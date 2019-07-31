@@ -1,0 +1,34 @@
+﻿using Microsoft.Cci;
+using System.Collections.Generic;
+
+namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetBackend.Model
+{
+    class FieldReferenceComparer : IEqualityComparer<IFieldReference>
+    {
+        public int GetHashCode(IFieldReference fld)
+        {
+            return fld.InternedKey.GetHashCode();
+        }
+
+        public bool Equals(IFieldReference x, IFieldReference y)
+        {
+            bool result;
+            var xdef = x as IFieldDefinition;
+            var ydef = y as IFieldDefinition;
+
+            if (xdef != null && ydef == null)
+            {
+                result = y.ResolvedField.Equals(xdef);
+            }
+            else if (xdef == null && ydef != null)
+            {
+                result = x.ResolvedField.Equals(ydef);
+            }
+            else
+            {
+                result = x.Equals(y);
+            }
+            return result;
+        }
+    }
+}

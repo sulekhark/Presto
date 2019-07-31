@@ -1,0 +1,140 @@
+.include "T.dom"                       # domain of types
+.include "F.dom"                       # domain of fields
+.include "M.dom"                       # domain of methods
+.include "I.dom"                       # domain of invoke statements
+.include "H.dom"                       # domain of allocation sites
+.include "V.dom"                       # domain of variables
+.include "Z.dom"                       # domain of integer indexes
+
+###
+# Relations
+###
+
+VT(v:V,t:T) input                      # Variable v has Type t
+HT(h:H,t:T) input                      # AllocSite h has Type t
+cha(n:M,t:T,m:M) input                 # For receiver object of Type t, virtual/interface/overridable Method n resolves to Method m.
+sub(t1:T,t2:T) input                   # Type t1 is a subtype of Type t2
+MmethArg(m:M,n:Z,v:V) input            # Variable v is the nth parameter of Method m
+MmethRet(m:M,n:Z,v:V) input            # Variable v is returned from Method m (n is always 0 - not used).
+IinvkArg0(i:I,v:V) input               # Variable v is the receiver of the method call in the InvokeStmt i
+IinvkArg(i:I,n:Z,v:V) input            # Variable v is the nth argument of the method call in the InvokeStmt i
+IinvkRet(i:I,n:Z,v:V) input            # Variable v is the lhs of InvokeStmt i (n is always 0 - not used)
+MI(m:M,i:I) input                      # Method m contains InvokeStmt i
+StatIM(i:I,m:M) input                  # InvokeStmt i calls static method m
+VirtIM(i:I,m:M) input                  # InvokeStmt i calls instance method m
+
+MAlloc(m:M,l:V,h:H) input              # Method m contains stmt: l = new ... (alloc site h)
+MMove(m:M,l:V,r:V) input               # Method m contains: l = r
+MInstFldRead(m:M,l:V,b:V,f:F) input    # Method m contains: l = b.f
+MInstFldWrite(m:M,b:V,f:F,r:V) input   # Method m contains: b.f = r
+MStatFldRead(m:M,l:V,f:F) input        # Method m contains: l = f
+MStatFldWrite(m:M,f:F,r:V) input       # Method m contains: f = r
+
+classT(t:T) input                      # Type t is a class
+staticTM(t:T,m:M) input                # Type t contains static method m
+staticTF(t:T,f:F) input                # Type t contains static field f
+clinitTM(t:T,m:M) input                # Type t contains static initializer method m
+entryPtM(m:M) input                    # Method m is an entrypoint
+
+IHM(i:I,h:H,m:M)            
+VV(v1:V,v2:V)
+VHfilter(v:V,h:H)
+
+Alloc(l:V,h:H)
+Move(l:V,r:V)
+InstFldRead(l:V,b:V,f:F)
+InstFldWrite(b:V,f:F,r:V)
+StatFldRead(l:V,f:F)
+StatFldWrite(f:F,r:V)
+
+reachableT(t:T) printtuples
+VH(v:V,h:H) printtuples              # Variable v may point to AllocSite h
+FH(f:F,h:H) printtuples              # Static field f may point to AllocSite h
+rootM(m:M) printtuples
+HFH(h1:H,f:F,h2:H) printtuples       # Field f of object allocated at AllocSite h1 may point to AllocSite h2
+reachableI(i:I) printtuples
+reachableM(m:M) printtuples
+IM(i:I,m:M) printtuples              # InvokeStmt i may call Method m
+MM(m:M,n:M) printtuples              # Method m may call Method n
+
+###
+# Constraints
+###
+
+VHfilter(v,h) :- VT(v,t), HT(h,s), sub(s,t).
+
+IHM(i,h,m2) :- VirtIM(i,m1), HT(h,t), cha(m1,t,m2).
+
+# base cases: each root method and each class initializer is reachable
+reachableM(m) :- entryPtM(m).
+reachableM(m) :- reachableT(t), clinitTM(t,m).
+# inductive case
+reachableM(m) :- IM(_,m).
+
+reachableI(i) :- MI(m,i), reachableM(m).
+
+# possibly-multiple-target call sites
+IM(i,m) :- reachableI(i), IinvkArg0(i,v), VH(v,h), IHM(i,h,m).
+
+IM(i,m) :- reachableI(i), StatIM(i,m).
+
+# arguments and return/throw variables
+VV(v,u) :- IinvkArg(i,z,u), IM(i,m), MmethArg(m,z,v).
+VV(u,v) :- IinvkRet(i,z,u), IM(i,m), MmethRet(m,z,v).
+
+VH(u,h) :- VV(u,v), VH(v,h), VHfilter(u,h).
+
+Alloc(l,h)   :- reachableM(m), MAlloc(m,l,h).
+Move(l,r)   :- reachableM(m), MMove(m,l,r).
+InstFldRead(l,b,f) :- reachableM(m), MInstFldRead(m,l,b,f).
+InstFldWrite(b,f,r) :- reachableM(m), MInstFldWrite(m,b,f,r).
+StatFldRead(l,f)   :- reachableM(m), MStatFldRead(m,l,f).
+StatFldWrite(f,r)   :- reachableM(m), MStatFldWrite(m,f,r).
+
+VH(l,h) :- Alloc(l,h), VHfilter(l,h).
+VH(l,h) :- Move(l,r), VH(r,h), VHfilter(l,h).
+VH(l,h2) :- InstFldRead(l,b,f), VH(b,h1), HFH(h1,f,h2), VHfilter(l,h2).
+HFH(h1,f,h2) :- InstFldWrite(b,f,r), VH(b,h1), VH(r,h2).
+VH(l,h) :- StatFldRead(l,f), FH(f,h), VHfilter(l,h).
+FH(f,h) :- StatFldWrite(f,r), VH(r,h).
+
+# 1. T is a class and an instance of T is created.
+reachableT(t) :- Alloc(_,h), HT(h,t).
+# 2. T is a class and a static method declared by T is invoked
+reachableT(t) :- reachableM(m), staticTM(t,m).
+# 3. A static field declared by T is assigned.
+reachableT(t) :- StatFldWrite(f,_), staticTF(t,f).
+# 4. A static field declared by T is used and the reference to the
+#    field is not a compile-time constant.
+reachableT(t) :- StatFldRead(_,f), staticTF(t,f).
+# 5. Before a class is initialized, its direct superclass must be
+#    initialized.
+reachableT(t) :- classT(t), reachableT(s), sub(s,t).
+
+rootM(m) :- entryPtM(m).
+rootM(m) :- reachableT(t), clinitTM(t,m).
+MM(m,n) :- IM(i,n), MI(m,i).
+
+.include "cha.datalog"
+.include "classT.datalog"
+.include "clinitTM.datalog"
+.include "entryPtM.datalog"
+.include "HT.datalog"
+.include "IinvkArg.datalog"
+.include "IinvkArg0.datalog"
+.include "IinvkRet.datalog"
+.include "MAlloc.datalog"
+.include "MI.datalog"
+.include "MInstFldRead.datalog"
+.include "MInstFldWrite.datalog"
+.include "MmethArg.datalog"
+.include "MmethRet.datalog"
+.include "MMove.datalog"
+.include "MStatFldRead.datalog"
+.include "MStatFldWrite.datalog"
+.include "staticTF.datalog"
+.include "staticTM.datalog"
+.include "StatIM.datalog"
+.include "sub.datalog"
+.include "VirtIM.datalog"
+.include "VT.datalog"
