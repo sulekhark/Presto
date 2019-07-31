@@ -4,15 +4,16 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetBackend.Wrappers
 {
     public class VariableWrapper
     {
-        readonly string varStr;
+        IVariable var;
 
         public VariableWrapper(IVariable var)
         {
-            varStr = var.Method.Name + "::" + var.ToString();
+            this.var = var;
         }
 
         public override string ToString()
         {
+            string varStr = var.Method.Name + "::" + var.ToString();
             return varStr;
         }
     }

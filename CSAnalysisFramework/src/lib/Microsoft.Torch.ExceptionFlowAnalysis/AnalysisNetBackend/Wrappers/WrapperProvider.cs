@@ -15,13 +15,29 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetBackend.Wrappers
         private readonly static IDictionary<Instruction, InstructionWrapper> InstToWrapperMap;
         private readonly static IDictionary<IVariable, VariableWrapper> VarToWrapperMap;
 
+        //AddressWrapper dictionaries
+        private readonly static IDictionary<IMethodReference, AddressWrapper> MethRefToAddrWrapperMap;
+        private readonly static IDictionary<ITypeReference, IDictionary<IFieldReference, AddressWrapper>> TypeFldRefToAddrWrapperMap;
+        private readonly static IDictionary<IFieldReference, AddressWrapper> FieldRefToAddrWrapperMap;
+        private readonly static IDictionary<IVariable, AddressWrapper> VarToAddrWrapperMap;
+
+        static readonly FieldReferenceComparer frc;
         static WrapperProvider()
         {
+            frc = new FieldReferenceComparer();
+            TypeDefinitionComparer tdc = new TypeDefinitionComparer();
+            VariableComparer vc = new VariableComparer();
+
             MethRefToWrapperMap = new Dictionary<IMethodReference, MethodRefWrapper>(MethodReferenceDefinitionComparer.Default);
-            TypeRefToWrapperMap = new Dictionary<ITypeReference, TypeRefWrapper>(new TypeDefinitionComparer());
-            FieldRefToWrapperMap = new Dictionary<IFieldReference, FieldRefWrapper>(new FieldReferenceComparer());
+            TypeRefToWrapperMap = new Dictionary<ITypeReference, TypeRefWrapper>(tdc);
+            FieldRefToWrapperMap = new Dictionary<IFieldReference, FieldRefWrapper>(frc);
             InstToWrapperMap = new Dictionary<Instruction, InstructionWrapper>(new InstructionComparer());
-            VarToWrapperMap = new Dictionary<IVariable, VariableWrapper>(new VariableComparer());
+            VarToWrapperMap = new Dictionary<IVariable, VariableWrapper>(vc);
+
+            MethRefToAddrWrapperMap = new Dictionary<IMethodReference, AddressWrapper>(MethodReferenceDefinitionComparer.Default);
+            TypeFldRefToAddrWrapperMap = new Dictionary<ITypeReference, IDictionary<IFieldReference, AddressWrapper>>(tdc);
+            FieldRefToAddrWrapperMap = new Dictionary<IFieldReference, AddressWrapper>(frc);
+            VarToAddrWrapperMap = new Dictionary<IVariable, AddressWrapper>(vc);
         }
 
         public static MethodRefWrapper getMethodRefW (IMethodReference methRef)
@@ -116,6 +132,78 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetBackend.Wrappers
                 VariableWrapper varW = new VariableWrapper(var);
                 VarToWrapperMap.Add(var, varW);
                 return varW;
+            }
+        }
+ 
+        public static AddressWrapper getAddrW(IMethodReference mRef)
+        {
+            if (MethRefToAddrWrapperMap.ContainsKey(mRef))
+            {
+                return MethRefToAddrWrapperMap[mRef];
+            }
+            else
+            {
+                MethodRefWrapper mRefW = getMethodRefW(mRef);
+                AddressWrapper methAW = new AddressWrapper(mRefW);
+                MethRefToAddrWrapperMap[mRef] = methAW;
+                return methAW;
+            }
+        }
+
+        public static AddressWrapper getAddrW(ITypeReference typeRef, IFieldReference fldRef)
+        {
+            if (TypeFldRefToAddrWrapperMap.ContainsKey(typeRef))
+            {
+                IDictionary<IFieldReference, AddressWrapper> innerDict = TypeFldRefToAddrWrapperMap[typeRef];
+
+                if (innerDict != null && innerDict.ContainsKey(fldRef))
+                {
+                    return innerDict[fldRef];
+                }
+                if (innerDict == null)
+                {
+                    TypeFldRefToAddrWrapperMap[typeRef] = new Dictionary<IFieldReference, AddressWrapper>(frc);
+                }
+            }
+            else
+            {
+                IDictionary<IFieldReference, AddressWrapper> innerDict = new Dictionary<IFieldReference, AddressWrapper>(frc);
+                TypeFldRefToAddrWrapperMap.Add(typeRef, innerDict);   
+            }
+            TypeRefWrapper typW = getTypeRefW(typeRef);
+            FieldRefWrapper fldW = getFieldRefW(fldRef);
+            AddressWrapper addW = new AddressWrapper(typW, fldW);
+            TypeFldRefToAddrWrapperMap[typeRef][fldRef] = addW;
+            return addW;
+        }
+
+        public static AddressWrapper getAddrW(IFieldReference fldRef)
+        {
+            if (FieldRefToAddrWrapperMap.ContainsKey(fldRef))
+            {
+                return FieldRefToAddrWrapperMap[fldRef];
+            }
+            else
+            {
+                FieldRefWrapper fldW = getFieldRefW(fldRef);
+                AddressWrapper addW = new AddressWrapper(fldW);
+                FieldRefToAddrWrapperMap[fldRef] = addW;
+                return addW;
+            }
+        }
+
+        public static AddressWrapper getAddrW(IVariable var)
+        {
+            if (VarToAddrWrapperMap.ContainsKey(var))
+            {
+                return VarToAddrWrapperMap[var];
+            }
+            else
+            {
+                VariableWrapper varW = getVarW(var);
+                AddressWrapper addW = new AddressWrapper(varW);
+                VarToAddrWrapperMap[var] = addW;
+                return addW;
             }
         }
     }
