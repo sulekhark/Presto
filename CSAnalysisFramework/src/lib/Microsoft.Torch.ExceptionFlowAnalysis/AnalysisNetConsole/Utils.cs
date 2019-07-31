@@ -1,6 +1,9 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using System.Collections.Generic;
 using Microsoft.Cci;
+using Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetBackend.Model;
+using Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetBackend.ThreeAddressCode.Instructions;
 
 namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
 {
@@ -141,6 +144,35 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
                 if (meth.IsStaticConstructor) return meth;
             }
             return null;
+        }
+
+        public static IList<CFGNode> getProgramFlowOrder(ControlFlowGraph cfg)
+        {
+            IList<CFGNode> cfgNodeList = new List<CFGNode>();
+            IDictionary<int, CFGNode> addrToNodeMap = new Dictionary<int, CFGNode>();
+
+            foreach (var node in cfg.Nodes)
+            {
+                if (node.Instructions.Count > 0)
+                {
+                    Instruction firstInst = node.Instructions.First();
+                    if (firstInst is PhiInstruction)
+                    {
+                        firstInst = node.Instructions.ElementAt(1);
+                    }
+                    string lbl = firstInst.Label;
+                    string pcStr = lbl.Substring(2);
+                    int pcVal = Int32.Parse(pcStr, System.Globalization.NumberStyles.HexNumber);
+                    addrToNodeMap.Add(pcVal, node);
+                }
+            }
+            int[] addrs = addrToNodeMap.Keys.ToArray();
+            Array.Sort(addrs);
+            for (int i = 0; i < addrs.Count(); i++)
+            {
+                cfgNodeList.Add(addrToNodeMap[addrs[i]]);
+            }
+            return cfgNodeList;
         }
     }
 }

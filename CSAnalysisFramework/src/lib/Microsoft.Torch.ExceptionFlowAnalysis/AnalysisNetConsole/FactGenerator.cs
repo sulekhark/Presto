@@ -69,7 +69,8 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
             }
             // Going through the instructions via cfg nodes instead of directly iterating over the instructions
             // of the methodBody becuase Phi instructions may not have been inserted in the insts of the methodBody.
-            foreach (var node in cfg.Nodes)
+            IList<CFGNode> cfgList = Utils.getProgramFlowOrder(cfg);
+            foreach (var node in cfgList)
             {
                 foreach (var instruction in node.Instructions)
                 {
