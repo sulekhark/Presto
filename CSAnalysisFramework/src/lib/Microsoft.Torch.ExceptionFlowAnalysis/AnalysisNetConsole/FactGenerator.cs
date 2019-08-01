@@ -39,34 +39,9 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
             System.Console.WriteLine();
             System.Console.WriteLine(mBody.MethodDefinition.Name);
             System.Console.WriteLine("==========================================");
-            IList<IVariable> paramList = mBody.Parameters;
-            int paramNdx = 0;
-            foreach (IVariable param in paramList)
-            {
-                if (!param.Type.IsValueType)
-                {
-                    VariableWrapper paramW = WrapperProvider.getVarW(param);
-                    ProgramDoms.domV.Add(paramW);
-                    ProgramRels.relMmethArg.Add(mRefW, paramNdx, paramW);
-                    ITypeReference varTypeRef = param.Type;
-                    TypeRefWrapper varTypeRefW = WrapperProvider.getTypeRefW(varTypeRef.ResolvedType);
-                    ProgramRels.relVT.Add(paramW, varTypeRefW);
-                }
-                paramNdx++;
-            }
+            ProcessParams(mBody, mRefW);
+            ProcessLocals(mBody, mRefW);
 
-            ISet<IVariable> localVarSet = mBody.Variables;
-            foreach (IVariable lclVar in localVarSet)
-            {
-                if (!lclVar.Type.IsValueType)
-                {
-                    VariableWrapper lclW = WrapperProvider.getVarW(lclVar);
-                    ProgramDoms.domV.Add(lclW);
-                    ITypeReference varTypeRef = lclVar.Type;
-                    TypeRefWrapper varTypeRefW = WrapperProvider.getTypeRefW(varTypeRef.ResolvedType);
-                    ProgramRels.relVT.Add(lclW, varTypeRefW);
-                }
-            }
             // Going through the instructions via cfg nodes instead of directly iterating over the instructions
             // of the methodBody becuase Phi instructions may not have been inserted in the insts of the methodBody.
             IList<CFGNode> cfgList = Utils.getProgramFlowOrder(cfg);
@@ -83,217 +58,42 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
                     if (instruction is LoadInstruction)
                     {
                         LoadInstruction lInst = instruction as LoadInstruction;
-                        IVariable lhsVar = lInst.Result;
-                        if (!lhsVar.Type.IsValueType)
-                        {
-                            VariableWrapper lhsW = WrapperProvider.getVarW(lhsVar);
-                            IValue rhsOperand = lInst.Operand;
-                            if (rhsOperand is IVariable)
-                            {
-                                IVariable rhsVar = rhsOperand as IVariable;
-                                VariableWrapper rhsW = WrapperProvider.getVarW(rhsVar);
-                                bool success = ProgramRels.relMMove.Add(mRefW, lhsW, rhsW);
-                            }
-                            else if (rhsOperand is InstanceFieldAccess)
-                            {
-                                InstanceFieldAccess rhsAcc = rhsOperand as InstanceFieldAccess;
-                                IVariable rhsVar = rhsAcc.Instance;
-                                VariableWrapper rhsW = WrapperProvider.getVarW(rhsVar);
-                                IFieldDefinition fld = rhsAcc.Field.ResolvedField;
-                                FieldRefWrapper fldW = WrapperProvider.getFieldRefW(fld);
-                                bool success = ProgramRels.relMInstFldRead.Add(mRefW, lhsW, rhsW, fldW);
-                            }
-                            else if (rhsOperand is StaticFieldAccess)
-                            {
-                                StaticFieldAccess rhsAcc = rhsOperand as StaticFieldAccess;
-                                IFieldDefinition fld = rhsAcc.Field.ResolvedField;
-                                FieldRefWrapper fldW = WrapperProvider.getFieldRefW(fld);
-                                bool success = ProgramRels.relMStatFldRead.Add(mRefW, lhsW, fldW);
-                            }
-                            else if (rhsOperand is ArrayElementAccess)
-                            {
-                                ArrayElementAccess rhsArr = rhsOperand as ArrayElementAccess;
-                                IVariable arr = rhsArr.Array;
-                                VariableWrapper arrW = WrapperProvider.getVarW(arr);
-                                FieldRefWrapper arrElemRepW = ProgramDoms.domF.GetVal(0);
-                                bool success = ProgramRels.relMInstFldRead.Add(mRefW, lhsW, arrW, arrElemRepW);
-                            }
-                            else if (rhsOperand is Constant)
-                            {
-                                // System.Console.WriteLine("Load Constant");
-                            }
-                            else
-                            {
-                                // System.Console.WriteLine("Load Inst: No idea: {0}   {1}", rhsOperand.Type, rhsOperand.ToString());
-                            }
-                        }
+                        ProcessLoadInst(lInst, mRefW);
                     }
                     else if (instruction is StoreInstruction)
                     {
                         StoreInstruction sInst = instruction as StoreInstruction;
-                        IVariable rhsVar = sInst.Operand;
-                        if (!rhsVar.Type.IsValueType)
-                        {
-                            VariableWrapper rhsW = WrapperProvider.getVarW(rhsVar);
-                            IAssignableValue lhs = sInst.Result;
-                            if (lhs is InstanceFieldAccess)
-                            {
-                                InstanceFieldAccess lhsAcc = lhs as InstanceFieldAccess;
-                                IVariable lhsVar = lhsAcc.Instance;
-                                VariableWrapper lhsW = WrapperProvider.getVarW(lhsVar);
-                                IFieldDefinition fld = lhsAcc.Field.ResolvedField;
-                                FieldRefWrapper fldW = WrapperProvider.getFieldRefW(fld);
-                                bool success = ProgramRels.relMInstFldWrite.Add(mRefW, lhsW, fldW, rhsW);
-                            }
-                            else if (lhs is StaticFieldAccess)
-                            {
-                                StaticFieldAccess lhsAcc = lhs as StaticFieldAccess;
-                                IFieldDefinition fld = lhsAcc.Field.ResolvedField;
-                                FieldRefWrapper fldW = WrapperProvider.getFieldRefW(fld);
-                                bool success = ProgramRels.relMStatFldWrite.Add(mRefW, fldW, rhsW);
-                            }
-                            else if (lhs is ArrayElementAccess)
-                            {
-                                ArrayElementAccess lhsArr = lhs as ArrayElementAccess;
-                                IVariable arr = lhsArr.Array;
-                                VariableWrapper arrW = WrapperProvider.getVarW(arr);
-                                FieldRefWrapper arrElemRepW = ProgramDoms.domF.GetVal(0);
-                                bool success = ProgramRels.relMInstFldWrite.Add(mRefW, arrW, arrElemRepW, rhsW);
-                            }
-                            else
-                            {
-                                System.Console.WriteLine("Store Inst: No idea");
-                            }
-                        }
+                        ProcessStoreInst(sInst, mRefW);
                     }
                     else if (instruction is CreateObjectInstruction)
                     {
                         CreateObjectInstruction newObjInst = instruction as CreateObjectInstruction;
-                        IVariable lhsVar = newObjInst.Result;
-                        VariableWrapper lhsW = WrapperProvider.getVarW(lhsVar);
-                        ITypeDefinition objTypeDef = newObjInst.AllocationType.ResolvedType;
-                        TypeRefWrapper objTypeW = WrapperProvider.getTypeRefW(objTypeDef);
-                        ProgramDoms.domH.Add(instW);
-                        ProgramRels.relMAlloc.Add(mRefW, lhsW, instW);
-                        ProgramRels.relHT.Add(instW, objTypeW);
+                        ProcessCreateObjectInst(newObjInst, mRefW, instW);
                     }
                     else if (instruction is CreateArrayInstruction)
                     {
                         CreateArrayInstruction newArrInst = instruction as CreateArrayInstruction;
-                        IVariable lhsVar = newArrInst.Result;
-                        VariableWrapper lhsW = WrapperProvider.getVarW(lhsVar);
-                        ITypeDefinition elemTypeDef = newArrInst.ElementType.ResolvedType;
-                        TypeRefWrapper elemTypeW = WrapperProvider.getTypeRefW(elemTypeDef);
-                        ProgramDoms.domH.Add(instW);
-                        ProgramRels.relMAlloc.Add(mRefW, lhsW, instW);
-                        ProgramRels.relHT.Add(instW, elemTypeW);
+                        ProcessCreateArrayInst(newArrInst, mRefW, instW);
                     }
                     else if (instruction is PhiInstruction)
                     {
                         PhiInstruction phiInst = instruction as PhiInstruction;
-                        IVariable lhsVar = phiInst.Result;
-                        if (!lhsVar.Type.IsValueType)
-                        {
-                            VariableWrapper lhsW = WrapperProvider.getVarW(lhsVar);
-                            ProgramDoms.domV.Add(lhsW);
-                            IList<IVariable> phiArgList = phiInst.Arguments;
-                            foreach (IVariable arg in phiArgList)
-                            {
-                                VariableWrapper argW = WrapperProvider.getVarW(arg);
-                                ProgramDoms.domV.Add(argW);
-                                bool success = ProgramRels.relMMove.Add(mRefW, lhsW, argW);
-                            }
-                        }
+                        ProcessPhiInst(phiInst, mRefW);
                     }
                     else if (instruction is MethodCallInstruction)
                     {
-                        ProgramDoms.domI.Add(instW);
-                        ProgramRels.relMI.Add(mRefW, instW);
-
                         MethodCallInstruction invkInst = instruction as MethodCallInstruction;
-                        if (invkInst.HasResult)
-                        {
-                            IVariable lhsVar = invkInst.Result;
-                            if (!lhsVar.Type.IsValueType)
-                            {
-                                VariableWrapper lhsW = WrapperProvider.getVarW(lhsVar);
-                                ProgramRels.relIinvkRet.Add(instW, 0, lhsW);
-                            }
-                        }
-                        IMethodReference callTgt = invkInst.Method;
-                        IMethodDefinition callTgtDef = callTgt.ResolvedMethod;
-                        ITypeDefinition declType = callTgtDef.ContainingTypeDefinition;
-
-                        if ((declType.ToString().StartsWith("System.Runtime.CompilerServices.AsyncTaskMethodBuilder")) &&
-                            (callTgtDef.Name.ToString() == "Start"))
-                        {
-                            IGenericMethodInstanceReference genericCallTgt = callTgt as IGenericMethodInstanceReference;
-                            if (genericCallTgt != null  && genericCallTgt.GenericArguments.Count() == 1)
-                            {
-                                ITypeDefinition genericParamDefn = genericCallTgt.GenericArguments.First().ResolvedType;
-                                IMethodDefinition moveNextMethod = Utils.GetMethodByName(genericParamDefn, "MoveNext");
-                                callTgtDef = moveNextMethod;
-                                declType = genericParamDefn;
-                            }
-                        }
-
-                        MethodRefWrapper callTgtW = WrapperProvider.getMethodRefW(callTgtDef);
-                        ProgramDoms.domM.Add(callTgtW);
-                        IList<IVariable> invkArgs = invkInst.Arguments;
-                        if (invkArgs.Count > 0)
-                        {
-                            IVariable arg0 = invkArgs[0];
-                            if (!arg0.Type.IsValueType)
-                            {
-                                VariableWrapper arg0W = WrapperProvider.getVarW(arg0);
-                                ProgramRels.relIinvkArg0.Add(instW, arg0W);
-                            }
-                        }
-                        int argNdx = 0;
-                        foreach (IVariable arg in invkArgs)
-                        {
-                            if (!arg.Type.IsValueType)
-                            {
-                                VariableWrapper argW = WrapperProvider.getVarW(arg);
-                                ProgramRels.relIinvkArg.Add(instW, argNdx, argW);
-                            }
-                            argNdx++;
-                        }
-                        MethodCallOperation callType = invkInst.Operation;
-                        if (callType == MethodCallOperation.Virtual)
-                        {
-                            ProgramRels.relVirtIM.Add(instW, callTgtW);
-                        }
-                        else if (callType == MethodCallOperation.Static)
-                        {
-                            ProgramRels.relStatIM.Add(instW, callTgtW);
-                        }
-                        else
-                        {
-                            // The only other type is MethodCallOperation.Jump which we ignore.
-                        }
+                        ProcessMethodCallInst(invkInst, mRefW, instW);
                     }
                     else if (instruction is ConvertInstruction) // cast
                     {
                         ConvertInstruction castInst = instruction as ConvertInstruction;
-                        IVariable lhsVar = castInst.Result;
-                        if (!lhsVar.Type.IsValueType)
-                        {
-                            VariableWrapper lhsW = WrapperProvider.getVarW(lhsVar);
-                            IVariable rhsVar = castInst.Operand;
-                            VariableWrapper rhsW = WrapperProvider.getVarW(rhsVar);
-                            bool success = ProgramRels.relMMove.Add(mRefW, lhsW, rhsW);
-                        }
+                        ProcessConvertInst(castInst, mRefW);
                     }
                     else if (instruction is ReturnInstruction)
                     {
                         ReturnInstruction retInst = instruction as ReturnInstruction;
-                        IVariable retVar = retInst.Operand;
-                        if (retVar != null && !retVar.Type.IsValueType)
-                        {
-                            VariableWrapper retW = WrapperProvider.getVarW(retVar);
-                            ProgramRels.relMmethRet.Add(mRefW, 0, retW);
-                        }
+                        ProcessRetInst(retInst, mRefW);
                     }
                     else if (instruction is InitializeObjectInstruction)
                     {
@@ -442,6 +242,347 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
                     }
                 }
            }
+        }
+
+        void ProcessParams(MethodBody mBody, MethodRefWrapper mRefW)
+        {
+            IList<IVariable> paramList = mBody.Parameters;
+            int paramNdx = 0;
+            foreach (IVariable param in paramList)
+            {
+                if (!param.Type.IsValueType)
+                {
+                    VariableWrapper paramW = WrapperProvider.getVarW(param);
+                    ProgramDoms.domV.Add(paramW);
+                    ProgramRels.relMmethArg.Add(mRefW, paramNdx, paramW);
+                    ITypeReference varTypeRef = param.Type;
+                    TypeRefWrapper varTypeRefW = WrapperProvider.getTypeRefW(varTypeRef.ResolvedType);
+                    ProgramRels.relVT.Add(paramW, varTypeRefW);
+                }
+                else
+                {
+                    if (param.Type.ResolvedType.IsStruct)
+                    {
+                        VariableWrapper paramW = WrapperProvider.getVarW(param);
+                        ProgramDoms.domV.Add(paramW);
+                        ProgramRels.relMmethArg.Add(mRefW, paramNdx, paramW);
+                        ITypeReference varTypeRef = param.Type;
+                        TypeRefWrapper varTypeRefW = WrapperProvider.getTypeRefW(varTypeRef.ResolvedType);
+                        ProgramRels.relVT.Add(paramW, varTypeRefW);
+                        ProgramRels.relStructV.Add(paramW);
+                    }
+                }
+                paramNdx++;
+            }
+            return;
+        }
+
+        void ProcessLocals(MethodBody mBody, MethodRefWrapper mRefW)
+        {
+            ISet<IVariable> localVarSet = mBody.Variables;
+            foreach (IVariable lclVar in localVarSet)
+            {
+                if (!lclVar.Type.IsValueType)
+                {
+                    VariableWrapper lclW = WrapperProvider.getVarW(lclVar);
+                    ProgramDoms.domV.Add(lclW);
+                    ITypeReference varTypeRef = lclVar.Type;
+                    TypeRefWrapper varTypeRefW = WrapperProvider.getTypeRefW(varTypeRef.ResolvedType);
+                    ProgramRels.relVT.Add(lclW, varTypeRefW);
+                }
+                else
+                {
+                    if (lclVar.Type.ResolvedType.IsStruct)
+                    {
+                        VariableWrapper lclW = WrapperProvider.getVarW(lclVar);
+                        ProgramDoms.domV.Add(lclW);
+                        ITypeReference varTypeRef = lclVar.Type;
+                        TypeRefWrapper varTypeRefW = WrapperProvider.getTypeRefW(varTypeRef.ResolvedType);
+                        ProgramRels.relVT.Add(lclW, varTypeRefW);
+                        ProgramRels.relStructV.Add(lclW);
+                    }
+                }
+            }
+            return;
+        }
+
+        void ProcessLoadInst(LoadInstruction lInst, MethodRefWrapper mRefW)
+        {
+            if (!lInst.Result.Type.IsValueType)
+            {
+                ProcessLoad(lInst, mRefW, false);
+            }
+            else
+            {
+                if (lInst.Result.Type.ResolvedType.IsStruct)
+                {
+                    ProcessLoad(lInst, mRefW, true);
+                }
+            }
+            return;
+        }
+        void ProcessLoad(LoadInstruction lInst, MethodRefWrapper mRefW, bool isStruct)
+        {
+            IVariable lhsVar = lInst.Result;
+            VariableWrapper lhsW = WrapperProvider.getVarW(lhsVar);
+            IValue rhsOperand = lInst.Operand;
+            if (rhsOperand is IVariable)
+            {
+                IVariable rhsVar = rhsOperand as IVariable;
+                VariableWrapper rhsW = WrapperProvider.getVarW(rhsVar);
+                bool success = isStruct ? ProgramRels.relMStrMove.Add(mRefW, lhsW, rhsW) :
+                                          ProgramRels.relMMove.Add(mRefW, lhsW, rhsW);
+            }
+            else if (rhsOperand is InstanceFieldAccess)
+            {
+                InstanceFieldAccess rhsAcc = rhsOperand as InstanceFieldAccess;
+                IVariable rhsVar = rhsAcc.Instance;
+                VariableWrapper rhsW = WrapperProvider.getVarW(rhsVar);
+                IFieldDefinition fld = rhsAcc.Field.ResolvedField;
+                FieldRefWrapper fldW = WrapperProvider.getFieldRefW(fld);
+                bool success = isStruct ? ProgramRels.relMStrInstFldRead.Add(mRefW, lhsW, rhsW, fldW):
+                                          ProgramRels.relMInstFldRead.Add(mRefW, lhsW, rhsW, fldW);
+            }
+            else if (rhsOperand is StaticFieldAccess)
+            {
+                StaticFieldAccess rhsAcc = rhsOperand as StaticFieldAccess;
+                IFieldDefinition fld = rhsAcc.Field.ResolvedField;
+                FieldRefWrapper fldW = WrapperProvider.getFieldRefW(fld);
+                bool success = isStruct ? ProgramRels.relMStrStatFldRead.Add(mRefW, lhsW, fldW):
+                                          ProgramRels.relMStatFldRead.Add(mRefW, lhsW, fldW);
+            }
+            else if (rhsOperand is ArrayElementAccess)
+            {
+                ArrayElementAccess rhsArr = rhsOperand as ArrayElementAccess;
+                IVariable arr = rhsArr.Array;
+                VariableWrapper arrW = WrapperProvider.getVarW(arr);
+                FieldRefWrapper arrElemRepW = ProgramDoms.domF.GetVal(0);
+                bool success = isStruct ? ProgramRels.relMStrInstFldRead.Add(mRefW, lhsW, arrW, arrElemRepW):
+                                          ProgramRels.relMInstFldRead.Add(mRefW, lhsW, arrW, arrElemRepW);
+            }
+            else if (rhsOperand is Constant)
+            {
+                // System.Console.WriteLine("Load Constant");
+            }
+            else
+            {
+                // System.Console.WriteLine("Load Inst: No idea: {0}   {1}", rhsOperand.Type, rhsOperand.ToString());
+            }
+            return;
+        }
+
+        void ProcessStoreInst(StoreInstruction sInst, MethodRefWrapper mRefW)
+        {
+            if (!sInst.Operand.Type.IsValueType)
+            {
+                ProcessStore(sInst, mRefW, false);
+            }
+            else
+            {
+                if (sInst.Result.Type.ResolvedType.IsStruct)
+                {
+                    ProcessStore(sInst, mRefW, true);
+                }
+            }
+            return;
+        }
+
+        void ProcessStore(StoreInstruction sInst, MethodRefWrapper mRefW, bool isStruct)
+        {
+            IVariable rhsVar = sInst.Operand;
+            VariableWrapper rhsW = WrapperProvider.getVarW(rhsVar);
+            IAssignableValue lhs = sInst.Result;
+            if (lhs is InstanceFieldAccess)
+            {
+                InstanceFieldAccess lhsAcc = lhs as InstanceFieldAccess;
+                IVariable lhsVar = lhsAcc.Instance;
+                VariableWrapper lhsW = WrapperProvider.getVarW(lhsVar);
+                IFieldDefinition fld = lhsAcc.Field.ResolvedField;
+                FieldRefWrapper fldW = WrapperProvider.getFieldRefW(fld);
+                bool success = isStruct ? ProgramRels.relMStrInstFldWrite.Add(mRefW, lhsW, fldW, rhsW):
+                                          ProgramRels.relMInstFldWrite.Add(mRefW, lhsW, fldW, rhsW);
+            }
+            else if (lhs is StaticFieldAccess)
+            {
+                StaticFieldAccess lhsAcc = lhs as StaticFieldAccess;
+                IFieldDefinition fld = lhsAcc.Field.ResolvedField;
+                FieldRefWrapper fldW = WrapperProvider.getFieldRefW(fld);
+                bool success = isStruct ? ProgramRels.relMStrStatFldWrite.Add(mRefW, fldW, rhsW):
+                                          ProgramRels.relMStatFldWrite.Add(mRefW, fldW, rhsW);
+            }
+            else if (lhs is ArrayElementAccess)
+            {
+                ArrayElementAccess lhsArr = lhs as ArrayElementAccess;
+                IVariable arr = lhsArr.Array;
+                VariableWrapper arrW = WrapperProvider.getVarW(arr);
+                FieldRefWrapper arrElemRepW = ProgramDoms.domF.GetVal(0);
+                bool success = isStruct ? ProgramRels.relMStrInstFldWrite.Add(mRefW, arrW, arrElemRepW, rhsW):
+                                          ProgramRels.relMInstFldWrite.Add(mRefW, arrW, arrElemRepW, rhsW);
+            }
+            else
+            {
+                System.Console.WriteLine("Store Inst: No idea");
+            }
+            return;
+        }
+
+        void ProcessCreateObjectInst(CreateObjectInstruction newObjInst, MethodRefWrapper mRefW, InstructionWrapper instW)
+        {
+            IVariable lhsVar = newObjInst.Result;
+            VariableWrapper lhsW = WrapperProvider.getVarW(lhsVar);
+            ITypeDefinition objTypeDef = newObjInst.AllocationType.ResolvedType;
+            TypeRefWrapper objTypeW = WrapperProvider.getTypeRefW(objTypeDef);
+            ProgramDoms.domH.Add(instW);
+            ProgramRels.relMAlloc.Add(mRefW, lhsW, instW);
+            ProgramRels.relHT.Add(instW, objTypeW);
+            return;
+        }
+
+        void ProcessCreateArrayInst(CreateArrayInstruction newArrInst, MethodRefWrapper mRefW, InstructionWrapper instW)
+        {
+            IVariable lhsVar = newArrInst.Result;
+            VariableWrapper lhsW = WrapperProvider.getVarW(lhsVar);
+            ITypeDefinition elemTypeDef = newArrInst.ElementType.ResolvedType;
+            TypeRefWrapper elemTypeW = WrapperProvider.getTypeRefW(elemTypeDef);
+            ProgramDoms.domH.Add(instW);
+            ProgramRels.relMAlloc.Add(mRefW, lhsW, instW);
+            ProgramRels.relHT.Add(instW, elemTypeW);
+            return;
+        }
+
+        void ProcessPhiInst(PhiInstruction phiInst, MethodRefWrapper mRefW)
+        {
+            IVariable lhsVar = phiInst.Result;
+            if (!lhsVar.Type.IsValueType)
+            {
+                VariableWrapper lhsW = WrapperProvider.getVarW(lhsVar);
+                ProgramDoms.domV.Add(lhsW);
+                IList<IVariable> phiArgList = phiInst.Arguments;
+                foreach (IVariable arg in phiArgList)
+                {
+                    VariableWrapper argW = WrapperProvider.getVarW(arg);
+                    ProgramDoms.domV.Add(argW);
+                    bool success = ProgramRels.relMMove.Add(mRefW, lhsW, argW);
+                }
+            }
+            else
+            {
+                if (lhsVar.Type.ResolvedType.IsStruct)
+                {
+                    VariableWrapper lhsW = WrapperProvider.getVarW(lhsVar);
+                    ProgramDoms.domV.Add(lhsW);
+                    IList<IVariable> phiArgList = phiInst.Arguments;
+                    foreach (IVariable arg in phiArgList)
+                    {
+                        VariableWrapper argW = WrapperProvider.getVarW(arg);
+                        ProgramDoms.domV.Add(argW);
+                        bool success = ProgramRels.relMStrMove.Add(mRefW, lhsW, argW);
+                    }
+                }
+            }
+            return;
+        }
+
+        void ProcessMethodCallInst(MethodCallInstruction invkInst, MethodRefWrapper mRefW, InstructionWrapper instW)
+        {
+            ProgramDoms.domI.Add(instW);
+            ProgramRels.relMI.Add(mRefW, instW);
+            if (invkInst.HasResult)
+            {
+                IVariable lhsVar = invkInst.Result;
+                if (!lhsVar.Type.IsValueType)
+                {
+                    VariableWrapper lhsW = WrapperProvider.getVarW(lhsVar);
+                    ProgramRels.relIinvkRet.Add(instW, 0, lhsW);
+                }
+            }
+            IMethodReference callTgt = invkInst.Method;
+            IMethodDefinition callTgtDef = callTgt.ResolvedMethod;
+            ITypeDefinition declType = callTgtDef.ContainingTypeDefinition;
+
+            if ((declType.ToString().StartsWith("System.Runtime.CompilerServices.AsyncTaskMethodBuilder")) &&
+                (callTgtDef.Name.ToString() == "Start"))
+            {
+                IGenericMethodInstanceReference genericCallTgt = callTgt as IGenericMethodInstanceReference;
+                if (genericCallTgt != null && genericCallTgt.GenericArguments.Count() == 1)
+                {
+                    ITypeDefinition genericParamDefn = genericCallTgt.GenericArguments.First().ResolvedType;
+                    IMethodDefinition moveNextMethod = Utils.GetMethodByName(genericParamDefn, "MoveNext");
+                    callTgtDef = moveNextMethod;
+                    declType = genericParamDefn;
+                }
+            }
+
+            MethodRefWrapper callTgtW = WrapperProvider.getMethodRefW(callTgtDef);
+            ProgramDoms.domM.Add(callTgtW);
+            IList<IVariable> invkArgs = invkInst.Arguments;
+            if (invkArgs.Count > 0)
+            {
+                IVariable arg0 = invkArgs[0];
+                if (!arg0.Type.IsValueType)
+                {
+                    VariableWrapper arg0W = WrapperProvider.getVarW(arg0);
+                    ProgramRels.relIinvkArg0.Add(instW, arg0W);
+                }
+            }
+            int argNdx = 0;
+            foreach (IVariable arg in invkArgs)
+            {
+                if (!arg.Type.IsValueType)
+                {
+                    VariableWrapper argW = WrapperProvider.getVarW(arg);
+                    ProgramRels.relIinvkArg.Add(instW, argNdx, argW);
+                }
+                argNdx++;
+            }
+            MethodCallOperation callType = invkInst.Operation;
+            if (callType == MethodCallOperation.Virtual)
+            {
+                ProgramRels.relVirtIM.Add(instW, callTgtW);
+            }
+            else if (callType == MethodCallOperation.Static)
+            {
+                ProgramRels.relStatIM.Add(instW, callTgtW);
+            }
+            else
+            {
+                // The only other type is MethodCallOperation.Jump which we ignore.
+            }
+            return;
+        }
+
+        void ProcessConvertInst(ConvertInstruction castInst, MethodRefWrapper mRefW)
+        {
+            IVariable lhsVar = castInst.Result;
+            if (!lhsVar.Type.IsValueType)
+            {
+                VariableWrapper lhsW = WrapperProvider.getVarW(lhsVar);
+                IVariable rhsVar = castInst.Operand;
+                VariableWrapper rhsW = WrapperProvider.getVarW(rhsVar);
+                bool success = ProgramRels.relMMove.Add(mRefW, lhsW, rhsW);
+            }
+            else
+            {
+                if (lhsVar.Type.ResolvedType.IsStruct)
+                {
+                    VariableWrapper lhsW = WrapperProvider.getVarW(lhsVar);
+                    IVariable rhsVar = castInst.Operand;
+                    VariableWrapper rhsW = WrapperProvider.getVarW(rhsVar);
+                    bool success = ProgramRels.relMStrMove.Add(mRefW, lhsW, rhsW);
+                }
+            }
+            return;
+        }
+
+        void ProcessRetInst(ReturnInstruction retInst, MethodRefWrapper mRefW)
+        {
+            IVariable retVar = retInst.Operand;
+            if (retVar != null && !retVar.Type.IsValueType)
+            {
+                VariableWrapper retW = WrapperProvider.getVarW(retVar);
+                ProgramRels.relMmethRet.Add(mRefW, 0, retW);
+            }
+            return;
         }
     }
 }

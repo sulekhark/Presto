@@ -54,7 +54,8 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.ProgramFacts
 	    public static RelMAddrTakenInstFld relMAddrTakenInstFld;
 	    public static RelMAddrTakenStatFld relMAddrTakenStatFld;
 	    public static RelMAddrTakenLocal relMAddrTakenLocal;
-	    public static RelMDerefLeft relMDerefLeft;
+        public static RelMAddrTakenFunc relMAddrTakenFunc;
+        public static RelMDerefLeft relMDerefLeft;
 	    public static RelMDerefRight relMDerefRight;
 	    public static RelDelegateIV relDelegateIV;
 	    public static RelStructV relStructV;
@@ -204,6 +205,9 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.ProgramFacts
             relMAddrTakenLocal = new RelMAddrTakenLocal();
             nameToRelMap.Add(relMAddrTakenLocal.GetName(), relMAddrTakenLocal);
 
+            relMAddrTakenFunc = new RelMAddrTakenFunc();
+            nameToRelMap.Add(relMAddrTakenFunc.GetName(), relMAddrTakenFunc);
+
             relMAddrTakenInstFld = new RelMAddrTakenInstFld();
             nameToRelMap.Add(relMAddrTakenInstFld.GetName(), relMAddrTakenInstFld);
 
@@ -263,7 +267,8 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.ProgramFacts
 	        relAddrOfMX.Save();
 	        relMAddrTakenInstFld.Save();
             relMAddrTakenLocal.Save();
-	        relMAddrTakenStatFld.Save();
+            relMAddrTakenFunc.Save();
+            relMAddrTakenStatFld.Save();
 	        relMDerefLeft.Save();
 	        relMDerefRight.Save();
 	        relDelegateIV.Save();

@@ -44,9 +44,10 @@ MStrInstFldWrite(m:M,l:V,f:F,r:V) input  # Method m contains: l.f = r
 MStrStatFldRead(m:M,l:V,f:F) input       # Method m contains: l = f
 MStrStatFldWrite(m:M,f:F,r:V) input      # Method m contains: f = r
 
-MAddrTakenLocal(m:M,l:V,r:V) input        # Method m contains l = &r
+MAddrTakenLocal(m:M,l:V,r:V) input       # Method m contains l = &r
 MAddrTakenInstFld(m:M,l:V,r:V,f:F) input # Method m contains l = &r.f
 MAddrTakenStatFld(m:M,l:V,f:F) input     # Method m contains l = &f
+MAddrTakenFunc(m1:M,l:V,m2:M)            # Method m1 contains l = &m2, where m2 is a method.
 
 MDerefLeft(m:M,l:V,r:V) input            # Method m contains *l = r
 MDerefRight(m:M,l:V,r:V) input           # Method m contains l = *r
@@ -60,8 +61,9 @@ entryPtM(m:M) input                      # Method m is an entrypoint
 
 IHM(i:I,h:H,m:M)
 VHfilter(v:V,h:H)
-delTgtVirtHM(h:H,m:M)
-delTgtHM(h:H,m:M)
+DelegateIH(i:I,h:H)
+DelReceiver(i:I,h:H)
+DelFunc(i:I,m:M)
 
 Alloc(l:V,h:H)
 Move(l:V,r:V)
@@ -79,6 +81,7 @@ StrStatFldWrite(f:F,r:V)
 AddrTakenLocal(l:V,r:V)
 AddrTakenInstFld(l:V,r:V,f:F)
 AddrTakenStatFld(l:V,f:F)
+AddrTakenFunc(l:V, m:M)
 DerefLeft(l:V,r:V)
 DerefRight(l:V,r:V)
 
@@ -101,8 +104,6 @@ MM(m:M,n:M) printtuples                # Method m may call Method n
 
 VHfilter(v,h) :- VT(v,t), HT(h,s), sub(s,t).
 IHM(i,h,m2) :- VirtIM(i,m1), HT(h,t), cha(m1,t,m2).
-delTgtVirtHM(h,m) :- HFX(h,0,x), AddrOfMX(m, x).
-delTgtHM(h,m) :- delTgtVirtHM(h,m1), HFH(h,0,h1), HT(h1,t), cha(m1,t,m). 
 
 # base cases: each root method and each class initializer is reachable
 reachableM(m) :- entryPtM(m).
@@ -117,7 +118,10 @@ IM(i,m) :- reachableI(i), IinvkArg0(i,v), VH(v,h), IHM(i,h,m).
 # calls to static methods
 IM(i,m) :- reachableI(i), StatIM(i,m).
 # method call via delegates
-IM(i,m) :- reachableI(i), DelegateIV(i,v), VH(v,h), delTgtHM(h,m).
+DelegateIH(i,h) :- reachableI(i), DelegateIV(i,v), VH(v,h).
+DelReceiver(i,rh) :- DelegateIH(i,h), HFH(h,0,rh).
+DelFunc(i,m) :- DelegateIH(i,h), HFX(h,0,x), AddrOf(m,x).
+IM(i,m1) :- DelFunc(i,m), DelReceiver(i,h), HT(h,t), cha(m,t,m1).
 
 # arguments and return/throw variables
 Move(v,u) :- IinvkArg(i,z,u), IM(i,m), MmethArg(m,z,v), !structV(u).
@@ -141,6 +145,7 @@ StrStatFldWrite(f,r)   :- reachableM(m), MStrStatFldWrite(m,f,r).
 AddrTakenLocal(l,r) :- reachableM(m), MAddrTakenLocal(m,l,r).
 AddrTakenInstFld(l,r,f) :- reachableM(m), MAddrTakenInstFld(m,l,r,f).
 AddrTakenStatFld(l,f) :- reachableM(m), MAddrTakenStatFld(m,l,f).
+AddrTakenFunc(l,m2) :- reachableM(m1), MAddrTakenFunc(m1,l,m2).
 DerefLeft(l,r) :- reachableM(m), MDerefLMove(m,l,r).
 DerefRight(l,r) :- reachableM(m), MDerefRMove(m,l,r).
 
@@ -169,11 +174,11 @@ HFH(fh,f1,fhf1h) :- StrStatFldWrite(f,r), VH(r,rh), FH(f,fh), HFH(rh,f1,rhf1h).
 HFX(fh,f1,x) :- StrStatFldWrite(f,r), VH(r,rh), FH(f,fh), HFH(rh,f1,x).
 
 # Handling & operator
-# Applying & to an address (an entry in domX) is not supported.
-# v1 = &v2, v1 = &v2.f, v1 = &f
+# v1 = &v2, v1 = &v2.f, v1 = &f, v1 = &m
 VX(v1,x) :- AddrTakenLocal(v1,v2), VH(v2,h), AddrOfVX(h,x).
 VX(v1,x) :- AddrTakenInstField(v1,v2,f), VH(v2,h2), AddrOfHFX(h2,f,x).
 VX(v1,x) :- AddrTakenStatField(v1,f), FH(f,h), AddrOfFX(f,x).
+VX(v1,x) :- AddrTakenFunc(v1,m), AddrOfMX(m,x).
 
 # Handling dereference
 # *l = r
