@@ -44,11 +44,12 @@ MStrInstFldWrite(m:M,l:V,f:F,r:V) input  # Method m contains: l.f = r
 MStrStatFldRead(m:M,l:V,f:F) input       # Method m contains: l = f
 MStrStatFldWrite(m:M,f:F,r:V) input      # Method m contains: f = r
 
-MAddrTaken(m:M,l:V,r:V) input            # Method m contains l = &r
-MDerefLeft(m:M,l:V,r:V) input            # Method m contains *l = r
-MDerefRight(m:M,l:V,r:V) input           # Method m contains l = *r
+MAddrTakenLocal(m:M,l:V,r:V) input        # Method m contains l = &r
 MAddrTakenInstFld(m:M,l:V,r:V,f:F) input # Method m contains l = &r.f
 MAddrTakenStatFld(m:M,l:V,f:F) input     # Method m contains l = &f
+
+MDerefLeft(m:M,l:V,r:V) input            # Method m contains *l = r
+MDerefRight(m:M,l:V,r:V) input           # Method m contains l = *r
 
 structV(v:V) input                       # Local variable v is of type struct
 classT(t:T) input                        # Type t is a class
@@ -64,22 +65,22 @@ delTgtHM(h:H,m:M)
 
 Alloc(l:V,h:H)
 Move(l:V,r:V)
-InstFldRead(l:V,r:V,f:F)
-InstFldWrite(l:V,f:F,r:V)
+InstFldRead(l:V,h:H,f:F)
+InstFldWrite(h:H,f:F,r:V)
 StatFldRead(l:V,f:F)
 StatFldWrite(f:F,r:V)
 
 StrMove(l:V,r:V)
-StrInstFldRead(l:V,r:V,f:F)
-StrInstFldWrite(l:V,f:F,r:V)
+StrInstFldRead(l:V,h:H,f:F)
+StrInstFldWrite(h:H,f:F,r:V)
 StrStatFldRead(l:V,f:F)
 StrStatFldWrite(f:F,r:V)
 
-AddrTaken(l:V,r:V)
-DerefLeft(l:V,r:V)
-DerefRight(l:V,r:V)
+AddrTakenLocal(l:V,r:V)
 AddrTakenInstFld(l:V,r:V,f:F)
 AddrTakenStatFld(l:V,f:F)
+DerefLeft(l:V,r:V)
+DerefRight(l:V,r:V)
 
 reachableT(t:T) printtuples
 VH(v:V,h:H) printtuples                # Variable v may point to AllocSite h
@@ -126,30 +127,30 @@ StrMove(u,v) :- IinvkRet(i,z,u), IM(i,m), MmethRet(m,z,v), structV(u).
 
 Alloc(l,h)   :- reachableM(m), MAlloc(m,l,h).
 Move(l,r)   :- reachableM(m), MMove(m,l,r).
-InstFldRead(l,r,f) :- reachableM(m), MInstFldRead(m,l,r,f).
-InstFldWrite(l,f,r) :- reachableM(m), MInstFldWrite(m,l,f,r).
+InstFldRead(l,h,f) :- reachableM(m), MInstFldRead(m,l,r,f), VH(r,h).
+InstFldWrite(h,f,r) :- reachableM(m), MInstFldWrite(m,l,f,r), VH(l,h).
 StatFldRead(l,f)   :- reachableM(m), MStatFldRead(m,l,f).
 StatFldWrite(f,r)   :- reachableM(m), MStatFldWrite(m,f,r).
 
 StrMove(l,r) :- reachableM(m), MStrMove(m,l,r).
-StrInstFldRead(l,r,f) :- reachableM(m), MStrInstFldRead(m,l,r,f).
-StrInstFldWrite(l,f,r) :- reachableM(m), MStrInstFldWrite(m,l,f,r).
+StrInstFldRead(l,h,f) :- reachableM(m), MStrInstFldRead(m,l,r,f), VH(r,h).
+StrInstFldWrite(h,f,r) :- reachableM(m), MStrInstFldWrite(m,l,f,r), VH(l,h).
 StrStatFldRead(l,f)   :- reachableM(m), MStrStatFldRead(m,l,f).
 StrStatFldWrite(f,r)   :- reachableM(m), MStrStatFldWrite(m,f,r).
 
-AddrTaken(l,r) :- reachableM(m), MAddrTaken(m,l,r).
-DerefLeft(l,r) :- reachableM(m), MDerefLeft(m,l,r).
-DerefRight(l,r) :- reachableM(m), MDerefRight(m,l,r).
+AddrTakenLocal(l,r) :- reachableM(m), MAddrTakenLocal(m,l,r).
 AddrTakenInstFld(l,r,f) :- reachableM(m), MAddrTakenInstFld(m,l,r,f).
 AddrTakenStatFld(l,f) :- reachableM(m), MAddrTakenStatFld(m,l,f).
+DerefLeft(l,r) :- reachableM(m), MDerefLMove(m,l,r).
+DerefRight(l,r) :- reachableM(m), MDerefRMove(m,l,r).
 
 VH(l,h) :- Alloc(l,h), VHfilter(l,h).
 VH(l,h) :- Move(l,r), VH(r,h), VHfilter(l,h).
 VX(l,x) :- Move(l,r), VX(r,x).
-VH(l,rhfh) :- InstFldRead(l,r,f), VH(r,rh), HFH(rh,f,rhfh), VHfilter(l,rhfh).
-VX(l,x) :- InstFldRead(l,r,f), VH(r,rh), HFX(rh,f,x).
-HFH(lh,f,rh) :- InstFldWrite(l,f,r), VH(l,lh), VH(r,rh).
-HFX(lh,f,x) :- InstFldWrite(l,f,r), VH(l,lh), VX(r,x).
+VH(l,hfh) :- InstFldRead(l,h,f), HFH(h,f,hfh), VHfilter(l,hfh).
+VX(l,x) :- InstFldRead(l,h,f), HFX(h,f,x).
+HFH(h,f,rh) :- InstFldWrite(h,f,r), VH(r,rh).
+HFX(h,f,x) :- InstFldWrite(h,f,r), VX(r,x).
 VH(l,h) :- StatFldRead(l,f), FH(f,h), VHfilter(l,h).
 VX(l,x) :- StatFldRead(l,f), FX(f,x).
 FH(f,h) :- StatFldWrite(f,r), VH(r,h).
@@ -158,10 +159,10 @@ FX(f,x) :- StatFldWrite(f,r), VX(r,x).
 # handling structs
 HFH(lh,f,rhfh) :- StrMove(l,r), VH(r,rh), VH(l,lh), HFH(rh,f,rhfh).
 HFX(lh,f,x) :- StrMove(l,r), VH(r,rh), VH(l,lh), HFX(rh,f,x).
-HFH(lh,f1,rhfhf1h) :- StrInstFldRead(l,r,f), VH(l,lh), VH(r,rh), HFH(rh,f,rhfh), HFH(rhfh,f1,rhfhf1h).
-HFX(lh,f1,x) :- StrInstFldRead(l,r,f), VH(l,lh), VH(r,rh), HFH(rh,f,rhfh), HFH(rhfh,f1,x).
-HFH(lhfh,f1,rhf1h) :- StrInstFldWrite(l,f,r), VH(l,lh), VH(r,rh), HFH(lh,f,lhfh), HFH(rh,f1,rhf1h).
-HFX(lhfh,f1,x) :- StrInstFldWrite(l,f,r), VH(l,lh), VH(r,rh), HFH(lh,f,lhfh), HFH(rh,f1,x).
+HFH(lh,f1,hfhf1h) :- StrInstFldRead(l,h,f), VH(l,lh), HFH(h,f,hfh), HFH(hfh,f1,hfhf1h).
+HFX(lh,f1,x) :- StrInstFldRead(l,h,f), VH(l,lh), HFH(h,f,hfh), HFH(hfh,f1,x).
+HFH(hfh,f1,rhf1h) :- StrInstFldWrite(h,f,r), VH(r,rh), HFH(h,f,hfh), HFH(rh,f1,rhf1h).
+HFX(hfh,f1,x) :- StrInstFldWrite(h,f,r), VH(r,rh), HFH(h,f,hfh), HFH(rh,f1,x).
 HFH(lh,f1,fhf1h) :- StrStatFldRead(l,f), VH(l,lh), FH(f,fh), HFH(fh,f1,fhf1h).
 HFX(lh,f1,x) :- StrStatFldRead(l,f), VH(l,lh), FH(f,fh), HFH(fh,f1,x).
 HFH(fh,f1,fhf1h) :- StrStatFldWrite(f,r), VH(r,rh), FH(f,fh), HFH(rh,f1,rhf1h).
@@ -170,25 +171,25 @@ HFX(fh,f1,x) :- StrStatFldWrite(f,r), VH(r,rh), FH(f,fh), HFH(rh,f1,x).
 # Handling & operator
 # Applying & to an address (an entry in domX) is not supported.
 # v1 = &v2, v1 = &v2.f, v1 = &f
-VX(v1,x) :- AddrTaken(v1,v2), VH(v2,h), AddrOfVX(h,x).
+VX(v1,x) :- AddrTakenLocal(v1,v2), VH(v2,h), AddrOfVX(h,x).
 VX(v1,x) :- AddrTakenInstField(v1,v2,f), VH(v2,h2), AddrOfHFX(h2,f,x).
 VX(v1,x) :- AddrTakenStatField(v1,f), FH(f,h), AddrOfFX(f,x).
 
 # Handling dereference
 # *l = r
-VH(v,rh) :- DerefLeft(l,r), AddrOfVX(v,l), VH(r,rh), VHfilter(v,rh).
-VX(v,x) :- DerefLeft(l,r), AddrOfVX(v,l), VX(r,x).
-HFH(h,f,rh) :- DerefLeft(l,r), AddrOfHFX(h,f,l), VH(r,rh).
-HFX(h,f,x) :- DerefLeft(l,r), AddrOfHFX(h,f,l), VX(r,x).
-FH(f,rh) :- DerefLeft(l,r), AddrOfFX(f,l), VH(r,rh).
-FX(f,x) :- DerefLeft(l,r), AddrOfFX(f,l), VX(r,x).
+Move(v,r) :- DerefLeft(l,r), VX(l,x), AddrOfVX(v,x), !structV(r).
+StrMove(v,r) :- DerefLeft(l,r), VX(l,x), AddrOfVX(v,x), structV(r).
+InstFldWrite(h,f,r) :- DerefLeft(l,r), VX(l,x), AddrOfHFX(h,f,x), !structV(r).
+StrInstFldWrite(h,f,r) :- DerefLeft(l,r), VX(l,x), AddrOfHFX(h,f,x), structV(r).
+StatFldWrite(f,r) :- DerefLeft(l,r), VX(l,x), AddrOfFX(f,x), !structV(r).
+StrStatFldWrite(f,r) :- DerefLeft(l,r), VX(l,x), AddrOfFX(f,x), structV(r).
 # l = *r
-VH(l,vh) :- DerefRight(l,r), AddrOfVX(v,r), VH(v,vh), VHfilter(l,vh).
-VX(l,x) :- DerefRight(l,r), AddrOfVX(v,r), VX(r,x).
-VH(l,hfh) :- DerefRight(l,r), AddrOfHFX(h,f,r), HFH(h,f,hfh), VHfilter(l,hfh).
-VX(l,x) :- DerefRight(l,r), AddrOfHFX(h,f,r), HFX(h,f,x).
-VH(l,fh) :- DerefRight(l,r), AddrOfFX(f,r), FH(f,fh), VHfilter(l,fh).
-VX(l,x) :- DerefRight(l,r), AddrOfFX(f,r), FX(f,x).
+Move(l,v) :- DerefRight(l,r), VX(r,x), AddrOfVX(v,x), !structV(l).
+StrMove(l,v) :- DerefRight(l,r), VX(r,x), AddrOfVX(v,x), structV(l).
+InstFldRead(l,h,f) :- DerefRight(l,r), VX(r,x), AddrOfHFX(h,f,x), !structV(l).
+StrInstFldRead(l,h,f) :- DerefRight(l,r), VX(r,x), AddrOfHFX(h,f,x), structV(l).
+StatFldRead(l,f) :- DerefRight(l,r), VX(r,x), AddrOfFX(f,x), !structV(l).
+StrStatFldRead(l,f) :- DerefRight(l,r), VX(r,x), AddrOfFX(f,x), structV(l).
 
 
 # 1. T is a class and an instance of T is created.

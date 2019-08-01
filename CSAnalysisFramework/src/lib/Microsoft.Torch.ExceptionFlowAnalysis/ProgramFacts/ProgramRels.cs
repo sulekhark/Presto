@@ -38,6 +38,26 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.ProgramFacts
         public static RelFH relFH;
         public static RelHFH relHFH;
         public static RelIM relIM;
+	
+        public static RelMStrMove relMStrMove;
+        public static RelMStrInstFldRead relMStrInstFldRead;
+        public static RelMStrStatFldRead relMStrStatFldRead;
+        public static RelMStrInstFldWrite relMStrInstFldWrite;
+        public static RelMStrStatFldWrite relMStrStatFldWrite;
+        public static RelVX relVX;
+        public static RelFX relFX;
+        public static RelHFX relHFX;
+        public static RelAddrOfVX relAddrOfVX;
+        public static RelAddrOfFX relAddrOfFX;
+        public static RelAddrOfHFX relAddrOfHFX;
+        public static RelAddrOfMX relAddrOfMX;
+	    public static RelMAddrTakenInstFld relMAddrTakenInstFld;
+	    public static RelMAddrTakenStatFld relMAddrTakenStatFld;
+	    public static RelMAddrTakenLocal relMAddrTakenLocal;
+	    public static RelMDerefLeft relMDerefLeft;
+	    public static RelMDerefRight relMDerefRight;
+	    public static RelDelegateIV relDelegateIV;
+	    public static RelStructV relStructV;
 
 
         public static Dictionary<string, Rel> nameToRelMap;
@@ -143,6 +163,65 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.ProgramFacts
 
             relIM = new RelIM();
             nameToRelMap.Add(relIM.GetName(), relIM);
+
+
+            relMStrMove = new RelMStrMove();
+            nameToRelMap.Add(relMStrMove.GetName(), relMStrMove);
+
+            relMStrInstFldRead = new RelMStrInstFldRead();
+            nameToRelMap.Add(relMStrInstFldRead.GetName(), relMStrInstFldRead);
+
+            relMStrStatFldRead = new RelMStrStatFldRead();
+            nameToRelMap.Add(relMStrStatFldRead.GetName(), relMStrStatFldRead);
+
+            relMStrInstFldWrite = new RelMStrInstFldWrite();
+            nameToRelMap.Add(relMStrInstFldWrite.GetName(), relMStrInstFldWrite);
+
+            relMStrStatFldWrite = new RelMStrStatFldWrite();
+            nameToRelMap.Add(relMStrStatFldWrite.GetName(), relMStrStatFldWrite);
+
+            relVX = new RelVX();
+            nameToRelMap.Add(relVX.GetName(), relVX);
+
+            relFX = new RelFX();
+            nameToRelMap.Add(relFX.GetName(), relFX);
+
+            relHFX = new RelHFX();
+            nameToRelMap.Add(relHFX.GetName(), relHFX);
+
+            relAddrOfVX = new RelAddrOfVX();
+            nameToRelMap.Add(relAddrOfVX.GetName(), relAddrOfVX);
+
+            relAddrOfFX = new RelAddrOfFX();
+            nameToRelMap.Add(relAddrOfFX.GetName(), relAddrOfFX);
+
+            relAddrOfHFX = new RelAddrOfHFX();
+            nameToRelMap.Add(relAddrOfHFX.GetName(), relAddrOfHFX);
+
+            relAddrOfMX = new RelAddrOfMX();
+            nameToRelMap.Add(relAddrOfMX.GetName(), relAddrOfMX);
+
+            relMAddrTakenLocal = new RelMAddrTakenLocal();
+            nameToRelMap.Add(relMAddrTakenLocal.GetName(), relMAddrTakenLocal);
+
+            relMAddrTakenInstFld = new RelMAddrTakenInstFld();
+            nameToRelMap.Add(relMAddrTakenInstFld.GetName(), relMAddrTakenInstFld);
+
+            relMAddrTakenStatFld = new RelMAddrTakenStatFld();
+            nameToRelMap.Add(relMAddrTakenStatFld.GetName(), relMAddrTakenStatFld);
+
+            relMDerefRight = new RelMDerefRight();
+            nameToRelMap.Add(relMDerefRight.GetName(), relMDerefRight);
+
+            relMDerefLeft = new RelMDerefLeft();
+            nameToRelMap.Add(relMDerefLeft.GetName(), relMDerefLeft);
+
+            relDelegateIV = new RelDelegateIV();
+            nameToRelMap.Add(relDelegateIV.GetName(), relDelegateIV);
+
+            relStructV = new RelStructV();
+            nameToRelMap.Add(relStructV.GetName(), relStructV);
+
         }
 
         public static void Save()
@@ -172,6 +251,23 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.ProgramFacts
             relStaticTF.Save();
             relClinitTM.Save();
             relVT.Save();
+
+            relMStrMove.Save();
+            relMStrInstFldRead.Save();
+            relMStrInstFldWrite.Save();
+            relMStrStatFldRead.Save();
+            relMStrStatFldWrite.Save();
+	        relAddrOfVX.Save();
+	        relAddrOfFX.Save();
+	        relAddrOfHFX.Save();
+	        relAddrOfMX.Save();
+	        relMAddrTakenInstFld.Save();
+            relMAddrTakenLocal.Save();
+	        relMAddrTakenStatFld.Save();
+	        relMDerefLeft.Save();
+	        relMDerefRight.Save();
+	        relDelegateIV.Save();
+	        relStructV.Save();
         }
     }
 }
