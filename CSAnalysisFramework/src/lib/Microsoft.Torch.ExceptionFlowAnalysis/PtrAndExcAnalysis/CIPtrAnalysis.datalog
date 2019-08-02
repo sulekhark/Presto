@@ -166,19 +166,19 @@ FX(f,x) :- StatFldWrite(f,r), VX(r,x).
 HFH(lh,f,rhfh) :- StrMove(l,r), VH(r,rh), VH(l,lh), HFH(rh,f,rhfh).
 HFX(lh,f,x) :- StrMove(l,r), VH(r,rh), VH(l,lh), HFX(rh,f,x).
 HFH(lh,f1,hfhf1h) :- StrInstFldRead(l,h,f), VH(l,lh), HFH(h,f,hfh), HFH(hfh,f1,hfhf1h).
-HFX(lh,f1,x) :- StrInstFldRead(l,h,f), VH(l,lh), HFH(h,f,hfh), HFH(hfh,f1,x).
+HFX(lh,f1,x) :- StrInstFldRead(l,h,f), VH(l,lh), HFH(h,f,hfh), HFX(hfh,f1,x).
 HFH(hfh,f1,rhf1h) :- StrInstFldWrite(h,f,r), VH(r,rh), HFH(h,f,hfh), HFH(rh,f1,rhf1h).
-HFX(hfh,f1,x) :- StrInstFldWrite(h,f,r), VH(r,rh), HFH(h,f,hfh), HFH(rh,f1,x).
+HFX(hfh,f1,x) :- StrInstFldWrite(h,f,r), VH(r,rh), HFH(h,f,hfh), HFX(rh,f1,x).
 HFH(lh,f1,fhf1h) :- StrStatFldRead(l,f), VH(l,lh), FH(f,fh), HFH(fh,f1,fhf1h).
-HFX(lh,f1,x) :- StrStatFldRead(l,f), VH(l,lh), FH(f,fh), HFH(fh,f1,x).
+HFX(lh,f1,x) :- StrStatFldRead(l,f), VH(l,lh), FH(f,fh), HFX(fh,f1,x).
 HFH(fh,f1,fhf1h) :- StrStatFldWrite(f,r), VH(r,rh), FH(f,fh), HFH(rh,f1,rhf1h).
-HFX(fh,f1,x) :- StrStatFldWrite(f,r), VH(r,rh), FH(f,fh), HFH(rh,f1,x).
+HFX(fh,f1,x) :- StrStatFldWrite(f,r), VH(r,rh), FH(f,fh), HFX(rh,f1,x).
 
 # Handling & operator
 # v1 = &v2, v1 = &v2.f, v1 = &f, v1 = &m
-VX(v1,x) :- AddrTakenLocal(v1,v2), VH(v2,h), AddrOfVX(h,x).
+VX(v1,x) :- AddrTakenLocal(v1,v2), AddrOfVX(v2,x).
 VX(v1,x) :- AddrTakenInstField(v1,v2,f), VH(v2,h2), AddrOfHFX(h2,f,x).
-VX(v1,x) :- AddrTakenStatField(v1,f), FH(f,h), AddrOfFX(f,x).
+VX(v1,x) :- AddrTakenStatField(v1,f), AddrOfFX(f,x).
 VX(v1,x) :- AddrTakenFunc(v1,m), AddrOfMX(m,x).
 
 # Handling dereference
