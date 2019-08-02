@@ -25,6 +25,11 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
         public ISet<IMethodDefinition> methods;
         public ISet<ITypeDefinition> types;
         public readonly bool rootIsExe;
+
+        public readonly ISet<IFieldDefinition> addrTakenInstFlds;
+        public readonly ISet<IFieldDefinition> addrTakenStatFlds;
+        public readonly ISet<IVariable> addrTakenLocals;
+        public readonly ISet<IMethodDefinition> addrTakenMethods;
        
         public RTAAnalyzer(bool rootIsExe)
         {
@@ -65,6 +70,37 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
                             IFieldReference fld = rhsAcc.Field;
                             ITypeDefinition fldType = fld.ContainingType.ResolvedType;
                             Utils.CheckAndAdd(fldType);
+                        }
+                        // Note: calls to static methods and instance methods appear as a StaticMethodReference
+                        else if (rhsOperand is StaticMethodReference)
+                        {
+                            StaticMethodReference sMethAddr = rhsOperand as StaticMethodReference;
+                            IMethodDefinition tgtMeth = sMethAddr.Method.ResolvedMethod;
+                            ITypeDefinition containingTy = tgtMeth.ContainingTypeDefinition;
+                            Utils.CheckAndAdd(containingTy);
+                            Utils.CheckAndAdd(tgtMeth);
+                        }
+                        //Note: calls to virtual, abstract or interface methods appear as VirtualMethodReference
+                        else if (rhsOperand is VirtualMethodReference)
+                        {
+                            VirtualMethodReference sMethAddr = rhsOperand as VirtualMethodReference;
+                            IMethodDefinition tgtMeth = sMethAddr.Method.ResolvedMethod;
+                            ITypeDefinition containingTy = tgtMeth.ContainingTypeDefinition;
+                            Utils.CheckAndAdd(containingTy);
+                            Utils.CheckAndAdd(tgtMeth);
+                            ProcessVirtualInvoke(tgtMeth, containingTy, true);
+                        }
+                        else if (rhsOperand is Reference)
+                        {
+                            Reference rhsRef = rhsOperand as Reference;
+                            IReferenceable refOf = rhsRef.Value;
+                            if (refOf is StaticFieldAccess)
+                            {
+                                StaticFieldAccess refAcc = refOf as StaticFieldAccess;
+                                IFieldDefinition fld = refAcc.Field.ResolvedField;
+                                ITypeDefinition fldType = fld.ContainingType.ResolvedType;
+                                Utils.CheckAndAdd(fldType);
+                            }
                         }
                     }
                     else if (instruction is StoreInstruction)
@@ -127,7 +163,7 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
                             MethodCallOperation callType = invkInst.Operation;
                             if (callType == MethodCallOperation.Virtual)
                             {
-                                ProcessVirtualInvoke(callTgtDef, declType);
+                                ProcessVirtualInvoke(callTgtDef, declType, false);
                             }
                         }
                     }
@@ -141,7 +177,7 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
             }
         }
 
-        private void ProcessVirtualInvoke(IMethodDefinition mCallee, ITypeDefinition calleeClass)
+        private void ProcessVirtualInvoke(IMethodDefinition mCallee, ITypeDefinition calleeClass, bool isAddrTaken)
         {
             bool isInterface = calleeClass.IsInterface;
             

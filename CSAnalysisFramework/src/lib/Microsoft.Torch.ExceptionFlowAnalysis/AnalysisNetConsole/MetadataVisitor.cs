@@ -83,7 +83,7 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
 			forwardCopyAnalysis.Analyze();
 			forwardCopyAnalysis.Transform(methodBody);
 
-            // backwardCopyAnalysis is buggy - it says so in the source file - see notes in FactTest
+            // backwardCopyAnalysis is buggy - it says so in the source file - see notes in src/test
 			// var backwardCopyAnalysis = new BackwardCopyPropagationAnalysis(cfg);
 			// backwardCopyAnalysis.Analyze();
 			// backwardCopyAnalysis.Transform(methodBody);

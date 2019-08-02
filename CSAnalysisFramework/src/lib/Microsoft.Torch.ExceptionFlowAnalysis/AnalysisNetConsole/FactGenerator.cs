@@ -360,6 +360,7 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
                 bool success = isStruct ? ProgramRels.relMStrInstFldRead.Add(mRefW, lhsW, arrW, arrElemRepW):
                                           ProgramRels.relMInstFldRead.Add(mRefW, lhsW, arrW, arrElemRepW);
             }
+            // Note: calls to static methods and instance methods appear as a StaticMethodReference
             else if (rhsOperand is StaticMethodReference)
             {
                 StaticMethodReference sMethAddr = rhsOperand as StaticMethodReference;
@@ -367,9 +368,13 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
                 MethodRefWrapper tgtMethW = WrapperProvider.getMethodRefW(tgtMeth);
                 ProgramRels.relMAddrTakenFunc.Add(mRefW, lhsW, tgtMethW);
             }
+            //Note: calls to virtual, abstract or interface methods appear as VirtualMethodReference
             else if (rhsOperand is VirtualMethodReference)
             {
-                Console.WriteLine("WARNING: Not yet handling VirtualMethodReference");
+                VirtualMethodReference sMethAddr = rhsOperand as VirtualMethodReference;
+                IMethodDefinition tgtMeth = sMethAddr.Method.ResolvedMethod;
+                MethodRefWrapper tgtMethW = WrapperProvider.getMethodRefW(tgtMeth);
+                ProgramRels.relMAddrTakenFunc.Add(mRefW, lhsW, tgtMethW);
             }
             else if (rhsOperand is Dereference)
             {

@@ -33,6 +33,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "T7", "CSAnalysisFramework\s
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "T8", "CSAnalysisFramework\src\test\T8\T8.csproj", "{1AB6EF4B-C1D7-402C-98EB-3749495702DB}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "T9", "CSAnalysisFramework\src\test\T9\T9.csproj", "{D3A93302-4850-4344-B738-7311E0415326}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -83,6 +85,10 @@ Global
 		{1AB6EF4B-C1D7-402C-98EB-3749495702DB}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{1AB6EF4B-C1D7-402C-98EB-3749495702DB}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{1AB6EF4B-C1D7-402C-98EB-3749495702DB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D3A93302-4850-4344-B738-7311E0415326}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D3A93302-4850-4344-B738-7311E0415326}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D3A93302-4850-4344-B738-7311E0415326}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D3A93302-4850-4344-B738-7311E0415326}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -99,6 +105,7 @@ Global
 		{1150D764-A665-463B-8F3C-9621279DBD27} = {AE2D211D-4EA0-4BCC-8E6F-A3F833635FD0}
 		{0115F350-4386-4FF8-9477-DF10983951AD} = {AE2D211D-4EA0-4BCC-8E6F-A3F833635FD0}
 		{1AB6EF4B-C1D7-402C-98EB-3749495702DB} = {AE2D211D-4EA0-4BCC-8E6F-A3F833635FD0}
+		{D3A93302-4850-4344-B738-7311E0415326} = {AE2D211D-4EA0-4BCC-8E6F-A3F833635FD0}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {26192443-B8E7-40D6-8F72-E89831C4D9F4}
