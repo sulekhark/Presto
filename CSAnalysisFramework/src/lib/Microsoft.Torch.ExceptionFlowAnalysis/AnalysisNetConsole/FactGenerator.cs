@@ -371,6 +371,47 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
             {
                 Console.WriteLine("WARNING: Not yet handling VirtualMethodReference");
             }
+            else if (rhsOperand is Dereference)
+            {
+                Dereference rhsDeref = rhsOperand as Dereference;
+                VariableWrapper rhsW = WrapperProvider.getVarW(rhsDeref.Reference);
+                ProgramRels.relMDerefRight.Add(mRefW, lhsW, rhsW);
+            }
+            else if (rhsOperand is Reference)
+            {
+                Reference rhsRef = rhsOperand as Reference;
+                IReferenceable refOf = rhsRef.Value;
+                if (refOf is IVariable)
+                {
+                    IVariable refVar = refOf as IVariable;
+                    VariableWrapper refW = WrapperProvider.getVarW(refVar);
+                    ProgramRels.relMAddrTakenLocal.Add(mRefW, lhsW, refW);
+                }
+                else if (refOf is StaticFieldAccess)
+                {
+                    StaticFieldAccess refAcc = refOf as StaticFieldAccess;
+                    IFieldDefinition fld = refAcc.Field.ResolvedField;
+                    FieldRefWrapper fldW = WrapperProvider.getFieldRefW(fld);
+                    ProgramRels.relMAddrTakenStatFld.Add(mRefW, lhsW, fldW); 
+                }
+                else if (refOf is InstanceFieldAccess)
+                {
+                    InstanceFieldAccess refAcc = refOf as InstanceFieldAccess;
+                    IVariable refVar = refAcc.Instance;
+                    VariableWrapper refW = WrapperProvider.getVarW(refVar);
+                    IFieldDefinition fld = refAcc.Field.ResolvedField;
+                    FieldRefWrapper fldW = WrapperProvider.getFieldRefW(fld);
+                    ProgramRels.relMAddrTakenInstFld.Add(mRefW, lhsW, refW, fldW);
+                }
+                else if (refOf is ArrayElementAccess)
+                {
+                    ArrayElementAccess refArr = refOf as ArrayElementAccess;
+                    IVariable arr = refArr.Array;
+                    VariableWrapper arrW = WrapperProvider.getVarW(arr);
+                    FieldRefWrapper arrElemRepW = ProgramDoms.domF.GetVal(0);
+                    ProgramRels.relMAddrTakenInstFld.Add(mRefW, lhsW, arrW, arrElemRepW);
+                }
+            }
             else if (rhsOperand is Constant)
             {
                 // System.Console.WriteLine("Load Constant");
@@ -430,9 +471,15 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
                 bool success = isStruct ? ProgramRels.relMStrInstFldWrite.Add(mRefW, arrW, arrElemRepW, rhsW):
                                           ProgramRels.relMInstFldWrite.Add(mRefW, arrW, arrElemRepW, rhsW);
             }
+            else if (lhs is Dereference)
+            {
+                Dereference lhsDeref = lhs as Dereference;
+                VariableWrapper lhsW = WrapperProvider.getVarW(lhsDeref.Reference);
+                ProgramRels.relMDerefLeft.Add(mRefW, lhsW, rhsW);
+            }
             else
             {
-                System.Console.WriteLine("Store Inst: No idea");
+                System.Console.WriteLine("Store Inst: {0}   {1}", lhs.GetType(), lhs.ToString());
             }
             return;
         }

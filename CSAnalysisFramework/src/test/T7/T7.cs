@@ -56,8 +56,12 @@ namespace T7NS
             bbb = new Bar(null, null);
             bbb.obj1 = xxx;
             bbb.obj2 = xxx;
-            p.copy(out ccc, bbb);
+            Bar fff = p.copy(out ccc, bbb);
             string s = ccc.PrintInfo();
+            p.setDummy(out Bar.dum1);
+            p.setDummy(out Foo.dum2);
+            p.setDummy(out xxx.dum3);
+
         }
 
         void getFoo(out Foo xfoo)
@@ -65,15 +69,25 @@ namespace T7NS
             xfoo = new Foo("msg1");
         }
 
-        void copy(out Bar dest, Bar src)
+        Bar copy(out Bar dest, Bar src)
         {
             dest = src;
+            Bar ret = dest;
+            return ret;
+        }
+
+        void setDummy(out Dummy d)
+        {
+            d = new Dummy();
         }
     }
 
+    class Dummy { }
     class Foo
     {
         public string info;
+        public static Dummy dum2;
+        public Dummy dum3;
 
         public Foo(string s)
         {
@@ -85,6 +99,7 @@ namespace T7NS
     {
         public Foo obj1;
         public Foo obj2;
+        public static Dummy dum1;
 
         public Bar(Foo x1, Foo x2)
         {
