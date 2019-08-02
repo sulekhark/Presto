@@ -10,21 +10,21 @@ namespace T7NS
         static StreamWriter sw;
 
         // delegate declaration
-        public delegate void printString(string s);
+        public delegate void printString(string s1, string s2, int i);
 
         // this method prints to the console
-        public void WriteToScreen(string str)
+        public void WriteToScreen(string str1, string str2, int i)
         {
-            Console.WriteLine("The String is: {0}", str);
+            Console.WriteLine("The String is: {0}", str1);
         }
 
         //this method prints to a file
-        public static void WriteToFile(string s)
+        public static void WriteToFile(string s1, string s2, int i)
         {
             fs = new FileStream("c:\\message.txt",
             FileMode.Append, FileAccess.Write);
             sw = new StreamWriter(fs);
-            sw.WriteLine(s);
+            sw.WriteLine(s1);
             sw.Flush();
             sw.Close();
             fs.Close();
@@ -34,7 +34,7 @@ namespace T7NS
         // call the methods as required
         public static void sendString(printString ps)
         {
-            ps("Hello World");
+            ps("Hello World", "foo", 2);
         }
 
         static void Main(string[] args)

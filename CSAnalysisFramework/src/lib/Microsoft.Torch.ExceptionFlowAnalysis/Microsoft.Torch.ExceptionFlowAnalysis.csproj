@@ -147,6 +147,7 @@
     <Compile Include="ProgramFacts\Relations\RelIinvkArg0.cs" />
     <Compile Include="ProgramFacts\Relations\RelIinvkRet.cs" />
     <Compile Include="ProgramFacts\Relations\RelIM.cs" />
+    <Compile Include="ProgramFacts\Relations\RelMAddrTakenFunc.cs" />
     <Compile Include="ProgramFacts\Relations\RelMAddrTakenInstFld.cs" />
     <Compile Include="ProgramFacts\Relations\RelMAddrTakenLocal.cs" />
     <Compile Include="ProgramFacts\Relations\RelMAddrTakenStatFld.cs" />

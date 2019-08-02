@@ -154,7 +154,7 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
                 if (rtaAnalyzer.classes.Contains(typeDefinition) && !rtaAnalyzer.visitedClasses.Contains(typeDefinition))
                 {
                     rtaAnalyzer.visitedClasses.Add(typeDefinition);
-                    if (!typeDefinition.IsValueType) ProcessStaticConstructors(typeDefinition);
+                    if (!typeDefinition.IsValueType || typeDefinition.IsStruct) ProcessStaticConstructors(typeDefinition);
                     System.Console.WriteLine("SRK_DBG: Visiting class: {0}",typeDefinition.ToString());
                     base.TraverseChildren(typeDefinition);
                 }

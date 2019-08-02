@@ -360,13 +360,24 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
                 bool success = isStruct ? ProgramRels.relMStrInstFldRead.Add(mRefW, lhsW, arrW, arrElemRepW):
                                           ProgramRels.relMInstFldRead.Add(mRefW, lhsW, arrW, arrElemRepW);
             }
+            else if (rhsOperand is StaticMethodReference)
+            {
+                StaticMethodReference sMethAddr = rhsOperand as StaticMethodReference;
+                IMethodDefinition tgtMeth = sMethAddr.Method.ResolvedMethod;
+                MethodRefWrapper tgtMethW = WrapperProvider.getMethodRefW(tgtMeth);
+                ProgramRels.relMAddrTakenFunc.Add(mRefW, lhsW, tgtMethW);
+            }
+            else if (rhsOperand is VirtualMethodReference)
+            {
+                Console.WriteLine("WARNING: Not yet handling VirtualMethodReference");
+            }
             else if (rhsOperand is Constant)
             {
                 // System.Console.WriteLine("Load Constant");
             }
             else
             {
-                // System.Console.WriteLine("Load Inst: No idea: {0}   {1}", rhsOperand.Type, rhsOperand.ToString());
+                System.Console.WriteLine("Load Inst: {0}   {1}", rhsOperand.GetType(), rhsOperand.ToString());
             }
             return;
         }
@@ -485,41 +496,28 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
 
         void ProcessMethodCallInst(MethodCallInstruction invkInst, MethodRefWrapper mRefW, InstructionWrapper instW)
         {
+            bool done = SpecialHandlingOfInvoke(invkInst, mRefW, instW);
+            if (done) return;
+
             ProgramDoms.domI.Add(instW);
             ProgramRels.relMI.Add(mRefW, instW);
             if (invkInst.HasResult)
             {
                 IVariable lhsVar = invkInst.Result;
-                if (!lhsVar.Type.IsValueType)
+                if (!lhsVar.Type.IsValueType || lhsVar.Type.ResolvedType.IsStruct)
                 {
                     VariableWrapper lhsW = WrapperProvider.getVarW(lhsVar);
                     ProgramRels.relIinvkRet.Add(instW, 0, lhsW);
                 }
             }
-            IMethodReference callTgt = invkInst.Method;
-            IMethodDefinition callTgtDef = callTgt.ResolvedMethod;
-            ITypeDefinition declType = callTgtDef.ContainingTypeDefinition;
-
-            if ((declType.ToString().StartsWith("System.Runtime.CompilerServices.AsyncTaskMethodBuilder")) &&
-                (callTgtDef.Name.ToString() == "Start"))
-            {
-                IGenericMethodInstanceReference genericCallTgt = callTgt as IGenericMethodInstanceReference;
-                if (genericCallTgt != null && genericCallTgt.GenericArguments.Count() == 1)
-                {
-                    ITypeDefinition genericParamDefn = genericCallTgt.GenericArguments.First().ResolvedType;
-                    IMethodDefinition moveNextMethod = Utils.GetMethodByName(genericParamDefn, "MoveNext");
-                    callTgtDef = moveNextMethod;
-                    declType = genericParamDefn;
-                }
-            }
-
+            IMethodDefinition callTgtDef = invkInst.Method.ResolvedMethod;
             MethodRefWrapper callTgtW = WrapperProvider.getMethodRefW(callTgtDef);
             ProgramDoms.domM.Add(callTgtW);
             IList<IVariable> invkArgs = invkInst.Arguments;
             if (invkArgs.Count > 0)
             {
                 IVariable arg0 = invkArgs[0];
-                if (!arg0.Type.IsValueType)
+                if (!arg0.Type.IsValueType || arg0.Type.ResolvedType.IsStruct)
                 {
                     VariableWrapper arg0W = WrapperProvider.getVarW(arg0);
                     ProgramRels.relIinvkArg0.Add(instW, arg0W);
@@ -528,7 +526,7 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
             int argNdx = 0;
             foreach (IVariable arg in invkArgs)
             {
-                if (!arg.Type.IsValueType)
+                if (!arg.Type.IsValueType || arg.Type.ResolvedType.IsStruct)
                 {
                     VariableWrapper argW = WrapperProvider.getVarW(arg);
                     ProgramRels.relIinvkArg.Add(instW, argNdx, argW);
@@ -549,6 +547,77 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
                 // The only other type is MethodCallOperation.Jump which we ignore.
             }
             return;
+        }
+
+        bool SpecialHandlingOfInvoke(MethodCallInstruction invkInst, MethodRefWrapper mRefW, InstructionWrapper instW)
+        {
+            IMethodReference callTgt = invkInst.Method;
+            IMethodDefinition callTgtDef = callTgt.ResolvedMethod;
+            ITypeDefinition declType = callTgtDef.ContainingTypeDefinition;
+
+            if (declType.IsDelegate && callTgtDef.IsConstructor)
+            {
+                IList<IVariable> invkArgs = invkInst.Arguments;
+                if (invkArgs.Count != 3) Console.WriteLine("WARNING: Delegate constructor invoke has args different from 3.");
+                VariableWrapper delegateVarW = WrapperProvider.getVarW(invkArgs[0]);
+                VariableWrapper receiverVarW = WrapperProvider.getVarW(invkArgs[1]);
+                VariableWrapper funcPtrVarW = WrapperProvider.getVarW(invkArgs[2]);
+                FieldRefWrapper dummyElemW = ProgramDoms.domF.GetVal(0);
+                ProgramRels.relMInstFldWrite.Add(mRefW, delegateVarW, dummyElemW, receiverVarW);
+                ProgramRels.relMInstFldWrite.Add(mRefW, delegateVarW, dummyElemW, funcPtrVarW);
+            }
+            else if (declType.IsDelegate && callTgt.Name.ToString() == "Invoke")
+            {
+                ProgramDoms.domI.Add(instW);
+                ProgramRels.relMI.Add(mRefW, instW);
+                if (invkInst.HasResult)
+                {
+                    IVariable lhsVar = invkInst.Result;
+                    if (!lhsVar.Type.IsValueType || lhsVar.Type.ResolvedType.IsStruct)
+                    {
+                        VariableWrapper lhsW = WrapperProvider.getVarW(lhsVar);
+                        ProgramRels.relIinvkRet.Add(instW, 0, lhsW);
+                    }
+                }
+                IList<IVariable> invkArgs = invkInst.Arguments;
+                VariableWrapper delegateVarW = WrapperProvider.getVarW(invkArgs[0]);
+                ProgramRels.relDelegateIV.Add(instW, delegateVarW);   
+                int argNdx = 0;
+                for (int i = 1; i < invkArgs.Count; i++)
+                {
+                    IVariable arg = invkArgs[i];
+                    if (!arg.Type.IsValueType || arg.Type.ResolvedType.IsStruct)
+                    {
+                        VariableWrapper argW = WrapperProvider.getVarW(arg);
+                        ProgramRels.relIinvkArg.Add(instW, argNdx, argW);
+                    }
+                    argNdx++;
+                }
+            }
+            else if (declType.IsDelegate && callTgt.Name.ToString() == "Combine")
+            {
+                if (!invkInst.HasResult) Console.WriteLine("WARNING: Delegate Combine function has no return register.");
+                VariableWrapper lhsVarW = WrapperProvider.getVarW(invkInst.Result);
+                IList<IVariable> invkArgs = invkInst.Arguments;
+                if (invkArgs.Count != 2) Console.WriteLine("WARNING: Delegate Combine has args different from 2.");
+                VariableWrapper rhsVarW1 = WrapperProvider.getVarW(invkArgs[0]);
+                VariableWrapper rhsVarW2 = WrapperProvider.getVarW(invkArgs[1]);
+                ProgramRels.relMMove.Add(mRefW, lhsVarW, rhsVarW1);
+                ProgramRels.relMMove.Add(mRefW, lhsVarW, rhsVarW2);
+            }
+            else if ((declType.ToString().StartsWith("System.Runtime.CompilerServices.AsyncTaskMethodBuilder")) &&
+                (callTgtDef.Name.ToString() == "Start"))
+            {
+                IGenericMethodInstanceReference genericCallTgt = callTgt as IGenericMethodInstanceReference;
+                if (genericCallTgt != null && genericCallTgt.GenericArguments.Count() == 1)
+                {
+                    ITypeDefinition genericParamDefn = genericCallTgt.GenericArguments.First().ResolvedType;
+                    IMethodDefinition moveNextMethod = Utils.GetMethodByName(genericParamDefn, "MoveNext");
+                    callTgtDef = moveNextMethod;
+                    declType = genericParamDefn;
+                }
+            }
+            return true;
         }
 
         void ProcessConvertInst(ConvertInstruction castInst, MethodRefWrapper mRefW)
@@ -577,7 +646,7 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
         void ProcessRetInst(ReturnInstruction retInst, MethodRefWrapper mRefW)
         {
             IVariable retVar = retInst.Operand;
-            if (retVar != null && !retVar.Type.IsValueType)
+            if (retVar != null && (!retVar.Type.IsValueType || retVar.Type.ResolvedType.IsStruct))
             {
                 VariableWrapper retW = WrapperProvider.getVarW(retVar);
                 ProgramRels.relMmethRet.Add(mRefW, 0, retW);

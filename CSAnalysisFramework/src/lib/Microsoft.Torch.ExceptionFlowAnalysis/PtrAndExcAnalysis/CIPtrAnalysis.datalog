@@ -122,6 +122,7 @@ DelegateIH(i,h) :- reachableI(i), DelegateIV(i,v), VH(v,h).
 DelReceiver(i,rh) :- DelegateIH(i,h), HFH(h,0,rh).
 DelFunc(i,m) :- DelegateIH(i,h), HFX(h,0,x), AddrOf(m,x).
 IM(i,m1) :- DelFunc(i,m), DelReceiver(i,h), HT(h,t), cha(m,t,m1).
+IM(i,m) :- DelFunc(i,m), StaticTM(_,m).
 
 # arguments and return/throw variables
 Move(v,u) :- IinvkArg(i,z,u), IM(i,m), MmethArg(m,z,v), !structV(u).
