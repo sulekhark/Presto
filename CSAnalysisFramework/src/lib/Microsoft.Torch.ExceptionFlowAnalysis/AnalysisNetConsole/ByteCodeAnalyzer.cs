@@ -12,12 +12,8 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
 {
     public static class ByteCodeAnalyzer
     {
-        static ISet<ITypeDefinition> classes;
-        static ISet<ITypeDefinition> types;
-        static ISet<IMethodDefinition> methods;
-        static ISet<IMethodDefinition> entryPtMethods;
-        static ISet<IModule> modules;
-
+        static RTAAnalyzer rtaAnalyzer;
+        static FactGenerator factGen;
         public static void GenerateEDBFacts(string input)
         {
             using (var host = new PeReader.DefaultHost())
@@ -36,7 +32,7 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
 
         static void DoRTA(IMetadataHost host, MetadataVisitor visitor, IModule rootModule, bool rootIsExe)
         {
-            RTAAnalyzer rtaAnalyzer = new RTAAnalyzer(rootIsExe);
+            rtaAnalyzer = new RTAAnalyzer(rootIsExe);
             visitor.SetupRTAAnalyzer(rtaAnalyzer);
             Utils.SetupRTAAnalyzer(rtaAnalyzer);
 
@@ -81,27 +77,22 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
                 iterationCount++;
                 if (rtaAnalyzer.classes.Count == startClassCnt && rtaAnalyzer.methods.Count == startMethCnt) changeInCount = false;
             }
-            classes = rtaAnalyzer.classes;
-            methods = rtaAnalyzer.methods;
-            types = rtaAnalyzer.types;
-            modules = rtaAnalyzer.visitedModules;
-            entryPtMethods = rtaAnalyzer.entryPtMethods;
 
             System.Console.WriteLine();
             System.Console.WriteLine();
-            foreach (IMethodDefinition m in methods)
+            foreach (IMethodDefinition m in rtaAnalyzer.methods)
             {
                 System.Console.WriteLine(m.ToString());
             }
             System.Console.WriteLine();
             System.Console.WriteLine();
-            foreach (IMethodDefinition m in entryPtMethods)
+            foreach (IMethodDefinition m in rtaAnalyzer.entryPtMethods)
             {
                 System.Console.WriteLine(m.ToString());
             }
             System.Console.WriteLine();
             System.Console.WriteLine();
-            foreach (ITypeDefinition m in classes)
+            foreach (ITypeDefinition m in rtaAnalyzer.classes)
             {
                 System.Console.WriteLine(m.ToString());
             }
@@ -109,18 +100,27 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
 
         static void GenerateFacts(IMetadataHost host, MetadataVisitor visitor)
         {
-            FactGenerator factGen = new FactGenerator(classes, methods, types, entryPtMethods);
+            factGen = new FactGenerator();
+
+            factGen.classes = rtaAnalyzer.classes;
+            factGen.methods = rtaAnalyzer.methods;
+            factGen.types = rtaAnalyzer.types;
+            factGen.entryPtMethods = rtaAnalyzer.entryPtMethods;
+            factGen.addrTakenInstFlds = rtaAnalyzer.addrTakenInstFlds;
+            factGen.addrTakenStatFlds = rtaAnalyzer.addrTakenStatFlds;
+            factGen.addrTakenMethods = rtaAnalyzer.addrTakenMethods;
+            factGen.addrTakenLocals = rtaAnalyzer.addrTakenLocals;
+
             factGen.GenerateTypeAndMethodFacts();
             factGen.GenerateChaFacts();
             visitor.SetupRTAAnalyzer(null);
             visitor.SetupFactGenerator(factGen);
             Utils.SetupFactGenerator(factGen);
-            foreach (IModule lmod in modules)
+            foreach (IModule lmod in rtaAnalyzer.visitedModules)
             {
                 visitor.Traverse(lmod);
             }
         }
     }
-
 }
 

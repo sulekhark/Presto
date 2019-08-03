@@ -17,7 +17,7 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetBackend.Wrappers
 
         //AddressWrapper dictionaries
         private readonly static IDictionary<IMethodReference, AddressWrapper> MethRefToAddrWrapperMap;
-        private readonly static IDictionary<ITypeReference, IDictionary<IFieldReference, AddressWrapper>> TypeFldRefToAddrWrapperMap;
+        private readonly static IDictionary<Instruction, IDictionary<IFieldReference, AddressWrapper>> InstFldRefToAddrWrapperMap;
         private readonly static IDictionary<IFieldReference, AddressWrapper> FieldRefToAddrWrapperMap;
         private readonly static IDictionary<IVariable, AddressWrapper> VarToAddrWrapperMap;
 
@@ -26,6 +26,7 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetBackend.Wrappers
         {
             frc = new FieldReferenceComparer();
             TypeDefinitionComparer tdc = new TypeDefinitionComparer();
+            InstructionComparer idc = new InstructionComparer();
             VariableComparer vc = new VariableComparer();
 
             MethRefToWrapperMap = new Dictionary<IMethodReference, MethodRefWrapper>(MethodReferenceDefinitionComparer.Default);
@@ -35,7 +36,7 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetBackend.Wrappers
             VarToWrapperMap = new Dictionary<IVariable, VariableWrapper>(vc);
 
             MethRefToAddrWrapperMap = new Dictionary<IMethodReference, AddressWrapper>(MethodReferenceDefinitionComparer.Default);
-            TypeFldRefToAddrWrapperMap = new Dictionary<ITypeReference, IDictionary<IFieldReference, AddressWrapper>>(tdc);
+            InstFldRefToAddrWrapperMap = new Dictionary<Instruction, IDictionary<IFieldReference, AddressWrapper>>(idc);
             FieldRefToAddrWrapperMap = new Dictionary<IFieldReference, AddressWrapper>(frc);
             VarToAddrWrapperMap = new Dictionary<IVariable, AddressWrapper>(vc);
         }
@@ -150,11 +151,11 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetBackend.Wrappers
             }
         }
 
-        public static AddressWrapper getAddrW(ITypeReference typeRef, IFieldReference fldRef)
+        public static AddressWrapper getAddrW(Instruction inst, IFieldReference fldRef)
         {
-            if (TypeFldRefToAddrWrapperMap.ContainsKey(typeRef))
+            if (InstFldRefToAddrWrapperMap.ContainsKey(inst))
             {
-                IDictionary<IFieldReference, AddressWrapper> innerDict = TypeFldRefToAddrWrapperMap[typeRef];
+                IDictionary<IFieldReference, AddressWrapper> innerDict = InstFldRefToAddrWrapperMap[inst];
 
                 if (innerDict != null && innerDict.ContainsKey(fldRef))
                 {
@@ -162,18 +163,18 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetBackend.Wrappers
                 }
                 if (innerDict == null)
                 {
-                    TypeFldRefToAddrWrapperMap[typeRef] = new Dictionary<IFieldReference, AddressWrapper>(frc);
+                    InstFldRefToAddrWrapperMap[inst] = new Dictionary<IFieldReference, AddressWrapper>(frc);
                 }
             }
             else
             {
                 IDictionary<IFieldReference, AddressWrapper> innerDict = new Dictionary<IFieldReference, AddressWrapper>(frc);
-                TypeFldRefToAddrWrapperMap.Add(typeRef, innerDict);   
+                InstFldRefToAddrWrapperMap.Add(inst, innerDict);   
             }
-            TypeRefWrapper typW = getTypeRefW(typeRef);
+            InstructionWrapper instW = getInstW(inst);
             FieldRefWrapper fldW = getFieldRefW(fldRef);
-            AddressWrapper addW = new AddressWrapper(typW, fldW);
-            TypeFldRefToAddrWrapperMap[typeRef][fldRef] = addW;
+            AddressWrapper addW = new AddressWrapper(instW, fldW);
+            InstFldRefToAddrWrapperMap[inst][fldRef] = addW;
             return addW;
         }
 

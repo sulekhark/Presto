@@ -89,30 +89,31 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
             return false;
         }
 
-        public static void CheckAndAdd(IMethodDefinition m)
+        public static bool CheckAndAdd(IMethodDefinition m)
         {
             string mSign = MemberHelper.GetMethodSignature(m, NameFormattingOptions.Signature | NameFormattingOptions.ParameterName);
             foreach (string s in prefixesToAvoid)
             {
-                if (mSign.StartsWith(s))
-                {
-                    return;
-                }
+                if (mSign.StartsWith(s)) return false;
             }
             if (!rtaAnalyzer.visitedMethods.Contains(m))
             {
                 System.Console.WriteLine("SRK_DBG: Adding method: {0}", m.Name.ToString());
                 rtaAnalyzer.methods.Add(m);
+                return true;
             }
+            return false;
         }
 
-        public static void CheckAndAdd(ITypeDefinition t)
+        public static bool CheckAndAdd(ITypeDefinition t)
         {
             if (!rtaAnalyzer.visitedClasses.Contains(t))
             {
                 System.Console.WriteLine("SRK_DBG: Adding class: {0}", t.ToString());
                 rtaAnalyzer.classes.Add(t);
+                return true;
             }
+            return false;
         }
 
         public static bool Avoid(IMethodDefinition m)

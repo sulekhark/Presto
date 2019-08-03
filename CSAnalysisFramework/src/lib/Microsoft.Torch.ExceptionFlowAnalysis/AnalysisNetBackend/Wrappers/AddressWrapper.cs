@@ -13,7 +13,7 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetBackend.Wrappers
     public class AddressWrapper
     {
         MethodRefWrapper mRefW;
-        TypeRefWrapper typeRefW;
+        InstructionWrapper instW;
         FieldRefWrapper fldRefW;
         VariableWrapper varW;
         readonly AddressKind kind;
@@ -25,9 +25,9 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetBackend.Wrappers
             kind = AddressKind.AddrM;
         }
 
-        public AddressWrapper(TypeRefWrapper typeRefW, FieldRefWrapper fldRefW)
+        public AddressWrapper(InstructionWrapper instW, FieldRefWrapper fldRefW)
         {
-            this.typeRefW = typeRefW;
+            this.instW = instW;
             this.fldRefW = fldRefW;
             kind = AddressKind.AddrHF;
         }
@@ -51,7 +51,7 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetBackend.Wrappers
             }
             else if (kind == AddressKind.AddrHF)
             {
-                return (typeRefW.ToString() + "::" + fldRefW.ToString());
+                return (instW.ToString() + "::" + fldRefW.ToString());
             }
             else if (kind == AddressKind.AddrF)
             {

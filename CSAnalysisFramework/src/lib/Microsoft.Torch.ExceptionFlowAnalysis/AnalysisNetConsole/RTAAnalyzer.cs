@@ -46,6 +46,11 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
             methods = new HashSet<IMethodDefinition>();
             types = new HashSet<ITypeDefinition>();
             this.rootIsExe = rootIsExe;
+
+            addrTakenInstFlds = new HashSet<IFieldDefinition>();
+            addrTakenStatFlds = new HashSet<IFieldDefinition>();
+            addrTakenLocals = new HashSet<IVariable>();
+            addrTakenMethods = new HashSet<IMethodDefinition>();
         }
 
         public void VisitMethod(MethodBody mBody, ControlFlowGraph cfg, bool isRootModule)
@@ -78,7 +83,8 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
                             IMethodDefinition tgtMeth = sMethAddr.Method.ResolvedMethod;
                             ITypeDefinition containingTy = tgtMeth.ContainingTypeDefinition;
                             Utils.CheckAndAdd(containingTy);
-                            Utils.CheckAndAdd(tgtMeth);
+                            bool added = Utils.CheckAndAdd(tgtMeth);
+                            if (added) addrTakenMethods.Add(tgtMeth);
                         }
                         //Note: calls to virtual, abstract or interface methods appear as VirtualMethodReference
                         else if (rhsOperand is VirtualMethodReference)
@@ -87,7 +93,8 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
                             IMethodDefinition tgtMeth = sMethAddr.Method.ResolvedMethod;
                             ITypeDefinition containingTy = tgtMeth.ContainingTypeDefinition;
                             Utils.CheckAndAdd(containingTy);
-                            Utils.CheckAndAdd(tgtMeth);
+                            bool added = Utils.CheckAndAdd(tgtMeth);
+                            if (added) addrTakenMethods.Add(tgtMeth);
                             ProcessVirtualInvoke(tgtMeth, containingTy, true);
                         }
                         else if (rhsOperand is Reference)
@@ -100,6 +107,18 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
                                 IFieldDefinition fld = refAcc.Field.ResolvedField;
                                 ITypeDefinition fldType = fld.ContainingType.ResolvedType;
                                 Utils.CheckAndAdd(fldType);
+                                addrTakenStatFlds.Add(fld);
+                            }
+                            else if (refOf is IVariable)
+                            {
+                                IVariable refVar = refOf as IVariable;
+                                if (!refVar.Type.IsValueType || refVar.Type.ResolvedType.IsStruct) addrTakenLocals.Add(refVar);
+                            }
+                            else if (refOf is InstanceFieldAccess)
+                            {
+                                InstanceFieldAccess refAcc = refOf as InstanceFieldAccess;
+                                IFieldDefinition fld = refAcc.Field.ResolvedField;
+                                addrTakenInstFlds.Add(fld);
                             }
                         }
                     }
@@ -191,7 +210,8 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
                         {
                             if (Utils.SignMatch(mCallee, meth))
                             {
-                                Utils.CheckAndAdd(meth);
+                                bool added = Utils.CheckAndAdd(meth);
+                                if (added && isAddrTaken) addrTakenMethods.Add(meth);
                                 break;
                             }
                         }
@@ -205,7 +225,8 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
                         {
                             if (Utils.SignMatch(mCallee, meth))
                             {
-                                Utils.CheckAndAdd(meth);
+                                bool added = Utils.CheckAndAdd(meth);
+                                if (added && isAddrTaken) addrTakenMethods.Add(meth);
                                 break;
                             }
                         }
