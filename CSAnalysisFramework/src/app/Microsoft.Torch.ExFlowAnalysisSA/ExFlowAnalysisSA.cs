@@ -12,21 +12,22 @@ namespace Microsoft.Torch.ExFlowAnalysisSA
         static void Main(string[] args)
         {
             ConfigParams.Z3ExePath = @"C:\Users\t-sukulk\source\repos\CSAnalysisFramework\CSAnalysisFramework\packages\Z3-4.1\bin\z3.exe";
+            ConfigParams.StubsPath = @"C:\Users\t-sukulk\source\repos\CSAnalysisFramework\CSAnalysisFramework\src\stubs\Micorsoft.Torch.Stubs\bin\Debug\Microsoft.Torch.Stubs.dll";
             ProgramDoms.Initialize();
             ProgramRels.Initialize();
             // ByteCodeAnalyzer.GenerateEDBFacts(@"C:\Users\t-sukulk\work\FromGithub\bmk\azure-storage-net\Lib\Common.Split\NetFx\bin\Debug\Microsoft.Azure.Storage.Common.dll");
             // ByteCodeAnalyzer.GenerateEDBFacts(@"C:\Users\t-sukulk\work\FromGithub\bmk\azure-storage-net\Lib\WindowsDesktop.Split\File\bin\Debug\Microsoft.Azure.Storage.File.dll");
 
-            ConfigParams.DatalogDir = @"C:\Users\t-sukulk\source\repos\CSAnalysisFramework\CSAnalysisFramework\src\test\T7\temp";
-            ByteCodeAnalyzer.GenerateEDBFacts(@"C:\Users\t-sukulk\source\repos\CSAnalysisFramework\CSAnalysisFramework\src\test\T7\bin\Debug\T7.exe");
+            ConfigParams.DatalogDir = @"C:\Users\t-sukulk\source\repos\CSAnalysisFramework\CSAnalysisFramework\src\test\T4\temp";
+            ByteCodeAnalyzer.GenerateEDBFacts(@"C:\Users\t-sukulk\source\repos\CSAnalysisFramework\CSAnalysisFramework\src\test\T4\bin\Debug\T4.exe");
 
             // ConfigParams.DatalogDir = @"C:\Users\t-sukulk\work\Test\storage-blob-dotnet-getting-started\BlobStorage\temp";
             // ByteCodeAnalyzer.GenerateEDBFacts(@"C:\Users\t-sukulk\work\Test\storage-blob-dotnet-getting-started\BlobStorage\bin\Debug\BlobStorage.exe");
 
             ProgramDoms.Save();
             ProgramRels.Save();
-            Z3CommandLineInvoke z3Cmd = new Z3CommandLineInvoke();
-            z3Cmd.RunAnalysis(@"C:\Users\t-sukulk\source\repos\CSAnalysisFramework\CSAnalysisFramework\src\lib\Microsoft.Torch.ExceptionFlowAnalysis\PtrAndExcAnalysis\CIPtrAnalysis.datalog");
+            // Z3CommandLineInvoke z3Cmd = new Z3CommandLineInvoke();
+            // z3Cmd.RunAnalysis(@"C:\Users\t-sukulk\source\repos\CSAnalysisFramework\CSAnalysisFramework\src\lib\Microsoft.Torch.ExceptionFlowAnalysis\PtrAndExcAnalysis\CIPtrAnalysis.datalog");
         }
     }
 }

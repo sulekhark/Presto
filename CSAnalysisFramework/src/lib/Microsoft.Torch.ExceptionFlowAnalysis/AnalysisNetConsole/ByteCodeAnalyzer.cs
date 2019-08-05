@@ -7,6 +7,7 @@ using Microsoft.Cci;
 using Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetBackend;
 using Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetBackend.Analyses;
 using Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetBackend.Model;
+using Microsoft.Torch.ExceptionFlowAnalysis.Common;
 
 namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
 {
@@ -20,9 +21,7 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
             {
                 Types.Initialize(host);
                 var visitor = new MetadataVisitor(host, null);
-                var assembly = new Assembly(host);
-                assembly.Load(input);
-                IModule rootModule = assembly.Module;
+                IModule rootModule = GetModule(host, input);
                 bool rootIsExe = false;
                 if (rootModule.Kind == ModuleKind.ConsoleApplication) rootIsExe = true;
                 DoRTA(host, visitor, rootModule, rootIsExe);
@@ -30,16 +29,25 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
             }
         }
 
+        public static IModule GetModule(IMetadataHost host, string assemblyPath)
+        {
+            var assembly = new Assembly(host);
+            assembly.Load(assemblyPath);
+            IModule module = assembly.Module;
+            return module;
+        }
+
         static void DoRTA(IMetadataHost host, MetadataVisitor visitor, IModule rootModule, bool rootIsExe)
         {
             rtaAnalyzer = new RTAAnalyzer(rootIsExe);
             visitor.SetupRTAAnalyzer(rtaAnalyzer);
-            Utils.SetupRTAAnalyzer(rtaAnalyzer);
-
+            Stubber.SetupRTAAnalyzer(rtaAnalyzer);
             IList<string> ignorePrefix = new List<string>();
             ignorePrefix.Add("System.");
-            Utils.SetupPrefixesToAvoid(ignorePrefix);
-            
+            Stubber.SetupPrefixesToSuppress(ignorePrefix);
+            IModule stubsModule = GetModule(host, ConfigParams.StubsPath);
+            StubMap.SetupStubs(stubsModule);
+
             int iterationCount = 0;
             bool changeInCount = true;
             int startClassCnt = 0, startMethCnt = 0;
@@ -55,6 +63,7 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
                 rtaAnalyzer.ignoredClasses.Clear();
                 rtaAnalyzer.visitedMethods.Clear();
                 rtaAnalyzer.moduleWorkList.Add(rootModule);
+                rtaAnalyzer.moduleWorkList.Add(stubsModule);
                 bool isRootModule = true;
                 while (rtaAnalyzer.moduleWorkList.Count > 0)
                 {
@@ -115,7 +124,7 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
             factGen.GenerateChaFacts();
             visitor.SetupRTAAnalyzer(null);
             visitor.SetupFactGenerator(factGen);
-            Utils.SetupFactGenerator(factGen);
+            Stubber.SetupFactGenerator(factGen);
             foreach (IModule lmod in rtaAnalyzer.visitedModules)
             {
                 visitor.Traverse(lmod);

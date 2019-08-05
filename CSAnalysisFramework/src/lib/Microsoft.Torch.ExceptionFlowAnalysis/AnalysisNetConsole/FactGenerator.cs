@@ -576,7 +576,8 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
                     ProgramRels.relIinvkRet.Add(instW, 0, lhsW);
                 }
             }
-            IMethodDefinition callTgtDef = invkInst.Method.ResolvedMethod;
+            IMethodDefinition origTgtDef = invkInst.Method.ResolvedMethod;
+            IMethodDefinition callTgtDef = Stubber.GetMethodToAnalyze(origTgtDef);
             MethodRefWrapper callTgtW = WrapperProvider.getMethodRefW(callTgtDef);
             ProgramDoms.domM.Add(callTgtW);
             IList<IVariable> invkArgs = invkInst.Arguments;

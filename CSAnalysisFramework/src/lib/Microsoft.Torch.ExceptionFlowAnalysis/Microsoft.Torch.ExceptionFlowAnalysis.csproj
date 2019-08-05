@@ -113,6 +113,8 @@
     <Compile Include="AnalysisNetConsole\FactGenerator.cs" />
     <Compile Include="AnalysisNetConsole\MetadataVisitor.cs" />
     <Compile Include="AnalysisNetConsole\RTAAnalyzer.cs" />
+    <Compile Include="AnalysisNetConsole\Stubber.cs" />
+    <Compile Include="AnalysisNetConsole\StubMap.cs" />
     <Compile Include="AnalysisNetConsole\Utils.cs" />
     <Compile Include="Common\ConfigParams.cs" />
     <Compile Include="ProgramFacts\Dom.cs" />

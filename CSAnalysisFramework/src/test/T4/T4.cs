@@ -62,7 +62,7 @@ namespace FactTest
             }
             return tmo;
         }
-        public async Task<MyObj> CallAsync()
+        public async Task<WrapperObj> CallAsync()
         {
             MyObj myObj = null;
             try
@@ -73,24 +73,34 @@ namespace FactTest
             {
                 Console.WriteLine(ex.Message);
             }
-            return myObj;
+            WrapperObj wObj = new WrapperObj();
+            wObj.mo = myObj;
+            return wObj;
         }
     }
 
     class MyObj
     {
         public int i;
+       
+    }
+
+    class WrapperObj
+    {
+        public MyObj mo;
+
         public void Process()
         {
             Console.WriteLine("Processing...");
         }
     }
+
     class Program
     {
         public static void Main(String[] args)
         {
             T4 demo = new T4();
-            MyObj zzz = demo.CallAsync().Result;
+            WrapperObj zzz = demo.CallAsync().Result;
             zzz.Process();
             Console.ReadLine();
             Iterator.barIt();

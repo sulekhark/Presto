@@ -8,6 +8,7 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.Common
     {
         public static string DatalogDir { get; set; }
         public static string Z3ExePath { get; set; }
+        public static string StubsPath { get; set; }
 
         public static void LoadConfig(string filePath)
         {
@@ -26,6 +27,10 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.Common
                         {
                             Z3ExePath = line.Split()[1];
                         }
+                        else if (line.StartsWith("StubsPath= "))
+                        {
+                            StubsPath = line.Split()[1];
+                        }
                     } catch (Exception e)
                     {
                         Console.WriteLine("Got Exception: {0}", e.Message);
@@ -40,6 +45,7 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.Common
             {
                 sw.WriteLine("DatalogDir= {0}", DatalogDir);
                 sw.WriteLine("Z3ExePath= {0}", Z3ExePath);
+                sw.WriteLine("StubsPath= {0}", StubsPath);
             }
         }
     }

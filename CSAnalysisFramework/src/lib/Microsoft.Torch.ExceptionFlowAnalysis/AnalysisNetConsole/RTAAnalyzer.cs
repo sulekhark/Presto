@@ -74,7 +74,7 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
                             StaticFieldAccess rhsAcc = rhsOperand as StaticFieldAccess;
                             IFieldReference fld = rhsAcc.Field;
                             ITypeDefinition fldType = fld.ContainingType.ResolvedType;
-                            Utils.CheckAndAdd(fldType);
+                            Stubber.CheckAndAdd(fldType);
                         }
                         // Note: calls to static methods and instance methods appear as a StaticMethodReference
                         else if (rhsOperand is StaticMethodReference)
@@ -82,8 +82,8 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
                             StaticMethodReference sMethAddr = rhsOperand as StaticMethodReference;
                             IMethodDefinition tgtMeth = sMethAddr.Method.ResolvedMethod;
                             ITypeDefinition containingTy = tgtMeth.ContainingTypeDefinition;
-                            Utils.CheckAndAdd(containingTy);
-                            bool added = Utils.CheckAndAdd(tgtMeth);
+                            Stubber.CheckAndAdd(containingTy);
+                            bool added = Stubber.CheckAndAdd(tgtMeth);
                             if (added) addrTakenMethods.Add(tgtMeth);
                         }
                         //Note: calls to virtual, abstract or interface methods appear as VirtualMethodReference
@@ -92,8 +92,8 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
                             VirtualMethodReference sMethAddr = rhsOperand as VirtualMethodReference;
                             IMethodDefinition tgtMeth = sMethAddr.Method.ResolvedMethod;
                             ITypeDefinition containingTy = tgtMeth.ContainingTypeDefinition;
-                            Utils.CheckAndAdd(containingTy);
-                            bool added = Utils.CheckAndAdd(tgtMeth);
+                            Stubber.CheckAndAdd(containingTy);
+                            bool added = Stubber.CheckAndAdd(tgtMeth);
                             if (added) addrTakenMethods.Add(tgtMeth);
                             ProcessVirtualInvoke(tgtMeth, containingTy, true);
                         }
@@ -106,7 +106,7 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
                                 StaticFieldAccess refAcc = refOf as StaticFieldAccess;
                                 IFieldDefinition fld = refAcc.Field.ResolvedField;
                                 ITypeDefinition fldType = fld.ContainingType.ResolvedType;
-                                Utils.CheckAndAdd(fldType);
+                                Stubber.CheckAndAdd(fldType);
                                 addrTakenStatFlds.Add(fld);
                             }
                             else if (refOf is IVariable)
@@ -131,7 +131,7 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
                             StaticFieldAccess lhsAcc = lhs as StaticFieldAccess;
                             IFieldReference fld = lhsAcc.Field;
                             ITypeDefinition fldType = fld.ContainingType.ResolvedType;
-                            Utils.CheckAndAdd(fldType);
+                            Stubber.CheckAndAdd(fldType);
                         }
                     }
                     else if (instruction is CreateObjectInstruction)
@@ -162,28 +162,12 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
                         IMethodReference callTgt = invkInst.Method;
                         IMethodDefinition callTgtDef = callTgt.ResolvedMethod;
                         ITypeDefinition declType = callTgtDef.ContainingTypeDefinition;
-                        
-                        if ((declType.ToString().StartsWith("System.Runtime.CompilerServices.AsyncTaskMethodBuilder")) &&
-                            (callTgtDef.Name.ToString() == "Start"))
+                        Stubber.CheckAndAdd(callTgtDef);
+                        Stubber.CheckAndAdd(declType);
+                        MethodCallOperation callType = invkInst.Operation;
+                        if (callType == MethodCallOperation.Virtual)
                         {
-                            IGenericMethodInstanceReference genericCallTgt = callTgt as IGenericMethodInstanceReference;
-                            if (genericCallTgt != null && genericCallTgt.GenericArguments.Count() == 1)
-                            {
-                                ITypeDefinition genericParamDefn = genericCallTgt.GenericArguments.First().ResolvedType;
-                                IMethodDefinition moveNextMethod = Utils.GetMethodByName(genericParamDefn, "MoveNext");
-                                Utils.CheckAndAdd(moveNextMethod);
-                                Utils.CheckAndAdd(genericParamDefn);
-                            }
-                        }
-                        else
-                        {
-                            Utils.CheckAndAdd(callTgtDef);
-                            Utils.CheckAndAdd(declType);
-                            MethodCallOperation callType = invkInst.Operation;
-                            if (callType == MethodCallOperation.Virtual)
-                            {
-                                ProcessVirtualInvoke(callTgtDef, declType, false);
-                            }
+                            ProcessVirtualInvoke(callTgtDef, declType, false);
                         }
                     }
                     else
@@ -210,7 +194,7 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
                         {
                             if (Utils.SignMatch(mCallee, meth))
                             {
-                                bool added = Utils.CheckAndAdd(meth);
+                                bool added = Stubber.CheckAndAdd(meth);
                                 if (added && isAddrTaken) addrTakenMethods.Add(meth);
                                 break;
                             }
@@ -225,7 +209,7 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
                         {
                             if (Utils.SignMatch(mCallee, meth))
                             {
-                                bool added = Utils.CheckAndAdd(meth);
+                                bool added = Stubber.CheckAndAdd(meth);
                                 if (added && isAddrTaken) addrTakenMethods.Add(meth);
                                 break;
                             }

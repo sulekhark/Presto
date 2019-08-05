@@ -9,25 +9,6 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
 {
     public static class Utils
     {
-        private static IList<string> prefixesToAvoid;
-        private static FactGenerator factGen;
-        private static RTAAnalyzer rtaAnalyzer;
-
-        public static void SetupFactGenerator(FactGenerator fg)
-        {
-            factGen = fg;
-        }
-
-        public static void SetupPrefixesToAvoid(IList<string> igPfx)
-        {
-            prefixesToAvoid = igPfx;
-        }
-
-        public static void SetupRTAAnalyzer(RTAAnalyzer rta)
-        {
-            rtaAnalyzer = rta;
-        }
-
         public static bool ImplementsInterface(ITypeDefinition tgt, ITypeDefinition qItf)
         {
             if (qItf == null || tgt == null) return false;
@@ -86,55 +67,6 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
         public static bool IsMainMethod (IMethodDefinition meth)
         {
             if (meth.Name.ToString() == "Main" && meth.IsStatic) return true;     
-            return false;
-        }
-
-        public static bool CheckAndAdd(IMethodDefinition m)
-        {
-            string mSign = MemberHelper.GetMethodSignature(m, NameFormattingOptions.Signature | NameFormattingOptions.ParameterName);
-            foreach (string s in prefixesToAvoid)
-            {
-                if (mSign.StartsWith(s)) return false;
-            }
-            if (!rtaAnalyzer.visitedMethods.Contains(m))
-            {
-                System.Console.WriteLine("SRK_DBG: Adding method: {0}", m.Name.ToString());
-                rtaAnalyzer.methods.Add(m);
-                return true;
-            }
-            return false;
-        }
-
-        public static bool CheckAndAdd(ITypeDefinition t)
-        {
-            if (!rtaAnalyzer.visitedClasses.Contains(t))
-            {
-                System.Console.WriteLine("SRK_DBG: Adding class: {0}", t.ToString());
-                rtaAnalyzer.classes.Add(t);
-                return true;
-            }
-            return false;
-        }
-
-        public static bool Avoid(IMethodDefinition m)
-        {
-            string mSign = MemberHelper.GetMethodSignature(m, NameFormattingOptions.Signature | NameFormattingOptions.ParameterName);
-            foreach (string s in prefixesToAvoid)
-            {
-                if (mSign.StartsWith(s))
-                {
-                    return true;
-                }
-            }
-            return false;
-        }
-
-        public static bool Avoid(ITypeDefinition ty)
-        {
-            foreach (string s in prefixesToAvoid)
-            {
-                if (ty.ToString().StartsWith(s)) return true;
-            }
             return false;
         }
 

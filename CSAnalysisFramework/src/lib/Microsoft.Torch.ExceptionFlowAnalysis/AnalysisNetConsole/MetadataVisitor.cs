@@ -41,7 +41,7 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
 		public override void TraverseChildren(IMethodDefinition methodDefinition)
 		{
 
-            if (Utils.Avoid(methodDefinition)) return;
+            if (Stubber.Suppress(methodDefinition)) return;
             if (methodDefinition.IsExternal) return;
             if (methodDefinition.IsAbstract)
             {
@@ -175,11 +175,11 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
 
         private void ProcessStaticConstructors(ITypeDefinition ty)
         {
-            if (!rtaAnalyzer.clinitProcessedClasses.Contains(ty) && !Utils.Avoid(ty))
+            if (!rtaAnalyzer.clinitProcessedClasses.Contains(ty) && !Stubber.Suppress(ty))
             {
                 rtaAnalyzer.clinitProcessedClasses.Add(ty);
                 IMethodDefinition clinitMeth = Utils.GetStaticConstructor(ty);
-                if (clinitMeth != null) Utils.CheckAndAdd(clinitMeth);
+                if (clinitMeth != null) Stubber.CheckAndAdd(clinitMeth);
                 if (ty.BaseClasses.Any())
                 {
                     ITypeDefinition baseTy = ty.BaseClasses.Single().ResolvedType;
