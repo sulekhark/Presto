@@ -38,11 +38,33 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
             return false;
         }
 
+        public static string FullName(this ITypeReference tref)
+        {
+            return TypeHelper.GetTypeName(tref, NameFormattingOptions.Signature | NameFormattingOptions.TypeParameters);
+        }
+        public static string GetName(this ITypeReference tref)
+        {
+            if (tref is INamedTypeReference)
+                return (tref as INamedTypeReference).Name.Value;
+
+            return TypeHelper.GetTypeName(tref, NameFormattingOptions.OmitContainingType | NameFormattingOptions.OmitContainingNamespace | NameFormattingOptions.SmartTypeName);
+        }
+
+        public static string FullName(this IMethodReference mref)
+        {
+            return MemberHelper.GetMethodSignature(mref, NameFormattingOptions.Signature | NameFormattingOptions.ParameterName | NameFormattingOptions.TypeParameters);
+        }
+
+        public static string GetName(this IMethodReference mref)
+        {
+            return MemberHelper.GetMethodSignature(mref, NameFormattingOptions.Signature | NameFormattingOptions.TypeParameters);
+        }
+
         public static bool SignMatch(IMethodReference m1, IMethodReference m2)
         {
             if (m1 == null || m2 == null) return false;
-            string m1Sign = MemberHelper.GetMethodSignature(m1, NameFormattingOptions.Signature | NameFormattingOptions.ParameterName);
-            string m2Sign = MemberHelper.GetMethodSignature(m2, NameFormattingOptions.Signature | NameFormattingOptions.ParameterName);
+            string m1Sign = m1.FullName();
+            string m2Sign = m2.FullName();
             return (m1Sign == m2Sign);
         }
 
@@ -59,14 +81,14 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
         {
             foreach (IMethodDefinition tyMeth in ty.Methods)
             {
-                if (tyMeth.Name.ToString() == methName) return tyMeth;
+                if (tyMeth.FullName() == methName) return tyMeth;
             }
             return null;
         }
 
         public static bool IsMainMethod (IMethodDefinition meth)
         {
-            if (meth.Name.ToString() == "Main" && meth.IsStatic) return true;     
+            if (meth.GetName() == "Main" && meth.IsStatic) return true;     
             return false;
         }
 

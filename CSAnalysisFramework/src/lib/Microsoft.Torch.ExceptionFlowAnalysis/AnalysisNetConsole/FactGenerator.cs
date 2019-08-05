@@ -633,7 +633,7 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
                 ProgramRels.relMInstFldWrite.Add(mRefW, delegateVarW, dummyElemW, receiverVarW);
                 ProgramRels.relMInstFldWrite.Add(mRefW, delegateVarW, dummyElemW, funcPtrVarW);
             }
-            else if (declType.IsDelegate && callTgt.Name.ToString() == "Invoke")
+            else if (declType.IsDelegate && callTgt.GetName() == "Invoke")
             {
                 ProgramDoms.domI.Add(instW);
                 ProgramRels.relMI.Add(mRefW, instW);
@@ -661,7 +661,7 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
                     argNdx++;
                 }
             }
-            else if (declType.IsDelegate && callTgt.Name.ToString() == "Combine")
+            else if (declType.IsDelegate && callTgt.GetName() == "Combine")
             {
                 if (!invkInst.HasResult) Console.WriteLine("WARNING: Delegate Combine function has no return register.");
                 VariableWrapper lhsVarW = WrapperProvider.getVarW(invkInst.Result);
@@ -672,14 +672,14 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
                 ProgramRels.relMMove.Add(mRefW, lhsVarW, rhsVarW1);
                 ProgramRels.relMMove.Add(mRefW, lhsVarW, rhsVarW2);
             }
-            else if ((declType.ToString().StartsWith("System.Runtime.CompilerServices.AsyncTaskMethodBuilder")) &&
-                (callTgtDef.Name.ToString() == "Start"))
+            else if ((declType.FullName().StartsWith("System.Runtime.CompilerServices.AsyncTaskMethodBuilder")) &&
+                (callTgtDef.GetName() == "Start"))
             {
                 IGenericMethodInstanceReference genericCallTgt = callTgt as IGenericMethodInstanceReference;
                 if (genericCallTgt != null && genericCallTgt.GenericArguments.Count() == 1)
                 {
                     ITypeDefinition genericParamDefn = genericCallTgt.GenericArguments.First().ResolvedType;
-                    IMethodDefinition moveNextMethod = Utils.GetMethodByName(genericParamDefn, "MoveNext");
+                    IMethodDefinition moveNextMethod = Utils.GetMethodByName(genericParamDefn, "MoveNext()");
                     callTgtDef = moveNextMethod;
                     declType = genericParamDefn;
                 }

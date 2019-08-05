@@ -19,7 +19,7 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetBackend.Wrappers
             }
             else
             {
-                return fld.ToString();
+                return fld.Name.Value;
             }
         }
     }

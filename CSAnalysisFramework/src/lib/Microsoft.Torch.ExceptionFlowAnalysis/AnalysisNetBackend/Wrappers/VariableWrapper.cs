@@ -1,20 +1,20 @@
 ﻿using Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetBackend.ThreeAddressCode.Values;
+using Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole;
 
 namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetBackend.Wrappers
 {
     public class VariableWrapper
     {
-        IVariable var;
+        string varName;
 
         public VariableWrapper(IVariable var)
         {
-            this.var = var;
+            this.varName = var.Method.FullName() + "::" + var.ToString();
         }
 
         public override string ToString()
         {
-            string varStr = var.Method.Name + "::" + var.ToString();
-            return varStr;
+            return varName;
         }
     }
 }

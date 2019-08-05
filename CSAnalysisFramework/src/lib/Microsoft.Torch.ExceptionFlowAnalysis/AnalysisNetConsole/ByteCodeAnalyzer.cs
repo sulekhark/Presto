@@ -91,19 +91,19 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
             System.Console.WriteLine();
             foreach (IMethodDefinition m in rtaAnalyzer.methods)
             {
-                System.Console.WriteLine(m.ToString());
+                System.Console.WriteLine(m.GetName());
             }
             System.Console.WriteLine();
             System.Console.WriteLine();
             foreach (IMethodDefinition m in rtaAnalyzer.entryPtMethods)
             {
-                System.Console.WriteLine(m.ToString());
+                System.Console.WriteLine(m.GetName());
             }
             System.Console.WriteLine();
             System.Console.WriteLine();
             foreach (ITypeDefinition m in rtaAnalyzer.classes)
             {
-                System.Console.WriteLine(m.ToString());
+                System.Console.WriteLine(m.FullName());
             }
         }
 

@@ -4,7 +4,7 @@ using Microsoft.Cci;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
+using Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole; // Utils.FullName
 
 namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetBackend.Model
 {
@@ -110,7 +110,7 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetBackend.Model
 			}
 			else
 			{
-				Console.WriteLine("WARNING: UNKNOWN TYPE KIND: {0}", type.ToString());
+				Console.WriteLine("WARNING: UNKNOWN TYPE KIND: {0}", type.FullName());
 			}
 		}
 

@@ -1,4 +1,5 @@
 ﻿using Microsoft.Cci;
+using Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole;
 
 namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetBackend.Wrappers
 {
@@ -13,7 +14,7 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetBackend.Wrappers
 
         public override string ToString()
         {
-            return type.ToString();
+            return type.FullName();
         }
     }
 }

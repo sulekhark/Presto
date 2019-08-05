@@ -12,7 +12,7 @@ namespace Microsoft.Torch.ExFlowAnalysisSA
         static void Main(string[] args)
         {
             ConfigParams.Z3ExePath = @"C:\Users\t-sukulk\source\repos\CSAnalysisFramework\CSAnalysisFramework\packages\Z3-4.1\bin\z3.exe";
-            ConfigParams.StubsPath = @"C:\Users\t-sukulk\source\repos\CSAnalysisFramework\CSAnalysisFramework\src\stubs\Micorsoft.Torch.Stubs\bin\Debug\Microsoft.Torch.Stubs.dll";
+            ConfigParams.StubsPath = @"C:\Users\t-sukulk\source\repos\CSAnalysisFramework\CSAnalysisFramework\src\stubs\Microsoft.Torch.Stubs\bin\Debug\Microsoft.Torch.Stubs.dll";
             ProgramDoms.Initialize();
             ProgramRels.Initialize();
             // ByteCodeAnalyzer.GenerateEDBFacts(@"C:\Users\t-sukulk\work\FromGithub\bmk\azure-storage-net\Lib\Common.Split\NetFx\bin\Debug\Microsoft.Azure.Storage.Common.dll");

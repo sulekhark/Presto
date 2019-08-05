@@ -51,7 +51,7 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
 
             // System.Console.WriteLine();
             // System.Console.WriteLine();
-            // System.Console.WriteLine("Analyzing: {0}", methodDefinition.ToString());
+            // System.Console.WriteLine("Analyzing: {0}", methodDefinition.GetName());
 
             var disassembler = new Disassembler(host, methodDefinition, sourceLocationProvider);
 			var methodBody = disassembler.Execute();
@@ -106,7 +106,7 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
                         // Add only the Main method as entry point
                         if (Utils.IsMainMethod(methodDefinition))
                         {
-                            System.Console.WriteLine("Adding main method: {0}", methodDefinition.Name.ToString());
+                            System.Console.WriteLine("Adding main method: {0}", methodDefinition.GetName());
                             rtaAnalyzer.methods.Add(methodDefinition);
                             rtaAnalyzer.entryPtMethods.Add(methodDefinition);
                         }
@@ -125,7 +125,7 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
                 if (rtaAnalyzer.methods.Contains(methodDefinition) && !rtaAnalyzer.visitedMethods.Contains(methodDefinition))
                 {
                     rtaAnalyzer.visitedMethods.Add(methodDefinition);
-                    System.Console.WriteLine("SRK_DBG: Visiting method: {0}", methodDefinition.Name.ToString());
+                    System.Console.WriteLine("SRK_DBG: Visiting method: {0}", methodDefinition.GetName());
                     rtaAnalyzer.VisitMethod(methodBody, cfg, IsRootModule);
                 }
                 else
@@ -155,7 +155,7 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
                 {
                     rtaAnalyzer.visitedClasses.Add(typeDefinition);
                     if (!typeDefinition.IsValueType || typeDefinition.IsStruct) ProcessStaticConstructors(typeDefinition);
-                    System.Console.WriteLine("SRK_DBG: Visiting class: {0}",typeDefinition.ToString());
+                    System.Console.WriteLine("SRK_DBG: Visiting class: {0}",typeDefinition.FullName());
                     base.TraverseChildren(typeDefinition);
                 }
                 else
@@ -167,7 +167,7 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
             {
                 if (factGen.classes.Contains(typeDefinition))
                 {
-                    System.Console.WriteLine(typeDefinition.ToString());
+                    System.Console.WriteLine(typeDefinition.FullName());
                     base.TraverseChildren(typeDefinition);
                 }
             }

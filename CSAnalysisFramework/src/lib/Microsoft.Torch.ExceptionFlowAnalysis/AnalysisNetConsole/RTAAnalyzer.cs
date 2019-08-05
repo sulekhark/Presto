@@ -62,7 +62,7 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
                 foreach (var instruction in node.Instructions)
                 {
                     // System.Console.WriteLine("{0}", instruction.ToString());
-                    // System.Console.WriteLine("{0}", instruction.GetType().ToString());
+                    // System.Console.WriteLine("{0}", instruction.GetType().FullName());
                     // System.Console.WriteLine();
 
                     if (instruction is LoadInstruction)

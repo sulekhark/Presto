@@ -26,7 +26,7 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
 
         public static ITypeDefinition GetStubType(ITypeDefinition ty)
         {
-            string clName = ty.ToString();
+            string clName = ty.FullName();
             if (StubMap.Map.ContainsKey(clName))
             {
                 string stubClName = StubMap.Map[clName];
@@ -42,7 +42,7 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
         public static IMethodDefinition GetStubMethod(IMethodDefinition m)
         {
             ITypeDefinition declClass = m.ContainingTypeDefinition;
-            string clName = declClass.ToString();
+            string clName = declClass.FullName();
             if (StubMap.Map.ContainsKey(clName))
             {
                 string stubClName = StubMap.Map[clName];
@@ -58,7 +58,7 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
 
         public static bool MatchesSuppress(IMethodDefinition m)
         {
-            string mSign = MemberHelper.GetMethodSignature(m, NameFormattingOptions.Signature | NameFormattingOptions.ParameterName);
+            string mSign = m.FullName();
             bool matches = false;
             foreach (string s in prefixesToSuppress)
             {
@@ -74,7 +74,7 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
         public static bool MatchesSuppress(ITypeDefinition t)
         {
             bool matches = false;
-            string tName = t.ToString();
+            string tName = t.FullName();
             foreach (string s in prefixesToSuppress)
             {
                 if (tName.StartsWith(s))
@@ -98,7 +98,7 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
             }
             if (!rtaAnalyzer.visitedMethods.Contains(toAdd))
             {
-                System.Console.WriteLine("SRK_DBG: Adding method: {0}", toAdd.Name.ToString());
+                System.Console.WriteLine("SRK_DBG: Adding method: {0}", toAdd.GetName());
                 rtaAnalyzer.methods.Add(toAdd);
                 return true;
             }
@@ -116,7 +116,7 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
             }
             if (!rtaAnalyzer.visitedClasses.Contains(t))
             {
-                System.Console.WriteLine("SRK_DBG: Adding class: {0}", t.ToString());
+                System.Console.WriteLine("SRK_DBG: Adding class: {0}", t.FullName());
                 rtaAnalyzer.classes.Add(t);
                 return true;
             }
