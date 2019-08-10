@@ -1,12 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Microsoft.Cci;
 using Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetBackend;
-using Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetBackend.Analyses;
-using Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetBackend.Model;
 using Microsoft.Torch.ExceptionFlowAnalysis.Common;
 
 namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
@@ -29,7 +25,7 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
             }
         }
 
-        public static IModule GetModule(IMetadataHost host, string assemblyPath)
+        static IModule GetModule(IMetadataHost host, string assemblyPath)
         {
             var assembly = new Assembly(host);
             assembly.Load(assemblyPath);
@@ -37,56 +33,70 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
             return module;
         }
 
+        static void Initialize(ISet<ITypeDefinition> classesSet, ISet<ITypeDefinition> entryPtList, IModule rootModule, bool rootIsExe)
+        {
+            foreach (ITypeDefinition ty in rootModule.GetAllTypes())
+            {
+                if (ty is INamedTypeDefinition && !ty.IsGeneric && !ty.IsAbstract && ty.FullName() != "<Module>")
+                {
+                    if (rootIsExe)
+                    {
+                        if (Utils.GetMethodByName(ty, "Main") != null)
+                        {
+                            classesSet.Add(ty);
+                            entryPtList.Add(ty);
+                        }
+                    }
+                    else
+                    {
+                        classesSet.Add(ty);
+                        entryPtList.Add(ty);
+                    }
+                }
+            }
+        }
+
         static void DoRTA(IMetadataHost host, MetadataVisitor visitor, IModule rootModule, bool rootIsExe)
         {
             rtaAnalyzer = new RTAAnalyzer(rootIsExe);
             visitor.SetupRTAAnalyzer(rtaAnalyzer);
             Stubber.SetupRTAAnalyzer(rtaAnalyzer);
+            Generics.SetupRTAAnalyzer(rtaAnalyzer);
+            Stubs.SetupInternFactory(host.InternFactory);
+            Generics.SetupInternFactory(host.InternFactory);
             IList<string> ignorePrefix = new List<string>();
             ignorePrefix.Add("System.");
             Stubber.SetupPrefixesToSuppress(ignorePrefix);
             IModule stubsModule = GetModule(host, ConfigParams.StubsPath);
-            StubMap.SetupStubs(stubsModule);
+            Stubs.SetupStubs(stubsModule);
+            Initialize(rtaAnalyzer.classes, rtaAnalyzer.entryPtClasses, rootModule, rootIsExe);
 
             int iterationCount = 0;
             bool changeInCount = true;
             int startClassCnt = 0, startMethCnt = 0;
             while (changeInCount)
             {
+                System.Console.WriteLine();
                 System.Console.WriteLine("Starting RTA ITERATION:{0}", iterationCount);
                 startClassCnt = rtaAnalyzer.classes.Count;
                 startMethCnt = rtaAnalyzer.methods.Count;
                 System.Console.WriteLine("Counts: classes:{0}   methods:{1}", startClassCnt, startMethCnt);
-                rtaAnalyzer.moduleWorkList.Clear();
-                rtaAnalyzer.visitedModules.Clear();
+                rtaAnalyzer.classWorkList.Clear();
                 rtaAnalyzer.visitedClasses.Clear();
                 rtaAnalyzer.ignoredClasses.Clear();
                 rtaAnalyzer.visitedMethods.Clear();
-                rtaAnalyzer.moduleWorkList.Add(rootModule);
-                rtaAnalyzer.moduleWorkList.Add(stubsModule);
-                bool isRootModule = true;
-                while (rtaAnalyzer.moduleWorkList.Count > 0)
+                rtaAnalyzer.ignoredMethods.Clear();
+                CopyAll(rtaAnalyzer.classes, rtaAnalyzer.classWorkList);
+                while (rtaAnalyzer.classWorkList.Count > 0)
                 {
-                    IModule module = rtaAnalyzer.moduleWorkList.First<IModule>();
-                    rtaAnalyzer.visitedModules.Add(module);
-                    rtaAnalyzer.moduleWorkList.RemoveAt(0);
-                    visitor.IsRootModule = isRootModule;
-                    visitor.Traverse(module);
-                    isRootModule = false;
-                    IList<IModule> loadedModules = host.LoadedUnits.OfType<IModule>().ToList();
-                    foreach (IModule lmod in loadedModules)
-                    {
-                        if (!rtaAnalyzer.visitedModules.Contains(lmod) && !rtaAnalyzer.moduleWorkList.Contains(lmod))
-                        {
-                            // System.Console.WriteLine("SRK_DBG: Adding {0}", lmod.Name);
-                            rtaAnalyzer.moduleWorkList.Add(lmod);
-                        }
-                    }
+                    ITypeDefinition ty = rtaAnalyzer.classWorkList.First<ITypeDefinition>();
+                    rtaAnalyzer.classWorkList.RemoveAt(0);
+                    visitor.Traverse(ty);
                 }
                 iterationCount++;
-                if (rtaAnalyzer.classes.Count == startClassCnt && rtaAnalyzer.methods.Count == startMethCnt) changeInCount = false;
+                if (rtaAnalyzer.classes.Count == startClassCnt && rtaAnalyzer.GetMethodCount() == startMethCnt) changeInCount = false;
             }
-
+            Copy(rtaAnalyzer.allocClasses, rtaAnalyzer.classes);
             System.Console.WriteLine();
             System.Console.WriteLine();
             foreach (IMethodDefinition m in rtaAnalyzer.methods)
@@ -105,6 +115,7 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
             {
                 System.Console.WriteLine(m.FullName());
             }
+            System.Console.WriteLine("+++++++++++++++ RTA DONE ++++++++++++++++++");
         }
 
         static void GenerateFacts(IMetadataHost host, MetadataVisitor visitor)
@@ -125,10 +136,20 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
             visitor.SetupRTAAnalyzer(null);
             visitor.SetupFactGenerator(factGen);
             Stubber.SetupFactGenerator(factGen);
-            foreach (IModule lmod in rtaAnalyzer.visitedModules)
+            foreach (ITypeDefinition ty in rtaAnalyzer.classes)
             {
-                visitor.Traverse(lmod);
+                visitor.Traverse(ty);
             }
+        }
+
+        static void CopyAll(ISet<ITypeDefinition> srcSet, IList<ITypeDefinition> dstList)
+        {
+            foreach (ITypeDefinition ty in srcSet) dstList.Add(ty);
+        }
+
+        static void Copy(ISet<ITypeDefinition> srcSet, ISet<ITypeDefinition> dstSet)
+        {
+            foreach (ITypeDefinition ty in srcSet) if (!dstSet.Contains(ty)) dstSet.Add(ty);
         }
     }
 }

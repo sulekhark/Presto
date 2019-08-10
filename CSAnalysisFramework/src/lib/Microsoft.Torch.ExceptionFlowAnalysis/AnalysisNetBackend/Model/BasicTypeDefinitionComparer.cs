@@ -14,8 +14,9 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetBackend.Model
 		{
             //return type.GetHashCode();
             return type.InternedKey.GetHashCode();
-		}
+        }
 
+        /****
 		public bool Equals(ITypeReference x, ITypeReference y)
 		{
 			bool result;
@@ -34,8 +35,32 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetBackend.Model
 			{
 				result = x.Equals(y);
 			}
-
 			return result;
 		}
-	}
+        *****/
+
+        public bool Equals(ITypeReference x, ITypeReference y)
+        {
+            if (x is IGenericTypeInstanceReference && y is IGenericTypeInstanceReference)
+            {
+                return TypeHelper.GenericTypeInstancesAreEquivalent(x as IGenericTypeInstanceReference, y as IGenericTypeInstanceReference);
+            }
+            else
+            {
+                return TypeHelper.TypesAreEquivalent(x, y);
+            }
+        }
+
+        /****
+        public bool Equals(ITypeReference x, ITypeReference y)
+        {
+            var xdef = x as ITypeDefinition;
+            var ydef = y as ITypeDefinition;
+
+            if (xdef == null) xdef = x.ResolvedType;
+            if (ydef == null) ydef = y.ResolvedType;
+            return (xdef.InternedKey == ydef.InternedKey);
+        }
+        ***/
+    }
 }

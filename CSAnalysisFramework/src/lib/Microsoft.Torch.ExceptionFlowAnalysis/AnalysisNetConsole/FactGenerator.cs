@@ -33,7 +33,7 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
             ProgramDoms.domF.Add(nullFieldRefW);
         }
 
-        public void GenerateFacts(MethodBody mBody, ControlFlowGraph cfg, bool isRootModule)
+        public void GenerateFacts(MethodBody mBody, ControlFlowGraph cfg)
         {
             MethodRefWrapper mRefW = WrapperProvider.getMethodRefW(mBody.MethodDefinition, mBody);
             System.Console.WriteLine();
@@ -672,6 +672,7 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
                 ProgramRels.relMMove.Add(mRefW, lhsVarW, rhsVarW1);
                 ProgramRels.relMMove.Add(mRefW, lhsVarW, rhsVarW2);
             }
+            /*****
             else if ((declType.FullName().StartsWith("System.Runtime.CompilerServices.AsyncTaskMethodBuilder")) &&
                 (callTgtDef.GetName() == "Start"))
             {
@@ -679,11 +680,12 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
                 if (genericCallTgt != null && genericCallTgt.GenericArguments.Count() == 1)
                 {
                     ITypeDefinition genericParamDefn = genericCallTgt.GenericArguments.First().ResolvedType;
-                    IMethodDefinition moveNextMethod = Utils.GetMethodByName(genericParamDefn, "MoveNext()");
+                    IMethodDefinition moveNextMethod = Utils.GetMethodByName(genericParamDefn, "MoveNext");
                     callTgtDef = moveNextMethod;
                     declType = genericParamDefn;
                 }
             }
+            *****/
             return true;
         }
 

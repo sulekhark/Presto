@@ -14,13 +14,12 @@ using Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetBackend.Model;
 
 namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
 {
-	public class MetadataVisitor : MetadataTraverser
+	public class MetadataVisitor
 	{
 		private readonly IMetadataHost host;
 		private readonly ISourceLocationProvider sourceLocationProvider;
         private FactGenerator factGen;
         private RTAAnalyzer rtaAnalyzer;
-        public bool IsRootModule { set; get; }
 
 		public MetadataVisitor(IMetadataHost host, ISourceLocationProvider sourceLocationProvider)
 		{
@@ -38,20 +37,16 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
             this.rtaAnalyzer = rtaAnalyzer;
         }
 
-		public override void TraverseChildren(IMethodDefinition methodDefinition)
+		public void Traverse(IMethodDefinition methodDefinition)
 		{
-
+            // System.Console.WriteLine("Traversing: {0}", methodDefinition.GetName());
             if (Stubber.Suppress(methodDefinition)) return;
             if (methodDefinition.IsExternal) return;
-            if (methodDefinition.IsAbstract)
-            {
-                if (rtaAnalyzer != null) rtaAnalyzer.methods.Add(methodDefinition);
-                return;
-            } 
+            if (methodDefinition.IsAbstract) return;
 
             // System.Console.WriteLine();
             // System.Console.WriteLine();
-            // System.Console.WriteLine("Analyzing: {0}", methodDefinition.GetName());
+            
 
             var disassembler = new Disassembler(host, methodDefinition, sourceLocationProvider);
 			var methodBody = disassembler.Execute();
@@ -99,7 +94,7 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
 
             if (rtaAnalyzer != null)
             {
-                if (IsRootModule)
+                if (rtaAnalyzer.entryPtClasses.Contains(methodDefinition.ContainingTypeDefinition))
                 {
                     if (rtaAnalyzer.rootIsExe)
                     {
@@ -107,8 +102,9 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
                         if (Utils.IsMainMethod(methodDefinition))
                         {
                             System.Console.WriteLine("Adding main method: {0}", methodDefinition.GetName());
-                            rtaAnalyzer.methods.Add(methodDefinition);
-                            rtaAnalyzer.entryPtMethods.Add(methodDefinition);
+                            IMethodDefinition addedMeth = Stubber.CheckAndAdd(methodDefinition);
+                            // The assumption is that addedMeth is not a template method. Here it is safe because it holds for the main method.
+                            if (addedMeth != null) rtaAnalyzer.entryPtMethods.Add(addedMeth);
                         }
                     }
                     else
@@ -117,8 +113,10 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
                             methodDefinition.Visibility == TypeMemberVisibility.Family)
                         {
                             // Otherwise, add all public methods as entry points
-                            rtaAnalyzer.methods.Add(methodDefinition);
-                            rtaAnalyzer.entryPtMethods.Add(methodDefinition);
+                            IMethodDefinition addedMeth = Stubber.CheckAndAdd(methodDefinition);
+                            // The assumption here is that addedMeth is not a template method.
+                            // TODO: It may be the case that this assumption does not hold in some cases.
+                            if (addedMeth != null) rtaAnalyzer.entryPtMethods.Add(addedMeth);
                         }
                     }
                 }
@@ -126,7 +124,7 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
                 {
                     rtaAnalyzer.visitedMethods.Add(methodDefinition);
                     System.Console.WriteLine("SRK_DBG: Visiting method: {0}", methodDefinition.GetName());
-                    rtaAnalyzer.VisitMethod(methodBody, cfg, IsRootModule);
+                    rtaAnalyzer.VisitMethod(methodBody, cfg);
                 }
                 else
                 {
@@ -138,25 +136,21 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
             {
                 if (factGen.methods.Contains(methodDefinition))
                 {
-                    factGen.GenerateFacts(methodBody, cfg, IsRootModule);
+                    factGen.GenerateFacts(methodBody, cfg);
                 }
             }
         }
 
-        public override void TraverseChildren (ITypeDefinition typeDefinition)
+        public void Traverse (ITypeDefinition typeDefinition)
         {
             if (rtaAnalyzer != null)
             {
-                if (IsRootModule)
-                {
-                    rtaAnalyzer.classes.Add(typeDefinition);
-                }
                 if (rtaAnalyzer.classes.Contains(typeDefinition) && !rtaAnalyzer.visitedClasses.Contains(typeDefinition))
                 {
                     rtaAnalyzer.visitedClasses.Add(typeDefinition);
                     if (!typeDefinition.IsValueType || typeDefinition.IsStruct) ProcessStaticConstructors(typeDefinition);
                     System.Console.WriteLine("SRK_DBG: Visiting class: {0}",typeDefinition.FullName());
-                    base.TraverseChildren(typeDefinition);
+                    TraverseMethods(typeDefinition);
                 }
                 else
                 {
@@ -168,7 +162,26 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
                 if (factGen.classes.Contains(typeDefinition))
                 {
                     System.Console.WriteLine(typeDefinition.FullName());
-                    base.TraverseChildren(typeDefinition);
+                    TraverseMethods(typeDefinition);
+                }
+            }
+        }
+
+        private void TraverseMethods(ITypeDefinition ty)
+        {
+            foreach(IMethodDefinition meth in ty.Methods)
+            {
+                if (meth is IGenericMethodInstance)
+                {
+                    if (rtaAnalyzer.genericMethodMap.ContainsKey(meth))
+                    {
+                        ISet<IMethodDefinition> instantiatedMeths = rtaAnalyzer.genericMethodMap[meth];
+                        foreach (IMethodDefinition instMeth in instantiatedMeths) Traverse(instMeth);
+                    }
+                }
+                else
+                {
+                    Traverse(meth);
                 }
             }
         }

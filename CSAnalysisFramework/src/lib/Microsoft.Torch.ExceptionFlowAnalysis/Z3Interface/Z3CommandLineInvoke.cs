@@ -41,7 +41,7 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.Z3Interface
             processCp.BeginOutputReadLine();
             using (StreamWriter sw = processCp.StandardInput)
             {
-                sw.WriteLine("copy " + filePath + " " + destDir);
+                sw.WriteLine("copy /Y " + filePath + " " + destDir);
             }
             //We want a blocking call
             processCp.WaitForExit();

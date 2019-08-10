@@ -12,8 +12,8 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
 {
     public class RTAAnalyzer
     {
-        public IList<IModule> moduleWorkList;
-        public ISet<IModule> visitedModules;
+        public IList<ITypeDefinition> classWorkList;
+        public ISet<ITypeDefinition> entryPtClasses;
         public ISet<ITypeDefinition> visitedClasses;
         public ISet<ITypeDefinition> clinitProcessedClasses;
         public ISet<ITypeDefinition> ignoredClasses;
@@ -30,30 +30,50 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
         public readonly ISet<IFieldDefinition> addrTakenStatFlds;
         public readonly ISet<IVariable> addrTakenLocals;
         public readonly ISet<IMethodDefinition> addrTakenMethods;
-       
+
+        public readonly IDictionary<IMethodDefinition, ISet<IMethodDefinition>> genericMethodMap;
+
         public RTAAnalyzer(bool rootIsExe)
         {
-            moduleWorkList = new List<IModule>();
-            visitedModules = new HashSet<IModule>();
-            visitedClasses = new HashSet<ITypeDefinition>();
-            clinitProcessedClasses = new HashSet<ITypeDefinition>();
-            ignoredClasses = new HashSet<ITypeDefinition>();
-            visitedMethods = new HashSet<IMethodDefinition>();
-            ignoredMethods = new HashSet<IMethodDefinition>();
-            entryPtMethods = new HashSet<IMethodDefinition>();
-            allocClasses = new HashSet<ITypeDefinition>();
-            classes = new HashSet<ITypeDefinition>();
-            methods = new HashSet<IMethodDefinition>();
-            types = new HashSet<ITypeDefinition>();
+            TypeDefinitionComparer tdc = new TypeDefinitionComparer();
+            MethodReferenceDefinitionComparer mdc = MethodReferenceDefinitionComparer.Default;
+            FieldReferenceComparer frc = new FieldReferenceComparer();
+            VariableComparer vc = new VariableComparer();
+
+            classWorkList = new List<ITypeDefinition>();
+            entryPtClasses = new HashSet<ITypeDefinition>(tdc);
+            visitedClasses = new HashSet<ITypeDefinition>(tdc);
+            clinitProcessedClasses = new HashSet<ITypeDefinition>(tdc);
+            ignoredClasses = new HashSet<ITypeDefinition>(tdc);
+            visitedMethods = new HashSet<IMethodDefinition>(mdc);
+            ignoredMethods = new HashSet<IMethodDefinition>(mdc);
+            entryPtMethods = new HashSet<IMethodDefinition>(mdc);
+            allocClasses = new HashSet<ITypeDefinition>(tdc);
+            classes = new HashSet<ITypeDefinition>(tdc);
+            methods = new HashSet<IMethodDefinition>(mdc);
+            types = new HashSet<ITypeDefinition>(tdc);
             this.rootIsExe = rootIsExe;
 
-            addrTakenInstFlds = new HashSet<IFieldDefinition>();
-            addrTakenStatFlds = new HashSet<IFieldDefinition>();
-            addrTakenLocals = new HashSet<IVariable>();
-            addrTakenMethods = new HashSet<IMethodDefinition>();
+            addrTakenInstFlds = new HashSet<IFieldDefinition>(frc);
+            addrTakenStatFlds = new HashSet<IFieldDefinition>(frc);
+            addrTakenLocals = new HashSet<IVariable>(vc);
+            addrTakenMethods = new HashSet<IMethodDefinition>(mdc);
+
+            genericMethodMap = new Dictionary<IMethodDefinition, ISet<IMethodDefinition>>(mdc);
         }
 
-        public void VisitMethod(MethodBody mBody, ControlFlowGraph cfg, bool isRootModule)
+        public int GetMethodCount()
+        {
+            int count = methods.Count;
+            foreach (ISet<IMethodDefinition> s in genericMethodMap.Values)
+            {
+                count += s.Count;
+            }
+            count = count - genericMethodMap.Count;
+            return count;
+        }
+
+        public void VisitMethod(MethodBody mBody, ControlFlowGraph cfg)
         {
             // Going through the instructions via cfg nodes instead of directly iterating over the instructions
             // of the methodBody becuase Phi instructions may not have been inserted in the insts of the methodBody.
@@ -83,8 +103,9 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
                             IMethodDefinition tgtMeth = sMethAddr.Method.ResolvedMethod;
                             ITypeDefinition containingTy = tgtMeth.ContainingTypeDefinition;
                             Stubber.CheckAndAdd(containingTy);
-                            bool added = Stubber.CheckAndAdd(tgtMeth);
-                            if (added) addrTakenMethods.Add(tgtMeth);
+                            IMethodDefinition addedMeth = Stubber.CheckAndAdd(tgtMeth);
+                            // addrTakenMethods do not contain templates.
+                            if (addedMeth != null) addrTakenMethods.Add(addedMeth);
                         }
                         //Note: calls to virtual, abstract or interface methods appear as VirtualMethodReference
                         else if (rhsOperand is VirtualMethodReference)
@@ -92,10 +113,14 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
                             VirtualMethodReference sMethAddr = rhsOperand as VirtualMethodReference;
                             IMethodDefinition tgtMeth = sMethAddr.Method.ResolvedMethod;
                             ITypeDefinition containingTy = tgtMeth.ContainingTypeDefinition;
-                            Stubber.CheckAndAdd(containingTy);
-                            bool added = Stubber.CheckAndAdd(tgtMeth);
-                            if (added) addrTakenMethods.Add(tgtMeth);
-                            ProcessVirtualInvoke(tgtMeth, containingTy, true);
+                            ITypeDefinition addedTy = Stubber.CheckAndAdd(containingTy);
+                            IMethodDefinition addedMeth = Stubber.CheckAndAdd(tgtMeth);
+                            if (addedTy != null && addedMeth != null)
+                            {
+                                // addrTakenMethods do not contain templates.
+                                addrTakenMethods.Add(addedMeth);
+                                ProcessVirtualInvoke(addedMeth, addedTy, true);
+                            }
                         }
                         else if (rhsOperand is Reference)
                         {
@@ -139,9 +164,15 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
                         CreateObjectInstruction newObjInst = instruction as CreateObjectInstruction;
                         ITypeReference objType = newObjInst.AllocationType;
                         ITypeDefinition objTypeDef = objType.ResolvedType;
-                        if (!allocClasses.Contains(objTypeDef))
+                        ITypeDefinition addedTy = Stubber.CheckAndAdd(objTypeDef);
+                        if (addedTy != null && !allocClasses.Contains(addedTy))
                         {
-                            classes.Add(objTypeDef);
+                            allocClasses.Add(addedTy);
+                        }
+                        else if (addedTy == null)
+                        // addedTy will be null for non-stubbed System.* types.
+                        // We don't want to analyze methods of such types, but we still want to track such objects.
+                        {
                             allocClasses.Add(objTypeDef);
                         }
                     }
@@ -150,9 +181,15 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
                         CreateArrayInstruction newArrInst = instruction as CreateArrayInstruction;
                         ITypeReference elemType = newArrInst.ElementType;
                         ITypeDefinition elemTypeDef = elemType.ResolvedType;
-                        if (!allocClasses.Contains(elemTypeDef))
+                        ITypeDefinition addedTy = Stubber.CheckAndAdd(elemTypeDef);
+                        if (addedTy != null && !allocClasses.Contains(addedTy))
                         {
-                            classes.Add(elemTypeDef);
+                            allocClasses.Add(addedTy);
+                        }
+                        else if (addedTy == null)
+                        // addedTy will be null for non-stubbed System.* types.
+                        // We don't want to analyze methods of such types, but we still want to track such objects.
+                        {
                             allocClasses.Add(elemTypeDef);
                         }
                     }
@@ -162,12 +199,12 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
                         IMethodReference callTgt = invkInst.Method;
                         IMethodDefinition callTgtDef = callTgt.ResolvedMethod;
                         ITypeDefinition declType = callTgtDef.ContainingTypeDefinition;
-                        Stubber.CheckAndAdd(callTgtDef);
-                        Stubber.CheckAndAdd(declType);
+                        ITypeDefinition addedType = Stubber.CheckAndAdd(declType);
+                        IMethodDefinition addedMeth = Stubber.CheckAndAdd(callTgtDef);
                         MethodCallOperation callType = invkInst.Operation;
-                        if (callType == MethodCallOperation.Virtual)
+                        if (callType == MethodCallOperation.Virtual && addedType != null && addedMeth != null)
                         {
-                            ProcessVirtualInvoke(callTgtDef, declType, false);
+                            ProcessVirtualInvoke(addedMeth, addedType, false);
                         }
                     }
                     else
@@ -182,35 +219,38 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
 
         private void ProcessVirtualInvoke(IMethodDefinition mCallee, ITypeDefinition calleeClass, bool isAddrTaken)
         {
+            // mCallee is an ordinary method - never a template method.
+            // calleeClass and mCallee are either both stubbed or, both unstubbed - i.e. they are consistent.
             bool isInterface = calleeClass.IsInterface;
             
             foreach (ITypeDefinition cl in allocClasses)
             {
-                if (isInterface)
+                if (!Stubber.Suppress(cl))
                 {
-                    if (Utils.ImplementsInterface(cl, calleeClass))
+                    bool process = false;
+                    if (isInterface && Utils.ImplementsInterface(cl, calleeClass))
+                        process = true;
+                    else if (Utils.ExtendsClass(cl, calleeClass))
+                        process = true;
+                    if (!process) continue;
+                    foreach (IMethodDefinition meth in cl.Methods)
                     {
-                        foreach (IMethodDefinition meth in cl.Methods)
+                        if (meth is IGenericMethodInstance)
                         {
-                            if (Utils.SignMatch(mCallee, meth))
+                            if (Utils.GenericStubMatch(mCallee, meth))
                             {
-                                bool added = Stubber.CheckAndAdd(meth);
-                                if (added && isAddrTaken) addrTakenMethods.Add(meth);
+                                IMethodDefinition instMeth = Generics.GetInstantiatedMeth(meth, mCallee);
+                                IMethodDefinition addedMeth = Stubber.CheckAndAdd(instMeth);
+                                if (addedMeth != null && isAddrTaken) addrTakenMethods.Add(addedMeth);
                                 break;
                             }
                         }
-                    }
-                }
-                else
-                {
-                    if (Utils.ExtendsClass(cl, calleeClass))
-                    {
-                        foreach (IMethodDefinition meth in cl.Methods)
+                        else
                         {
-                            if (Utils.SignMatch(mCallee, meth))
+                            if (Utils.StubMatch(mCallee, meth))
                             {
-                                bool added = Stubber.CheckAndAdd(meth);
-                                if (added && isAddrTaken) addrTakenMethods.Add(meth);
+                                IMethodDefinition addedMeth = Stubber.CheckAndAdd(meth);
+                                if (addedMeth != null && isAddrTaken) addrTakenMethods.Add(addedMeth);
                                 break;
                             }
                         }

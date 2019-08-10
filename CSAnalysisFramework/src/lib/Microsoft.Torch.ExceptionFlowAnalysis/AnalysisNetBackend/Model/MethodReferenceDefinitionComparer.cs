@@ -33,9 +33,11 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetBackend.Model
 
 		public int GetHashCode(IMethodReference method)
 		{
-			return method.GetHashCode();
-		}
+            // SRK: return method.GetHashCode();
+            return method.InternedKey.GetHashCode();
+        }
 
+        /*****
 		public bool Equals(IMethodReference x, IMethodReference y)
 		{
 			bool result;
@@ -57,5 +59,19 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetBackend.Model
 
 			return result;
 		}
-	}
+        ****/
+
+        public bool Equals(IMethodReference x, IMethodReference y)
+        {
+            var xdef = x as IMethodDefinition;
+            var ydef = y as IMethodDefinition;
+
+            return MemberHelper.MethodsAreEquivalent(x.ResolvedMethod, y.ResolvedMethod);
+            /***
+            if (xdef == null) xdef = x.ResolvedMethod;
+            if (ydef == null) ydef = y.ResolvedMethod;
+            return (xdef.InternedKey == ydef.InternedKey);
+            ***/
+        }
+    }
 }

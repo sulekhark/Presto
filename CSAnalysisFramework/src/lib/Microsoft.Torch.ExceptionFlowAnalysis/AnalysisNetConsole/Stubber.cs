@@ -24,38 +24,6 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
             rtaAnalyzer = rta;
         }
 
-        public static ITypeDefinition GetStubType(ITypeDefinition ty)
-        {
-            string clName = ty.FullName();
-            if (StubMap.Map.ContainsKey(clName))
-            {
-                string stubClName = StubMap.Map[clName];
-                if (StubMap.NameToTypeDefMap.ContainsKey(stubClName))
-                {
-                    ITypeDefinition stubCl = StubMap.NameToTypeDefMap[stubClName];
-                    if (stubCl != null) return stubCl;
-                }
-            }
-            return null;
-        }
-
-        public static IMethodDefinition GetStubMethod(IMethodDefinition m)
-        {
-            ITypeDefinition declClass = m.ContainingTypeDefinition;
-            string clName = declClass.FullName();
-            if (StubMap.Map.ContainsKey(clName))
-            {
-                string stubClName = StubMap.Map[clName];
-                if (StubMap.NameToTypeDefMap.ContainsKey(stubClName))
-                {
-                    ITypeDefinition stubCl = StubMap.NameToTypeDefMap[stubClName];
-                    IMethodDefinition stubMeth = Utils.GetSignMatchMethod(stubCl, m);
-                    if (stubMeth != null) return stubMeth;
-                }
-            }
-            return null;
-        }
-
         public static bool MatchesSuppress(IMethodDefinition m)
         {
             string mSign = m.FullName();
@@ -86,68 +54,78 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
             return matches;
         }
 
-        public static bool CheckAndAdd(IMethodDefinition m)
+        public static IMethodDefinition CheckAndAdd(IMethodDefinition m)
         {
-            IMethodDefinition toAdd = m;
+            IMethodDefinition methToAdd = m;
+            IMethodDefinition lookFor = m;
+            if (methToAdd.IsGeneric)
+            {
+                lookFor = Generics.GetTemplate(m);
+            }
+            
+            ITypeDefinition containingType = m.ContainingTypeDefinition; // Test methToAdd's containingTypeDefinition
             bool matches = MatchesSuppress(m);
             if (matches)
             {
-                IMethodDefinition stubMethod = GetStubMethod(m);
-                if (stubMethod == null) return false;
-                toAdd = stubMethod;
+                containingType = Stubs.GetStubType(containingType);
+                if (containingType == null) return null; // This entire containingType is to be ignored.
+                methToAdd = Utils.GetStubMatchMethod(containingType, lookFor);
+                if (methToAdd == null) return null; // containingType itself is stubbed, but the stub does not define a method equivalent to m.
             }
-            if (!rtaAnalyzer.visitedMethods.Contains(toAdd))
+
+            IMethodDefinition instMeth = methToAdd;
+            if (methToAdd.IsGeneric) instMeth = Generics.RecordInfo(methToAdd, m, matches);
+            if (!rtaAnalyzer.visitedMethods.Contains(instMeth) && !rtaAnalyzer.methods.Contains(instMeth))
             {
-                System.Console.WriteLine("SRK_DBG: Adding method: {0}", toAdd.GetName());
-                rtaAnalyzer.methods.Add(toAdd);
-                return true;
+                System.Console.WriteLine("SRK_DBG: Adding method: {0}", instMeth.GetName());
+                rtaAnalyzer.methods.Add(instMeth);
+                return instMeth;
             }
-            return false;
+            return null;
         }
 
-        public static bool CheckAndAdd(ITypeDefinition t)
+        public static ITypeDefinition CheckAndAdd(ITypeDefinition t)
         {
             ITypeDefinition toAdd = t;
             bool matches = MatchesSuppress(t);
             if (matches)
             {
-                ITypeDefinition stubType = GetStubType(t);
+                ITypeDefinition stubType = Stubs.GetStubType(t);
                 if (stubType != null) toAdd = stubType;
             }
-            if (!rtaAnalyzer.visitedClasses.Contains(t))
+            if (!rtaAnalyzer.visitedClasses.Contains(toAdd) && !rtaAnalyzer.classes.Contains(toAdd))
             {
-                System.Console.WriteLine("SRK_DBG: Adding class: {0}", t.FullName());
-                rtaAnalyzer.classes.Add(t);
-                return true;
+                System.Console.WriteLine("SRK_DBG: Adding class: {0}", toAdd.FullName());
+                rtaAnalyzer.classes.Add(toAdd);
+                rtaAnalyzer.classWorkList.Add(toAdd);
+                return toAdd;
             }
-            return false;
+            return null;
         }
 
-        //this method is used during FactGeneration. The above CheckAndAdd methods are used during RTAAnalysis.
-        public static IMethodDefinition GetMethodToAnalyze(IMethodDefinition meth)
+        // This method is used during FactGeneration. The above CheckAndAdd methods are used during RTAAnalysis.
+        // Since we are not modifying invoke statments to invoke methods in stubs (whenever stubs are used), we need the below method.
+        public static IMethodDefinition GetMethodToAnalyze(IMethodDefinition m)
         {
-            IMethodDefinition toAnalyze;
-            // Three chioces: meth should completely be ignored, should be analyzed as is, or the equivalent stub should be analyzed.
-            toAnalyze = meth;
-            bool matches = MatchesSuppress(meth);
+            // Three cases: m should completely be ignored, should be analyzed as is, or the equivalent stub should be analyzed.
+            IMethodDefinition methToAnalyze = m;
+            bool matches = MatchesSuppress(m);
             if (matches)
             {
-                IMethodDefinition stubMethod = GetStubMethod(meth);
-                toAnalyze = stubMethod ?? null;
+                ITypeDefinition containingType = m.ContainingTypeDefinition;
+                containingType = Stubs.GetStubType(containingType);
+                if (containingType == null) return null; // This entire containingType is to be ignored.
+                if (methToAnalyze.IsGeneric) methToAnalyze = Generics.GetTemplate(m);
+                methToAnalyze = Utils.GetStubMatchMethod(containingType, methToAnalyze);
+                if (methToAnalyze == null) return null; // containingType itself is stubbed, but the stub does not define a method equivalent to m.
+                if (methToAnalyze.IsGeneric) methToAnalyze = Generics.GetInstantiatedMeth(methToAnalyze, m);
             }
-            return toAnalyze;
+            return methToAnalyze;
         }
 
         public static bool Suppress(IMethodDefinition m)
         {
-            bool retval = false;
-            bool matches = MatchesSuppress(m);
-            if (matches)
-            {
-                IMethodDefinition stubMethod = GetStubMethod(m);
-                retval = stubMethod == null ? true : false;
-            }
-            return retval;
+            return (GetMethodToAnalyze(m) == null);
         }
 
         public static bool Suppress(ITypeDefinition ty)
@@ -156,7 +134,7 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
             bool matches = MatchesSuppress(ty);
             if (matches)
             {
-                ITypeDefinition stubType = GetStubType(ty);
+                ITypeDefinition stubType = Stubs.GetStubType(ty);
                 retval = stubType == null ? true : false;
             }
             return retval;

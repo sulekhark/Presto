@@ -60,24 +60,72 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
             return MemberHelper.GetMethodSignature(mref, NameFormattingOptions.Signature | NameFormattingOptions.TypeParameters);
         }
 
-        public static bool SignMatch(IMethodReference m1, IMethodReference m2)
+        // Full Name but without containing name space should match: <method_name><<generic_param_if_present>>(<param_list>)
+        // This is for finding the same method definition but in a stub namespace.
+        public static bool StubMatch(IMethodReference m1, IMethodReference m2)
         {
             if (m1 == null || m2 == null) return false;
-            string m1Sign = m1.FullName();
-            string m2Sign = m2.FullName();
+            string m1Sign = MemberHelper.GetMethodSignature(m1, NameFormattingOptions.OmitContainingType | NameFormattingOptions.Signature | NameFormattingOptions.ParameterName | NameFormattingOptions.TypeParameters);
+            string m2Sign = MemberHelper.GetMethodSignature(m2, NameFormattingOptions.OmitContainingType | NameFormattingOptions.Signature | NameFormattingOptions.ParameterName | NameFormattingOptions.TypeParameters);
             return (m1Sign == m2Sign);
         }
 
+        // method name, formal parameters and number of generic parameters must match
+        public static bool GenericStubMatch(IMethodReference m1, IMethodReference m2)
+        {
+            IGenericMethodInstance gm1 = m1 as IGenericMethodInstance;
+            IGenericMethodInstance gm2 = m2 as IGenericMethodInstance;
+            if (gm1 == null || gm2 == null) return false;
+            
+            string m1Sign = MemberHelper.GetMethodSignature(gm1, NameFormattingOptions.OmitContainingType | NameFormattingOptions.Signature | NameFormattingOptions.ParameterName);
+            string m2Sign = MemberHelper.GetMethodSignature(gm2, NameFormattingOptions.OmitContainingType | NameFormattingOptions.Signature | NameFormattingOptions.ParameterName);
+           
+            int num1 = gm1.GenericParameterCount;
+            int num2 = gm2.GenericParameterCount;
+            return (m1Sign == m2Sign) && (num1 == num2);
+        }
+
+        // Full Name should match: <containing_name_space>.<method_name><<generic_param_if_present>>(<param_list>)
         public static IMethodDefinition GetSignMatchMethod(ITypeDefinition ty, IMethodDefinition meth)
+        {
+            if (meth is IGenericMethodInstance)
+            {
+                foreach (IMethodDefinition tyMeth in ty.Methods)
+                {
+                    if (MemberHelper.GenericMethodSignaturesAreEqual(meth, tyMeth)) return tyMeth;
+                }
+            }
+            else
+            {
+                foreach (IMethodDefinition tyMeth in ty.Methods)
+                {
+                    if (MemberHelper.SignaturesAreEqual(meth, tyMeth)) return tyMeth;
+                }
+            }
+            return null;
+        }
+
+        // Full Name but without containing name space should match: <method_name><<generic_param_if_present>>(<param_list>)
+        // This is for finding the same method definition but in a stub namespace.
+        public static IMethodDefinition GetStubMatchMethod(ITypeDefinition ty, IMethodDefinition meth)
         {
             foreach (IMethodDefinition tyMeth in ty.Methods)
             {
-                if (SignMatch(meth, tyMeth)) return tyMeth;
+                if (StubMatch(meth, tyMeth)) return tyMeth;
             }
             return null;
         }
 
         public static IMethodDefinition GetMethodByName(ITypeDefinition ty, string methName)
+        {
+            foreach (IMethodDefinition tyMeth in ty.Methods)
+            {
+                if (tyMeth.Name.Value == methName) return tyMeth;
+            }
+            return null;
+        }
+
+        public static IMethodDefinition GetMethodByFullName(ITypeDefinition ty, string methName)
         {
             foreach (IMethodDefinition tyMeth in ty.Methods)
             {
@@ -88,7 +136,7 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
 
         public static bool IsMainMethod (IMethodDefinition meth)
         {
-            if (meth.GetName() == "Main" && meth.IsStatic) return true;     
+            if (meth.Name.Value == "Main" && meth.IsStatic) return true;     
             return false;
         }
 

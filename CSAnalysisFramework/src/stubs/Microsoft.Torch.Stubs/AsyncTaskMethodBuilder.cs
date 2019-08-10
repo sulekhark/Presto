@@ -65,21 +65,21 @@ namespace Microsoft.Torch.Stubs
             s_defaultResultTask = new Task<TResult>(default(TResult));
         }
 
-        public void Start<TStateMachine>(ref TStateMachine sm) where TStateMachine : IAsyncStateMachine
+        public void Start<TStateMachine>(ref TStateMachine stateMachine) where TStateMachine : IAsyncStateMachine
         {
-            sm.MoveNext();
+            stateMachine.MoveNext();
         }
 
-        public void SetException(Exception e)
+        public void SetException(Exception exception)
         {
-            Task.e = e;
+            Task.e = exception;
         }
 
-        public void SetResult(TResult res)
+        public void SetResult(TResult result)
         {
-            if (res == null)
+            if (result == null)
 
-            Task.Result = res;
+            Task.Result = result;
         }
     }
 }

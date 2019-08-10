@@ -19,10 +19,11 @@ namespace FactTest
     }
     static class Iterator
     {
+        static int counter = 0;
         static IEnumerable<int> fooIt()
         {
-            yield return 1;
-            yield return 2;
+            yield return bazIt();
+           
         }
 
         public static void barIt()
@@ -31,6 +32,11 @@ namespace FactTest
             {
                 Console.WriteLine(x);
             }
+        }
+
+        public static int bazIt()
+        {
+            return counter++;
         }
     }
     class T4
