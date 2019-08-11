@@ -26,8 +26,8 @@ namespace Microsoft.Torch.ExFlowAnalysisSA
 
             ProgramDoms.Save();
             ProgramRels.Save();
-            // Z3CommandLineInvoke z3Cmd = new Z3CommandLineInvoke();
-            // z3Cmd.RunAnalysis(@"C:\Users\t-sukulk\source\repos\CSAnalysisFramework\CSAnalysisFramework\src\lib\Microsoft.Torch.ExceptionFlowAnalysis\PtrAndExcAnalysis\CIPtrAnalysis.datalog");
+            Z3CommandLineInvoke z3Cmd = new Z3CommandLineInvoke();
+            z3Cmd.RunAnalysis(@"C:\Users\t-sukulk\source\repos\CSAnalysisFramework\CSAnalysisFramework\src\lib\Microsoft.Torch.ExceptionFlowAnalysis\PtrAndExcAnalysis\CIPtrAnalysis.datalog");
         }
     }
 }

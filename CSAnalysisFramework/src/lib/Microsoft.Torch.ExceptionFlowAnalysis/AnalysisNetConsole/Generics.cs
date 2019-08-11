@@ -33,14 +33,14 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
         public static IMethodDefinition RecordInfo(IMethodDefinition templateMeth, IMethodDefinition instMeth, bool isStubbed)
         {
             ISet<IMethodDefinition> instMeths;
-            if (rtaAnalyzer.genericMethodMap.ContainsKey(templateMeth))
+            if (MetadataVisitor.genericMethodMap.ContainsKey(templateMeth))
             {
-                instMeths = rtaAnalyzer.genericMethodMap[templateMeth];
+                instMeths = MetadataVisitor.genericMethodMap[templateMeth];
             }
             else
             {
                 instMeths = new HashSet<IMethodDefinition>();
-                rtaAnalyzer.genericMethodMap.Add(templateMeth, instMeths);
+                MetadataVisitor.genericMethodMap.Add(templateMeth, instMeths);
             }
             IMethodDefinition retMeth;
             if (!isStubbed)

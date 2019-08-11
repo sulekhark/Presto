@@ -9,31 +9,36 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
 {
     public static class Utils
     {
-        public static bool ImplementsInterface(ITypeDefinition tgt, ITypeDefinition qItf)
+        public static bool ImplementsInterface(ITypeDefinition tgt, ITypeDefinition queryItf)
         {
-            if (qItf == null || tgt == null) return false;
+            if (queryItf == null || tgt == null) return false;
             foreach (ITypeReference itf in tgt.Interfaces)
             {
-                if (itf != null && qItf.Equals(itf.ResolvedType)) return true;
+                ITypeDefinition analItf = Stubber.GetTypeToAnalyze(itf.ResolvedType);
+                if (analItf != null && queryItf.Equals(analItf.ResolvedType)) return true;
             }
             foreach (ITypeReference itf in tgt.Interfaces)
             {
-                if (ImplementsInterface(itf.ResolvedType, qItf)) return true;
+                ITypeReference analItf = Stubber.GetTypeToAnalyze(itf.ResolvedType);
+                if (analItf != null && ImplementsInterface(analItf.ResolvedType, queryItf)) return true;
             }
             return false;
         }
 
         public static bool ExtendsClass(ITypeDefinition derivedCl, ITypeDefinition baseCl)
         {
-            if (derivedCl.Equals(baseCl)) return true;
             if (derivedCl == null || baseCl == null) return false;
+            ITypeDefinition analBaseCl = Stubber.GetTypeToAnalyze(baseCl);
+            if (analBaseCl != null && derivedCl.Equals(analBaseCl)) return true;
             foreach (ITypeReference bcl in derivedCl.BaseClasses)
             {
-                if (bcl != null && baseCl.Equals(bcl.ResolvedType)) return true;
+                ITypeDefinition analBcl = Stubber.GetTypeToAnalyze(bcl.ResolvedType);
+                if (analBcl != null && baseCl.Equals(analBcl)) return true;
             }
             foreach (ITypeReference bcl in derivedCl.BaseClasses)
             {
-                if (ExtendsClass(bcl.ResolvedType, baseCl)) return true;
+                ITypeDefinition analBcl = Stubber.GetTypeToAnalyze(bcl.ResolvedType);
+                if (ExtendsClass(analBcl, baseCl)) return true;
             }
             return false;
         }

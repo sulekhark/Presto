@@ -31,7 +31,7 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
         public readonly ISet<IVariable> addrTakenLocals;
         public readonly ISet<IMethodDefinition> addrTakenMethods;
 
-        public readonly IDictionary<IMethodDefinition, ISet<IMethodDefinition>> genericMethodMap;
+        
 
         public RTAAnalyzer(bool rootIsExe)
         {
@@ -58,19 +58,6 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
             addrTakenStatFlds = new HashSet<IFieldDefinition>(frc);
             addrTakenLocals = new HashSet<IVariable>(vc);
             addrTakenMethods = new HashSet<IMethodDefinition>(mdc);
-
-            genericMethodMap = new Dictionary<IMethodDefinition, ISet<IMethodDefinition>>(mdc);
-        }
-
-        public int GetMethodCount()
-        {
-            int count = methods.Count;
-            foreach (ISet<IMethodDefinition> s in genericMethodMap.Values)
-            {
-                count += s.Count;
-            }
-            count = count - genericMethodMap.Count;
-            return count;
         }
 
         public void VisitMethod(MethodBody mBody, ControlFlowGraph cfg)

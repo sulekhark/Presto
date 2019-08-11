@@ -22,6 +22,7 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
             NameToNameMap.Add("System.Threading.Tasks.Task<TResult>", "Microsoft.Torch.Stubs.Task<TResult>");
             NameToNameMap.Add("System.Runtime.CompilerServices.TaskAwaiter", "Microsoft.Torch.Stubs.TaskAwaiter");
             NameToNameMap.Add("System.Runtime.CompilerServices.TaskAwaiter<TResult>", "Microsoft.Torch.Stubs.TaskAwaiter<TResult>");
+            NameToNameMap.Add("System.Runtime.CompilerServices.IAsyncStateMachine", "Microsoft.Torch.Stubs.IAsyncStateMachine");
         }
 
         public static void SetupInternFactory(IInternFactory ifactory)

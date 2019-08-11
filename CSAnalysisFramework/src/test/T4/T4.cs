@@ -20,7 +20,7 @@ namespace FactTest
     static class Iterator
     {
         static int counter = 0;
-        static IEnumerable<int> fooIt()
+        static IEnumerable<MyObj> fooIt()
         {
             yield return bazIt();
            
@@ -28,15 +28,19 @@ namespace FactTest
 
         public static void barIt()
         {
-            foreach (var x in fooIt())
+            foreach (MyObj x in fooIt())
             {
-                Console.WriteLine(x);
+                WrapperObj wx = new WrapperObj();
+                wx.mo = x;
+                wx.Process();
             }
         }
 
-        public static int bazIt()
+        public static MyObj bazIt()
         {
-            return counter++;
+            MyObj x = new MyObj();
+            counter++;
+            return x;
         }
     }
     class T4
@@ -111,6 +115,11 @@ namespace FactTest
             Console.ReadLine();
             Iterator.barIt();
             AnonymousFunction.barAnon();
+
+            IDictionary<string, MyObj> dict;
+            dict = new Dictionary<string, MyObj>();
+            dict.Add("aaa", new MyObj());
+            MyObj xxx = dict["aaa"];
         }
     }
 }

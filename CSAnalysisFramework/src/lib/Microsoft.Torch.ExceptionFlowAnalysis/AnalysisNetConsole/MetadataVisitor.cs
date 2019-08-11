@@ -20,11 +20,18 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
 		private readonly ISourceLocationProvider sourceLocationProvider;
         private FactGenerator factGen;
         private RTAAnalyzer rtaAnalyzer;
+        public static readonly IDictionary<IMethodDefinition, ISet<IMethodDefinition>> genericMethodMap;
 
-		public MetadataVisitor(IMetadataHost host, ISourceLocationProvider sourceLocationProvider)
+        static MetadataVisitor()
+        {
+            MethodReferenceDefinitionComparer mdc = MethodReferenceDefinitionComparer.Default;
+            genericMethodMap = new Dictionary<IMethodDefinition, ISet<IMethodDefinition>>(mdc);
+        }
+
+        public MetadataVisitor(IMetadataHost host, ISourceLocationProvider sourceLocationProvider)
 		{
 			this.host = host;
-			this.sourceLocationProvider = sourceLocationProvider; 
+			this.sourceLocationProvider = sourceLocationProvider;
         }
 
         public void SetupFactGenerator(FactGenerator factGen)
@@ -37,7 +44,7 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
             this.rtaAnalyzer = rtaAnalyzer;
         }
 
-		public void Traverse(IMethodDefinition methodDefinition)
+        public void Traverse(IMethodDefinition methodDefinition)
 		{
             // System.Console.WriteLine("Traversing: {0}", methodDefinition.GetName());
             if (Stubber.Suppress(methodDefinition)) return;
@@ -171,11 +178,11 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
         {
             foreach(IMethodDefinition meth in ty.Methods)
             {
-                if (meth is IGenericMethodInstance)
+                if (meth.IsGeneric)
                 {
-                    if (rtaAnalyzer.genericMethodMap.ContainsKey(meth))
+                    if (genericMethodMap.ContainsKey(meth))
                     {
-                        ISet<IMethodDefinition> instantiatedMeths = rtaAnalyzer.genericMethodMap[meth];
+                        ISet<IMethodDefinition> instantiatedMeths = genericMethodMap[meth];
                         foreach (IMethodDefinition instMeth in instantiatedMeths) Traverse(instMeth);
                     }
                 }

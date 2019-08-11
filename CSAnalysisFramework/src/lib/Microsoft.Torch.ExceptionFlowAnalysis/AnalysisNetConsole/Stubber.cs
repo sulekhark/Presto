@@ -24,7 +24,7 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
             rtaAnalyzer = rta;
         }
 
-        public static bool MatchesSuppress(IMethodDefinition m)
+        static bool MatchesSuppress(IMethodDefinition m)
         {
             string mSign = m.FullName();
             bool matches = false;
@@ -39,7 +39,7 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
             return matches;
         }
 
-        public static bool MatchesSuppress(ITypeDefinition t)
+        static bool MatchesSuppress(ITypeDefinition t)
         {
             bool matches = false;
             string tName = t.FullName();
@@ -58,7 +58,7 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
         {
             IMethodDefinition methToAdd = m;
             IMethodDefinition lookFor = m;
-            if (methToAdd.IsGeneric)
+            if (methToAdd is IGenericMethodInstance)
             {
                 lookFor = Generics.GetTemplate(m);
             }
@@ -121,6 +121,21 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
                 if (methToAnalyze.IsGeneric) methToAnalyze = Generics.GetInstantiatedMeth(methToAnalyze, m);
             }
             return methToAnalyze;
+        }
+
+        public static ITypeDefinition GetTypeToAnalyze(ITypeDefinition ty)
+        {
+            ITypeDefinition retTy = ty;
+            bool matches = MatchesSuppress(ty);
+            if (matches)
+            {
+                ITypeDefinition stubType = Stubs.GetStubType(ty);
+                if (stubType != null)
+                    retTy = stubType;
+                else
+                    retTy = null;
+            }
+            return retTy;
         }
 
         public static bool Suppress(IMethodDefinition m)

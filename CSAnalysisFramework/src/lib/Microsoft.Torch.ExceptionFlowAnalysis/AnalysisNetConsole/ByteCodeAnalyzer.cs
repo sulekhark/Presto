@@ -94,7 +94,7 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
                     visitor.Traverse(ty);
                 }
                 iterationCount++;
-                if (rtaAnalyzer.classes.Count == startClassCnt && rtaAnalyzer.GetMethodCount() == startMethCnt) changeInCount = false;
+                if (rtaAnalyzer.classes.Count == startClassCnt && rtaAnalyzer.methods.Count == startMethCnt) changeInCount = false;
             }
             Copy(rtaAnalyzer.allocClasses, rtaAnalyzer.classes);
             System.Console.WriteLine();

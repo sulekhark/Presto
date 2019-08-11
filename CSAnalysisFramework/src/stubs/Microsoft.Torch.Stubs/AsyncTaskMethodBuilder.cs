@@ -30,9 +30,9 @@ namespace Microsoft.Torch.Stubs
             m_builder.SetResult(null);
         }
 
-        public void Start<TStateMachine>(ref TStateMachine sm) where TStateMachine : IAsyncStateMachine
+        public void Start<TStateMachine>(ref TStateMachine stateMachine) where TStateMachine : IAsyncStateMachine
         {
-            sm.MoveNext();
+            stateMachine.MoveNext();
         }
     }
 
@@ -77,8 +77,7 @@ namespace Microsoft.Torch.Stubs
 
         public void SetResult(TResult result)
         {
-            if (result == null)
-
+            // TODO: if (result == null)
             Task.Result = result;
         }
     }
