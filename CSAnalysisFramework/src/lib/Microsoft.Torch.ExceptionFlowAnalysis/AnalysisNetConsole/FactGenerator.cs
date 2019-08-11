@@ -672,20 +672,6 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
                 ProgramRels.relMMove.Add(mRefW, lhsVarW, rhsVarW1);
                 ProgramRels.relMMove.Add(mRefW, lhsVarW, rhsVarW2);
             }
-            /*****
-            else if ((declType.FullName().StartsWith("System.Runtime.CompilerServices.AsyncTaskMethodBuilder")) &&
-                (callTgtDef.GetName() == "Start"))
-            {
-                IGenericMethodInstanceReference genericCallTgt = callTgt as IGenericMethodInstanceReference;
-                if (genericCallTgt != null && genericCallTgt.GenericArguments.Count() == 1)
-                {
-                    ITypeDefinition genericParamDefn = genericCallTgt.GenericArguments.First().ResolvedType;
-                    IMethodDefinition moveNextMethod = Utils.GetMethodByName(genericParamDefn, "MoveNext");
-                    callTgtDef = moveNextMethod;
-                    declType = genericParamDefn;
-                }
-            }
-            *****/
             return true;
         }
 

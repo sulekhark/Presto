@@ -9,14 +9,32 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
         private static FactGenerator factGen;
         private static RTAAnalyzer rtaAnalyzer;
 
+        static Stubber()
+        {
+            prefixesToSuppress = new List<string>();
+            prefixesToSuppress.Add("System.Console"); // Has bytecode arglist
+            prefixesToSuppress.Add("System.String");  // causes crash in TypeInference
+            prefixesToSuppress.Add("System.Environment");
+            prefixesToSuppress.Add("System.ComponentModel");
+            prefixesToSuppress.Add("System.Data");
+            prefixesToSuppress.Add("System.Diagnostics");
+            prefixesToSuppress.Add("System.Globalization");
+            prefixesToSuppress.Add("System.IO");
+            prefixesToSuppress.Add("System.Linq");
+            prefixesToSuppress.Add("System.Net");
+            prefixesToSuppress.Add("System.Reflection");
+            prefixesToSuppress.Add("System.Resources");
+            prefixesToSuppress.Add("System.Runtime");
+            prefixesToSuppress.Add("System.Security");
+            prefixesToSuppress.Add("System.Text");
+            prefixesToSuppress.Add("System.Threading");
+            prefixesToSuppress.Add("System.Xml");
+
+        }
+
         public static void SetupFactGenerator(FactGenerator fg)
         {
             factGen = fg;
-        }
-
-        public static void SetupPrefixesToSuppress(IList<string> igPfx)
-        {
-            prefixesToSuppress = igPfx;
         }
 
         public static void SetupRTAAnalyzer(RTAAnalyzer rta)
@@ -79,9 +97,8 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
             {
                 System.Console.WriteLine("SRK_DBG: Adding method: {0}", instMeth.GetName());
                 rtaAnalyzer.methods.Add(instMeth);
-                return instMeth;
             }
-            return null;
+            return instMeth;
         }
 
         public static ITypeDefinition CheckAndAdd(ITypeDefinition t)
@@ -98,9 +115,8 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
                 System.Console.WriteLine("SRK_DBG: Adding class: {0}", toAdd.FullName());
                 rtaAnalyzer.classes.Add(toAdd);
                 rtaAnalyzer.classWorkList.Add(toAdd);
-                return toAdd;
             }
-            return null;
+            return toAdd;
         }
 
         // This method is used during FactGeneration. The above CheckAndAdd methods are used during RTAAnalysis.

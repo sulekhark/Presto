@@ -64,9 +64,6 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
             Generics.SetupRTAAnalyzer(rtaAnalyzer);
             Stubs.SetupInternFactory(host.InternFactory);
             Generics.SetupInternFactory(host.InternFactory);
-            IList<string> ignorePrefix = new List<string>();
-            ignorePrefix.Add("System.");
-            Stubber.SetupPrefixesToSuppress(ignorePrefix);
             IModule stubsModule = GetModule(host, ConfigParams.StubsPath);
             Stubs.SetupStubs(stubsModule);
             Initialize(rtaAnalyzer.classes, rtaAnalyzer.entryPtClasses, rootModule, rootIsExe);

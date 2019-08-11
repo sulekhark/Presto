@@ -163,12 +163,14 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
             {
                 if (node.Instructions.Count > 0)
                 {
-                    Instruction firstInst = node.Instructions.First();
-                    if (firstInst is PhiInstruction)
+                    Instruction firstNonPhiInst = null;
+                    foreach (Instruction inst in node.Instructions)
                     {
-                        firstInst = node.Instructions.ElementAt(1);
+                        if (inst is PhiInstruction) continue;
+                        firstNonPhiInst = inst;
+                        break;
                     }
-                    string lbl = firstInst.Label;
+                    string lbl = firstNonPhiInst.Label;
                     string pcStr = lbl.Substring(2);
                     int pcVal = Int32.Parse(pcStr, System.Globalization.NumberStyles.HexNumber);
                     addrToNodeMap.Add(pcVal, node);

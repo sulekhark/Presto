@@ -130,7 +130,7 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
                 if (rtaAnalyzer.methods.Contains(methodDefinition) && !rtaAnalyzer.visitedMethods.Contains(methodDefinition))
                 {
                     rtaAnalyzer.visitedMethods.Add(methodDefinition);
-                    System.Console.WriteLine("SRK_DBG: Visiting method: {0}", methodDefinition.GetName());
+                    Console.WriteLine("SRK_DBG: Visiting method: {0}", methodDefinition.GetName());
                     rtaAnalyzer.VisitMethod(methodBody, cfg);
                 }
                 else
