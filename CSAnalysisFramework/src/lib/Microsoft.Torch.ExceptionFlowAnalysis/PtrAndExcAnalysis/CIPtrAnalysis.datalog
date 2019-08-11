@@ -120,9 +120,9 @@ IM(i,m) :- reachableI(i), StatIM(i,m).
 # method call via delegates
 DelegateIH(i,h) :- reachableI(i), DelegateIV(i,v), VH(v,h).
 DelReceiver(i,rh) :- DelegateIH(i,h), HFH(h,0,rh).
-DelFunc(i,m) :- DelegateIH(i,h), HFX(h,0,x), AddrOf(m,x).
+DelFunc(i,m) :- DelegateIH(i,h), HFX(h,0,x), AddrOfMX(m,x).
 IM(i,m1) :- DelFunc(i,m), DelReceiver(i,h), HT(h,t), cha(m,t,m1).
-IM(i,m) :- DelFunc(i,m), StaticTM(_,m).
+IM(i,m) :- DelFunc(i,m), staticTM(t,m).
 
 # arguments and return/throw variables
 Move(v,u) :- IinvkArg(i,z,u), IM(i,m), MmethArg(m,z,v), !structV(u).
@@ -147,8 +147,8 @@ AddrTakenLocal(l,r) :- reachableM(m), MAddrTakenLocal(m,l,r).
 AddrTakenInstFld(l,r,f) :- reachableM(m), MAddrTakenInstFld(m,l,r,f).
 AddrTakenStatFld(l,f) :- reachableM(m), MAddrTakenStatFld(m,l,f).
 AddrTakenFunc(l,m2) :- reachableM(m1), MAddrTakenFunc(m1,l,m2).
-DerefLeft(l,r) :- reachableM(m), MDerefLMove(m,l,r).
-DerefRight(l,r) :- reachableM(m), MDerefRMove(m,l,r).
+DerefLeft(l,r) :- reachableM(m), MDerefLeft(m,l,r).
+DerefRight(l,r) :- reachableM(m), MDerefRight(m,l,r).
 
 VH(l,h) :- Alloc(l,h), VHfilter(l,h).
 VH(l,h) :- Move(l,r), VH(r,h), VHfilter(l,h).
@@ -177,8 +177,8 @@ HFX(fh,f1,x) :- StrStatFldWrite(f,r), VH(r,rh), FH(f,fh), HFX(rh,f1,x).
 # Handling & operator
 # v1 = &v2, v1 = &v2.f, v1 = &f, v1 = &m
 VX(v1,x) :- AddrTakenLocal(v1,v2), AddrOfVX(v2,x).
-VX(v1,x) :- AddrTakenInstField(v1,v2,f), VH(v2,h2), AddrOfHFX(h2,f,x).
-VX(v1,x) :- AddrTakenStatField(v1,f), AddrOfFX(f,x).
+VX(v1,x) :- AddrTakenInstFld(v1,v2,f), VH(v2,h2), AddrOfHFX(h2,f,x).
+VX(v1,x) :- AddrTakenStatFld(v1,f), AddrOfFX(f,x).
 VX(v1,x) :- AddrTakenFunc(v1,m), AddrOfMX(m,x).
 
 # Handling dereference

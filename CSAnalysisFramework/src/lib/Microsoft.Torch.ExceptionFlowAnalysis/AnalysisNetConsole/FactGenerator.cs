@@ -187,6 +187,18 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
             }
         }
 
+        public void CheckDomX()
+        {
+            if (ProgramDoms.domX.Count() == 0)
+            {
+                IMethodDefinition someMeth = methods.ElementAt(0);
+                MethodRefWrapper methW = WrapperProvider.getMethodRefW(someMeth);
+                AddressWrapper mAddrW = WrapperProvider.getAddrW(someMeth);
+                ProgramDoms.domX.Add(mAddrW);
+                ProgramRels.relAddrOfMX.Add(methW, mAddrW);
+            }
+        }
+
         public void GenerateChaFacts()
         {
            ClassHierarchyAnalysis cha = new ClassHierarchyAnalysis();
@@ -578,6 +590,7 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
             }
             IMethodDefinition origTgtDef = invkInst.Method.ResolvedMethod;
             IMethodDefinition callTgtDef = Stubber.GetMethodToAnalyze(origTgtDef);
+            if (callTgtDef == null) return;
             MethodRefWrapper callTgtW = WrapperProvider.getMethodRefW(callTgtDef);
             ProgramDoms.domM.Add(callTgtW);
             IList<IVariable> invkArgs = invkInst.Arguments;
@@ -632,6 +645,7 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
                 FieldRefWrapper dummyElemW = ProgramDoms.domF.GetVal(0);
                 ProgramRels.relMInstFldWrite.Add(mRefW, delegateVarW, dummyElemW, receiverVarW);
                 ProgramRels.relMInstFldWrite.Add(mRefW, delegateVarW, dummyElemW, funcPtrVarW);
+                return true;
             }
             else if (declType.IsDelegate && callTgt.GetName() == "Invoke")
             {
@@ -660,6 +674,7 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
                     }
                     argNdx++;
                 }
+                return true;
             }
             else if (declType.IsDelegate && callTgt.GetName() == "Combine")
             {
@@ -671,8 +686,9 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
                 VariableWrapper rhsVarW2 = WrapperProvider.getVarW(invkArgs[1]);
                 ProgramRels.relMMove.Add(mRefW, lhsVarW, rhsVarW1);
                 ProgramRels.relMMove.Add(mRefW, lhsVarW, rhsVarW2);
+                return true;
             }
-            return true;
+            return false;
         }
 
         void ProcessConvertInst(ConvertInstruction castInst, MethodRefWrapper mRefW)

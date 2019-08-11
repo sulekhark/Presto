@@ -137,6 +137,7 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
             {
                 visitor.Traverse(ty);
             }
+            factGen.CheckDomX();
         }
 
         static void CopyAll(ISet<ITypeDefinition> srcSet, IList<ITypeDefinition> dstList)
