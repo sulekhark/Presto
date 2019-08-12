@@ -543,6 +543,12 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
             ProgramDoms.domH.Add(instW);
             ProgramRels.relMAlloc.Add(mRefW, lhsW, instW);
             ProgramRels.relHT.Add(instW, elemTypeW);
+
+            // By default, create an entry in domX for the array as potential address-taken.
+            FieldRefWrapper fldW = ProgramDoms.domF.GetVal(0);
+            AddressWrapper arrayAddrW = WrapperProvider.getAddrW(newArrInst);
+            ProgramDoms.domX.Add(arrayAddrW);
+            ProgramRels.relAddrOfHFX.Add(instW, fldW, arrayAddrW);
             return;
         }
 

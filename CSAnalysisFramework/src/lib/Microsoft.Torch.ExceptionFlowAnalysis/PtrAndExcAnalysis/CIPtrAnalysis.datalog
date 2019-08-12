@@ -133,13 +133,17 @@ StrMove(u,v) :- IinvkRet(i,z,u), IM(i,m), MmethRet(m,z,v), structV(u).
 Alloc(l,h)   :- reachableM(m), MAlloc(m,l,h).
 Move(l,r)   :- reachableM(m), MMove(m,l,r).
 InstFldRead(l,h,f) :- reachableM(m), MInstFldRead(m,l,r,f), VH(r,h).
+InstFldRead(l,h,f) :- reachableM(m), MInstFldRead(m,l,r,f), VX(r,x), AddrOfHFX(h,f,x).
 InstFldWrite(h,f,r) :- reachableM(m), MInstFldWrite(m,l,f,r), VH(l,h).
+InstFldWrite(h,f,r) :- reachableM(m), MInstFldWrite(m,l,f,r), VX(l,x), AddrOfHFX(h,f,x).
 StatFldRead(l,f)   :- reachableM(m), MStatFldRead(m,l,f).
 StatFldWrite(f,r)   :- reachableM(m), MStatFldWrite(m,f,r).
 
 StrMove(l,r) :- reachableM(m), MStrMove(m,l,r).
 StrInstFldRead(l,h,f) :- reachableM(m), MStrInstFldRead(m,l,r,f), VH(r,h).
+StrInstFldRead(l,h,f) :- reachableM(m), MStrInstFldRead(m,l,r,f), VX(r,x), AddrOfHFX(h,f,x).
 StrInstFldWrite(h,f,r) :- reachableM(m), MStrInstFldWrite(m,l,f,r), VH(l,h).
+StrInstFldWrite(h,f,r) :- reachableM(m), MStrInstFldWrite(m,l,f,r), VX(l,x), AddrOfHFX(h,f,x).
 StrStatFldRead(l,f)   :- reachableM(m), MStrStatFldRead(m,l,f).
 StrStatFldWrite(f,r)   :- reachableM(m), MStrStatFldWrite(m,f,r).
 

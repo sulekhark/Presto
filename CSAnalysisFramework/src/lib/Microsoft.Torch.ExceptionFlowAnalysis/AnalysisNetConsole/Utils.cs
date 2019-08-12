@@ -9,13 +9,21 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
 {
     public static class Utils
     {
+        static TypeDefinitionComparer tdc;
+
+        static Utils()
+        {
+            tdc = new TypeDefinitionComparer();
+        }
+
         public static bool ImplementsInterface(ITypeDefinition tgt, ITypeDefinition queryItf)
         {
             if (queryItf == null || tgt == null) return false;
+            
             foreach (ITypeReference itf in tgt.Interfaces)
             {
                 ITypeDefinition analItf = Stubber.GetTypeToAnalyze(itf.ResolvedType);
-                if (analItf != null && queryItf.Equals(analItf.ResolvedType)) return true;
+                if (analItf != null && tdc.Equals(queryItf, analItf.ResolvedType)) return true;
             }
             foreach (ITypeReference itf in tgt.Interfaces)
             {
@@ -29,11 +37,12 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
         {
             if (derivedCl == null || baseCl == null) return false;
             ITypeDefinition analBaseCl = Stubber.GetTypeToAnalyze(baseCl);
-            if (analBaseCl != null && derivedCl.Equals(analBaseCl)) return true;
+            if (analBaseCl != null && tdc.Equals(derivedCl, analBaseCl)) return true;
+
             foreach (ITypeReference bcl in derivedCl.BaseClasses)
             {
                 ITypeDefinition analBcl = Stubber.GetTypeToAnalyze(bcl.ResolvedType);
-                if (analBcl != null && baseCl.Equals(analBcl)) return true;
+                if (analBcl != null && tdc.Equals(baseCl, analBcl)) return true;
             }
             foreach (ITypeReference bcl in derivedCl.BaseClasses)
             {

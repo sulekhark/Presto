@@ -48,8 +48,10 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
 		{
             // System.Console.WriteLine("Traversing: {0}", methodDefinition.GetName());
             if (Stubber.Suppress(methodDefinition)) return;
-            if (methodDefinition.IsExternal) return;
-            if (methodDefinition.IsAbstract) return;
+            if (methodDefinition.IsExternal || methodDefinition.IsAbstract)
+            {
+                return;
+            }
 
             // System.Console.WriteLine();
             // System.Console.WriteLine();
@@ -156,7 +158,7 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
                 {
                     rtaAnalyzer.visitedClasses.Add(typeDefinition);
                     if (!typeDefinition.IsValueType || typeDefinition.IsStruct) ProcessStaticConstructors(typeDefinition);
-                    System.Console.WriteLine("SRK_DBG: Visiting class: {0}",typeDefinition.FullName());
+                    Console.WriteLine("SRK_DBG: Visiting class: {0}",typeDefinition.FullName());
                     TraverseMethods(typeDefinition);
                 }
                 else

@@ -84,9 +84,7 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetBackend.Model
 
 			foreach (var type in definedTypes)
 			{
-                var genericType = (type is IGenericTypeInstance) ? (type as IGenericTypeInstance).GenericType.ResolvedType : type as ITypeDefinition;
-
-                Analyze(genericType);
+                Analyze(type);
 			}
 		}
 
@@ -153,17 +151,14 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetBackend.Model
 			}
 		}
 
-		private ClassHierarchyInfo GetOrAddInfo(ITypeReference type1)
+		private ClassHierarchyInfo GetOrAddInfo(ITypeReference type)
 		{
 			ClassHierarchyInfo result;
-            var type = (type1.ResolvedType is IGenericTypeInstance) ? (type1.ResolvedType as IGenericTypeInstance).GenericType.ResolvedType : type1.ResolvedType as ITypeDefinition;
-
             if (!types.TryGetValue(type, out result))
 			{
 				result = new ClassHierarchyInfo(type);
 				types.Add(type, result);
 			}
-
 			return result;
 		}
 	}

@@ -65,6 +65,13 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.ProgramFacts
         {
             string outDir = ConfigParams.DatalogDir;
             Save(outDir);
+            Print(outDir); // SRK_DBG: for debugging only.
+        }
+
+        public void Print()
+        {
+            string outDir = ConfigParams.DatalogDir;
+            Print(outDir);
         }
 
         public void Print(string dirName)
@@ -72,7 +79,7 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.ProgramFacts
             string relFileName = "";
             int sz = Size();
 
-            relFileName = name + ".datalog";
+            relFileName = name + ".txt";
             string relPath = Path.Combine(dirName, relFileName);
             using (StreamWriter sw = new StreamWriter(relPath))
             {

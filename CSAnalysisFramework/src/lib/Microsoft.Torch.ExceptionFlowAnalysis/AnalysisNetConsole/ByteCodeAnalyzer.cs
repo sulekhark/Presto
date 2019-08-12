@@ -73,11 +73,11 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
             int startClassCnt = 0, startMethCnt = 0;
             while (changeInCount)
             {
-                System.Console.WriteLine();
-                System.Console.WriteLine("Starting RTA ITERATION:{0}", iterationCount);
+                Console.WriteLine();
+                Console.WriteLine("Starting RTA ITERATION:{0}", iterationCount);
                 startClassCnt = rtaAnalyzer.classes.Count;
                 startMethCnt = rtaAnalyzer.methods.Count;
-                System.Console.WriteLine("Counts: classes:{0}   methods:{1}", startClassCnt, startMethCnt);
+                Console.WriteLine("Counts: classes:{0}   methods:{1}", startClassCnt, startMethCnt);
                 rtaAnalyzer.classWorkList.Clear();
                 rtaAnalyzer.visitedClasses.Clear();
                 rtaAnalyzer.ignoredClasses.Clear();

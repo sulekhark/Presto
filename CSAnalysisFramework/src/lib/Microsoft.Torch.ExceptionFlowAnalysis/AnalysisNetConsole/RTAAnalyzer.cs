@@ -132,6 +132,10 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
                                 IFieldDefinition fld = refAcc.Field.ResolvedField;
                                 addrTakenInstFlds.Add(fld);
                             }
+                            else if (refOf is ArrayElementAccess)
+                            {
+                                // All arrays will be added into domX as potential address taken.
+                            }
                         }
                     }
                     else if (instruction is StoreInstruction)
@@ -151,6 +155,7 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
                         CreateObjectInstruction newObjInst = instruction as CreateObjectInstruction;
                         ITypeReference objType = newObjInst.AllocationType;
                         ITypeDefinition objTypeDef = objType.ResolvedType;
+                        if (objTypeDef is IGenericTypeInstance) objTypeDef = objTypeDef.ResolvedType;
                         ITypeDefinition addedTy = Stubber.CheckAndAdd(objTypeDef);
                         if (addedTy != null && !allocClasses.Contains(addedTy))
                         {
@@ -204,7 +209,7 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
             }
         }
 
-        private void ProcessVirtualInvoke(IMethodDefinition mCallee, ITypeDefinition calleeClass, bool isAddrTaken)
+        public void ProcessVirtualInvoke(IMethodDefinition mCallee, ITypeDefinition calleeClass, bool isAddrTaken)
         {
             // mCallee is an ordinary method - never a template method.
             // calleeClass and mCallee are either both stubbed or, both unstubbed - i.e. they are consistent.
@@ -217,7 +222,7 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
                     bool process = false;
                     if (isInterface && Utils.ImplementsInterface(cl, calleeClass))
                         process = true;
-                    else if (Utils.ExtendsClass(cl, calleeClass))
+                    if (Utils.ExtendsClass(cl, calleeClass))
                         process = true;
                     if (!process) continue;
                     foreach (IMethodDefinition meth in cl.Methods)

@@ -4,6 +4,7 @@ using Microsoft.Cci;
 using Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetBackend.ThreeAddressCode.Instructions;
 using Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetBackend.ThreeAddressCode.Values;
 using Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetBackend.Model;
+using Microsoft.Torch.ExceptionFlowAnalysis.ProgramFacts;
 
 namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetBackend.Wrappers
 {
@@ -20,6 +21,7 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetBackend.Wrappers
         private readonly static IDictionary<Instruction, IDictionary<IFieldReference, AddressWrapper>> InstFldRefToAddrWrapperMap;
         private readonly static IDictionary<IFieldReference, AddressWrapper> FieldRefToAddrWrapperMap;
         private readonly static IDictionary<IVariable, AddressWrapper> VarToAddrWrapperMap;
+        private readonly static IDictionary<Instruction, AddressWrapper> ArrayToAddrWrapperMap;
 
         static readonly FieldReferenceComparer frc;
         static WrapperProvider()
@@ -39,6 +41,7 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetBackend.Wrappers
             InstFldRefToAddrWrapperMap = new Dictionary<Instruction, IDictionary<IFieldReference, AddressWrapper>>(idc);
             FieldRefToAddrWrapperMap = new Dictionary<IFieldReference, AddressWrapper>(frc);
             VarToAddrWrapperMap = new Dictionary<IVariable, AddressWrapper>(vc);
+            ArrayToAddrWrapperMap = new Dictionary<Instruction, AddressWrapper>(idc);
         }
 
         public static MethodRefWrapper getMethodRefW (IMethodReference methRef)
@@ -176,6 +179,22 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetBackend.Wrappers
             AddressWrapper addW = new AddressWrapper(instW, fldW);
             InstFldRefToAddrWrapperMap[inst][fldRef] = addW;
             return addW;
+        }
+
+        public static AddressWrapper getAddrW(Instruction newArrInst)
+        {
+            if (ArrayToAddrWrapperMap.ContainsKey(newArrInst))
+            {
+                return ArrayToAddrWrapperMap[newArrInst];
+            }
+            else
+            {
+                InstructionWrapper instW = getInstW(newArrInst);
+                FieldRefWrapper fldW = ProgramDoms.domF.GetVal(0);
+                AddressWrapper addW = new AddressWrapper(instW, fldW);
+                ArrayToAddrWrapperMap[newArrInst] = addW;
+                return addW;
+            }
         }
 
         public static AddressWrapper getAddrW(IFieldReference fldRef)
