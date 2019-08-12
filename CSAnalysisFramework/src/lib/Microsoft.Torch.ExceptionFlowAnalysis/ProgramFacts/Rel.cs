@@ -95,7 +95,7 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.ProgramFacts
                         string domName = domNames[i];
                         string uStr = ProgramDoms.DomUniqueString(domName, arr[i]);
                         sb.Append(uStr);
-                        sb.Append(",");
+                        if (i < numDoms - 1) sb.Append(",   ");
                     }
                     sb.Append(").");
                     sw.WriteLine(sb.ToString());

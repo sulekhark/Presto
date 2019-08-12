@@ -17,7 +17,7 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
 	public class MetadataVisitor
 	{
 		private readonly IMetadataHost host;
-		private readonly ISourceLocationProvider sourceLocationProvider;
+		private ISourceLocationProvider sourceLocationProvider;
         private FactGenerator factGen;
         private RTAAnalyzer rtaAnalyzer;
         public static readonly IDictionary<IMethodDefinition, ISet<IMethodDefinition>> genericMethodMap;
@@ -32,6 +32,11 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
 		{
 			this.host = host;
 			this.sourceLocationProvider = sourceLocationProvider;
+        }
+
+        public void SetupSrcLocProvider(ISourceLocationProvider slp)
+        {
+            sourceLocationProvider = slp;
         }
 
         public void SetupFactGenerator(FactGenerator factGen)

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Cci;
@@ -18,11 +19,25 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
                 Types.Initialize(host);
                 var visitor = new MetadataVisitor(host, null);
                 IModule rootModule = GetModule(host, input);
+                PdbReader pdbReader = GetPdbReader(host, input);
+                visitor.SetupSrcLocProvider(pdbReader);
                 bool rootIsExe = false;
                 if (rootModule.Kind == ModuleKind.ConsoleApplication) rootIsExe = true;
                 DoRTA(host, visitor, rootModule, rootIsExe);
                 GenerateFacts(host, visitor);
             }
+        }
+
+        static PdbReader GetPdbReader(IMetadataHost host, string assemblyPath)
+        {
+            var pdbFileName = Path.ChangeExtension(assemblyPath, "pdb");
+
+            if (File.Exists(pdbFileName))
+            {
+                using (var pdbStream = File.OpenRead(pdbFileName))
+                return new PdbReader(pdbStream, host);
+            }
+            return null;
         }
 
         static IModule GetModule(IMetadataHost host, string assemblyPath)
