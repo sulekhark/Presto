@@ -53,14 +53,8 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
 		{
             // System.Console.WriteLine("Traversing: {0}", methodDefinition.GetName());
             if (Stubber.Suppress(methodDefinition)) return;
-            if (methodDefinition.IsExternal || methodDefinition.IsAbstract)
-            {
-                return;
-            }
-
-            // System.Console.WriteLine();
-            // System.Console.WriteLine();
-            
+            if (methodDefinition.IsExternal) return;
+            if (methodDefinition.IsAbstract) return;
 
             var disassembler = new Disassembler(host, methodDefinition, sourceLocationProvider);
 			var methodBody = disassembler.Execute();

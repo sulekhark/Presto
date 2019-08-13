@@ -47,6 +47,11 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
             IList<CFGNode> cfgList = Utils.getProgramFlowOrder(cfg);
             foreach (var node in cfgList)
             {
+                StringBuilder succStr = new StringBuilder("S: ");
+                foreach (CFGNode n in node.Successors) succStr.Append(n.Id + " ");
+                StringBuilder predStr = new StringBuilder("P: ");
+                foreach (CFGNode n in node.Predecessors) predStr.Append(n.Id + " ");
+                System.Console.WriteLine("----- BB {0} {1} {2} -----", node.Id, succStr.ToString(), predStr.ToString());
                 foreach (var instruction in node.Instructions)
                 {
                     System.Console.WriteLine("{0}", instruction.ToString());
