@@ -290,8 +290,15 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
                     ITypeReference varTypeRef = param.Type;
                     TypeRefWrapper varTypeRefW = WrapperProvider.getTypeRefW(varTypeRef.ResolvedType);
                     ProgramRels.relVT.Add(paramW, varTypeRefW);
-                    if (param.Type.ResolvedType.IsStruct) ProgramRels.relStructV.Add(paramW);
-
+                    if (param.Type.ResolvedType.IsStruct)
+                    {
+                        HeapAccWrapper hpW = WrapperProvider.getHeapAccW(param);
+                        ProgramDoms.domH.Add(hpW);
+                        ProgramRels.relMAlloc.Add(mRefW, paramW, hpW);
+                        ProgramRels.relHT.Add(hpW, varTypeRefW);
+                        ProgramRels.relStructH.Add(hpW);
+                        ProgramRels.relStructV.Add(paramW);
+                    }
                     if (addrTakenLocals.Contains(param))
                     {
                         AddressWrapper varAddrW = WrapperProvider.getAddrW(param);
@@ -316,8 +323,15 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
                     ITypeReference varTypeRef = lclVar.Type;
                     TypeRefWrapper varTypeRefW = WrapperProvider.getTypeRefW(varTypeRef.ResolvedType);
                     ProgramRels.relVT.Add(lclW, varTypeRefW);
-                    if (lclVar.Type.ResolvedType.IsStruct) ProgramRels.relStructV.Add(lclW);
-
+                    if (lclVar.Type.ResolvedType.IsStruct)
+                    {
+                        HeapAccWrapper hpW = WrapperProvider.getHeapAccW(lclVar);
+                        ProgramDoms.domH.Add(hpW);
+                        ProgramRels.relMAlloc.Add(mRefW, lclW, hpW);
+                        ProgramRels.relHT.Add(hpW, varTypeRefW);
+                        ProgramRels.relStructH.Add(hpW);
+                        ProgramRels.relStructV.Add(lclW);
+                    }
                     if (addrTakenLocals.Contains(lclVar))
                     {
                         AddressWrapper varAddrW = WrapperProvider.getAddrW(lclVar);
@@ -354,8 +368,7 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
             {
                 IVariable rhsVar = rhsOperand as IVariable;
                 VariableWrapper rhsW = WrapperProvider.getVarW(rhsVar);
-                bool success = isStruct ? ProgramRels.relMStrMove.Add(mRefW, lhsW, rhsW) :
-                                          ProgramRels.relMMove.Add(mRefW, lhsW, rhsW);
+                bool success = ProgramRels.relMMove.Add(mRefW, lhsW, rhsW);
             }
             else if (rhsOperand is InstanceFieldAccess)
             {
@@ -364,16 +377,14 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
                 VariableWrapper rhsW = WrapperProvider.getVarW(rhsVar);
                 IFieldDefinition fld = rhsAcc.Field.ResolvedField;
                 FieldRefWrapper fldW = WrapperProvider.getFieldRefW(fld);
-                bool success = isStruct ? ProgramRels.relMStrInstFldRead.Add(mRefW, lhsW, rhsW, fldW):
-                                          ProgramRels.relMInstFldRead.Add(mRefW, lhsW, rhsW, fldW);
+                bool success = ProgramRels.relMInstFldRead.Add(mRefW, lhsW, rhsW, fldW);
             }
             else if (rhsOperand is StaticFieldAccess)
             {
                 StaticFieldAccess rhsAcc = rhsOperand as StaticFieldAccess;
                 IFieldDefinition fld = rhsAcc.Field.ResolvedField;
                 FieldRefWrapper fldW = WrapperProvider.getFieldRefW(fld);
-                bool success = isStruct ? ProgramRels.relMStrStatFldRead.Add(mRefW, lhsW, fldW):
-                                          ProgramRels.relMStatFldRead.Add(mRefW, lhsW, fldW);
+                bool success = ProgramRels.relMStatFldRead.Add(mRefW, lhsW, fldW);
             }
             else if (rhsOperand is ArrayElementAccess)
             {
@@ -381,8 +392,7 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
                 IVariable arr = rhsArr.Array;
                 VariableWrapper arrW = WrapperProvider.getVarW(arr);
                 FieldRefWrapper arrElemRepW = ProgramDoms.domF.GetVal(0);
-                bool success = isStruct ? ProgramRels.relMStrInstFldRead.Add(mRefW, lhsW, arrW, arrElemRepW):
-                                          ProgramRels.relMInstFldRead.Add(mRefW, lhsW, arrW, arrElemRepW);
+                bool success = ProgramRels.relMInstFldRead.Add(mRefW, lhsW, arrW, arrElemRepW);
             }
             // Note: calls to static methods and instance methods appear as a StaticMethodReference
             else if (rhsOperand is StaticMethodReference)
@@ -480,16 +490,14 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
                 VariableWrapper lhsW = WrapperProvider.getVarW(lhsVar);
                 IFieldDefinition fld = lhsAcc.Field.ResolvedField;
                 FieldRefWrapper fldW = WrapperProvider.getFieldRefW(fld);
-                bool success = isStruct ? ProgramRels.relMStrInstFldWrite.Add(mRefW, lhsW, fldW, rhsW):
-                                          ProgramRels.relMInstFldWrite.Add(mRefW, lhsW, fldW, rhsW);
+                bool success = ProgramRels.relMInstFldWrite.Add(mRefW, lhsW, fldW, rhsW);
             }
             else if (lhs is StaticFieldAccess)
             {
                 StaticFieldAccess lhsAcc = lhs as StaticFieldAccess;
                 IFieldDefinition fld = lhsAcc.Field.ResolvedField;
                 FieldRefWrapper fldW = WrapperProvider.getFieldRefW(fld);
-                bool success = isStruct ? ProgramRels.relMStrStatFldWrite.Add(mRefW, fldW, rhsW):
-                                          ProgramRels.relMStatFldWrite.Add(mRefW, fldW, rhsW);
+                bool success = ProgramRels.relMStatFldWrite.Add(mRefW, fldW, rhsW);
             }
             else if (lhs is ArrayElementAccess)
             {
@@ -497,8 +505,7 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
                 IVariable arr = lhsArr.Array;
                 VariableWrapper arrW = WrapperProvider.getVarW(arr);
                 FieldRefWrapper arrElemRepW = ProgramDoms.domF.GetVal(0);
-                bool success = isStruct ? ProgramRels.relMStrInstFldWrite.Add(mRefW, arrW, arrElemRepW, rhsW):
-                                          ProgramRels.relMInstFldWrite.Add(mRefW, arrW, arrElemRepW, rhsW);
+                bool success = ProgramRels.relMInstFldWrite.Add(mRefW, arrW, arrElemRepW, rhsW);
             }
             else if (lhs is Dereference)
             {
@@ -519,9 +526,15 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
             VariableWrapper lhsW = WrapperProvider.getVarW(lhsVar);
             ITypeDefinition objTypeDef = newObjInst.AllocationType.ResolvedType;
             TypeRefWrapper objTypeW = WrapperProvider.getTypeRefW(objTypeDef);
-            ProgramDoms.domH.Add(instW);
-            ProgramRels.relMAlloc.Add(mRefW, lhsW, instW);
-            ProgramRels.relHT.Add(instW, objTypeW);
+            HeapAccWrapper hpW = WrapperProvider.getHeapAccW(newObjInst);
+            ProgramDoms.domH.Add(hpW);
+            ProgramRels.relMAlloc.Add(mRefW, lhsW, hpW);
+            ProgramRels.relHT.Add(hpW, objTypeW);
+            if (objTypeDef.IsStruct)
+            {
+                ProgramRels.relStructV.Add(lhsW);
+                ProgramRels.relStructH.Add(hpW);
+            }
 
             foreach (IFieldDefinition fld in objTypeDef.Fields)
             { 
@@ -532,7 +545,7 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
                         FieldRefWrapper fldW = WrapperProvider.getFieldRefW(fld);
                         AddressWrapper allocfldAddrW = WrapperProvider.getAddrW(newObjInst, fld);
                         ProgramDoms.domX.Add(allocfldAddrW);
-                        ProgramRels.relAddrOfHFX.Add(instW, fldW, allocfldAddrW);
+                        ProgramRels.relAddrOfHFX.Add(hpW, fldW, allocfldAddrW);
                     }
                 }
             }
@@ -545,15 +558,16 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
             VariableWrapper lhsW = WrapperProvider.getVarW(lhsVar);
             ITypeDefinition elemTypeDef = newArrInst.ElementType.ResolvedType;
             TypeRefWrapper elemTypeW = WrapperProvider.getTypeRefW(elemTypeDef);
-            ProgramDoms.domH.Add(instW);
-            ProgramRels.relMAlloc.Add(mRefW, lhsW, instW);
-            ProgramRels.relHT.Add(instW, elemTypeW);
+            HeapAccWrapper hpW = WrapperProvider.getHeapAccW(newArrInst);
+            ProgramDoms.domH.Add(hpW);
+            ProgramRels.relMAlloc.Add(mRefW, lhsW, hpW);
+            ProgramRels.relHT.Add(hpW, elemTypeW);
 
             // By default, create an entry in domX for the array as potential address-taken.
             FieldRefWrapper fldW = ProgramDoms.domF.GetVal(0);
             AddressWrapper arrayAddrW = WrapperProvider.getAddrW(newArrInst);
             ProgramDoms.domX.Add(arrayAddrW);
-            ProgramRels.relAddrOfHFX.Add(instW, fldW, arrayAddrW);
+            ProgramRels.relAddrOfHFX.Add(hpW, fldW, arrayAddrW);
             return;
         }
 
@@ -570,14 +584,7 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
                 {
                     VariableWrapper argW = WrapperProvider.getVarW(arg);
                     ProgramDoms.domV.Add(argW);
-                    if (isStruct)
-                    {
-                        bool success = ProgramRels.relMStrMove.Add(mRefW, lhsW, argW);
-                    }
-                    else
-                    {
-                        bool success = ProgramRels.relMMove.Add(mRefW, lhsW, argW);
-                    }
+                    bool success = ProgramRels.relMMove.Add(mRefW, lhsW, argW);
                 }
             }
             return;
@@ -710,14 +717,7 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
                 VariableWrapper lhsW = WrapperProvider.getVarW(lhsVar);
                 IVariable rhsVar = castInst.Operand;
                 VariableWrapper rhsW = WrapperProvider.getVarW(rhsVar);
-                if (lhsVar.Type.ResolvedType.IsStruct)
-                {
-                    bool success = ProgramRels.relMStrMove.Add(mRefW, lhsW, rhsW);
-                }
-                else
-                {
-                    bool success = ProgramRels.relMMove.Add(mRefW, lhsW, rhsW);
-                }
+                bool success = ProgramRels.relMMove.Add(mRefW, lhsW, rhsW);
             }
             return;
         }

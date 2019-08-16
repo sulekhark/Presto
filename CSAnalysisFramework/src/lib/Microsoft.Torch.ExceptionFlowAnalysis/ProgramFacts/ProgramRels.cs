@@ -39,11 +39,6 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.ProgramFacts
         public static RelHFH relHFH;
         public static RelIM relIM;
 	
-        public static RelMStrMove relMStrMove;
-        public static RelMStrInstFldRead relMStrInstFldRead;
-        public static RelMStrStatFldRead relMStrStatFldRead;
-        public static RelMStrInstFldWrite relMStrInstFldWrite;
-        public static RelMStrStatFldWrite relMStrStatFldWrite;
         public static RelVX relVX;
         public static RelFX relFX;
         public static RelHFX relHFX;
@@ -59,6 +54,7 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.ProgramFacts
 	    public static RelMDerefRight relMDerefRight;
 	    public static RelDelegateIV relDelegateIV;
 	    public static RelStructV relStructV;
+        public static RelStructH relStructH;
 
 
         public static Dictionary<string, Rel> nameToRelMap;
@@ -164,23 +160,7 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.ProgramFacts
 
             relIM = new RelIM();
             nameToRelMap.Add(relIM.GetName(), relIM);
-
-
-            relMStrMove = new RelMStrMove();
-            nameToRelMap.Add(relMStrMove.GetName(), relMStrMove);
-
-            relMStrInstFldRead = new RelMStrInstFldRead();
-            nameToRelMap.Add(relMStrInstFldRead.GetName(), relMStrInstFldRead);
-
-            relMStrStatFldRead = new RelMStrStatFldRead();
-            nameToRelMap.Add(relMStrStatFldRead.GetName(), relMStrStatFldRead);
-
-            relMStrInstFldWrite = new RelMStrInstFldWrite();
-            nameToRelMap.Add(relMStrInstFldWrite.GetName(), relMStrInstFldWrite);
-
-            relMStrStatFldWrite = new RelMStrStatFldWrite();
-            nameToRelMap.Add(relMStrStatFldWrite.GetName(), relMStrStatFldWrite);
-
+          
             relVX = new RelVX();
             nameToRelMap.Add(relVX.GetName(), relVX);
 
@@ -226,6 +206,9 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.ProgramFacts
             relStructV = new RelStructV();
             nameToRelMap.Add(relStructV.GetName(), relStructV);
 
+            relStructH = new RelStructH();
+            nameToRelMap.Add(relStructH.GetName(), relStructH);
+
         }
 
         public static void Save()
@@ -256,11 +239,6 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.ProgramFacts
             relClinitTM.Save();
             relVT.Save();
 
-            relMStrMove.Save();
-            relMStrInstFldRead.Save();
-            relMStrInstFldWrite.Save();
-            relMStrStatFldRead.Save();
-            relMStrStatFldWrite.Save();
 	        relAddrOfVX.Save();
 	        relAddrOfFX.Save();
 	        relAddrOfHFX.Save();
@@ -273,6 +251,7 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.ProgramFacts
 	        relMDerefRight.Save();
 	        relDelegateIV.Save();
 	        relStructV.Save();
+            relStructH.Save();
         }
     }
 }

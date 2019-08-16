@@ -23,6 +23,10 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetBackend.Wrappers
         private readonly static IDictionary<IVariable, AddressWrapper> VarToAddrWrapperMap;
         private readonly static IDictionary<Instruction, AddressWrapper> ArrayToAddrWrapperMap;
 
+        //HeapAccWrapper dictionaries
+        private readonly static IDictionary<Instruction, HeapAccWrapper> InstToHeapAccWrapperMap;
+        private readonly static IDictionary<IVariable, HeapAccWrapper> VarToHeapAccWrapperMap;
+
         static readonly FieldReferenceComparer frc;
         static WrapperProvider()
         {
@@ -42,6 +46,9 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetBackend.Wrappers
             FieldRefToAddrWrapperMap = new Dictionary<IFieldReference, AddressWrapper>(frc);
             VarToAddrWrapperMap = new Dictionary<IVariable, AddressWrapper>(vc);
             ArrayToAddrWrapperMap = new Dictionary<Instruction, AddressWrapper>(idc);
+
+            InstToHeapAccWrapperMap = new Dictionary<Instruction, HeapAccWrapper>(idc);
+            VarToHeapAccWrapperMap = new Dictionary<IVariable, HeapAccWrapper>(vc);
         }
 
         public static MethodRefWrapper getMethodRefW (IMethodReference methRef)
@@ -224,6 +231,36 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetBackend.Wrappers
                 AddressWrapper addW = new AddressWrapper(varW);
                 VarToAddrWrapperMap[var] = addW;
                 return addW;
+            }
+        }
+
+        public static HeapAccWrapper getHeapAccW(IVariable var)
+        {
+            if (VarToHeapAccWrapperMap.ContainsKey(var))
+            {
+                return VarToHeapAccWrapperMap[var];
+            }
+            else
+            {
+                VariableWrapper varW = getVarW(var);
+                HeapAccWrapper hpW = new HeapAccWrapper(varW);
+                VarToHeapAccWrapperMap[var] = hpW;
+                return hpW;
+            }
+        }
+
+        public static HeapAccWrapper getHeapAccW(Instruction inst)
+        {
+            if (InstToHeapAccWrapperMap.ContainsKey(inst))
+            {
+                return InstToHeapAccWrapperMap[inst];
+            }
+            else
+            {
+                InstructionWrapper instW = getInstW(inst);
+                HeapAccWrapper hpW = new HeapAccWrapper(instW);
+                InstToHeapAccWrapperMap[inst] = hpW;
+                return hpW;
             }
         }
     }

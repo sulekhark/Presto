@@ -11,7 +11,7 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.ProgramFacts.Relations
             domNames[1] = ProgramDoms.domH.GetName();
         }
 
-        public bool Add(VariableWrapper varW, InstructionWrapper allocW)
+        public bool Add(VariableWrapper varW, HeapAccWrapper allocW)
         {
             int[] iarr = new int[2];
 

@@ -127,6 +127,7 @@
     <Compile Include="AnalysisNetBackend\Visitors\InstructionVisitor.cs" />
     <Compile Include="AnalysisNetBackend\Wrappers\AddressWrapper.cs" />
     <Compile Include="AnalysisNetBackend\Wrappers\FieldRefWrapper.cs" />
+    <Compile Include="AnalysisNetBackend\Wrappers\HeapAccWrapper.cs" />
     <Compile Include="AnalysisNetBackend\Wrappers\InstructionWrapper.cs" />
     <Compile Include="AnalysisNetBackend\Wrappers\MethodRefWrapper.cs" />
     <Compile Include="AnalysisNetBackend\Wrappers\TypeRefWrapper.cs" />
@@ -190,17 +191,13 @@
     <Compile Include="ProgramFacts\Relations\RelMMove.cs" />
     <Compile Include="ProgramFacts\Relations\RelMStatFldRead.cs" />
     <Compile Include="ProgramFacts\Relations\RelMStatFldWrite.cs" />
-    <Compile Include="ProgramFacts\Relations\RelMStrInstFldRead.cs" />
-    <Compile Include="ProgramFacts\Relations\RelMStrInstFldWrite.cs" />
-    <Compile Include="ProgramFacts\Relations\RelMStrMove.cs" />
-    <Compile Include="ProgramFacts\Relations\RelMStrStatFldRead.cs" />
-    <Compile Include="ProgramFacts\Relations\RelMStrStatFldWrite.cs" />
     <Compile Include="ProgramFacts\Relations\RelReachableI.cs" />
     <Compile Include="ProgramFacts\Relations\RelReachableM.cs" />
     <Compile Include="ProgramFacts\Relations\RelReachableT.cs" />
     <Compile Include="ProgramFacts\Relations\RelRootM.cs" />
     <Compile Include="ProgramFacts\Relations\RelStaticTF.cs" />
     <Compile Include="ProgramFacts\Relations\RelStaticTM.cs" />
+    <Compile Include="ProgramFacts\Relations\RelStructH.cs" />
     <Compile Include="ProgramFacts\Relations\RelStructV.cs" />
     <Compile Include="ProgramFacts\Relations\RelSub.cs" />
     <Compile Include="ProgramFacts\Relations\RelTM.cs" />
@@ -218,6 +215,8 @@
   <ItemGroup />
   <ItemGroup>
     <None Include="PtrAndExcAnalysis\CIPtrAnalysis.datalog" />
+    <None Include="PtrAndExcAnalysis\ExcAnalysisInterProc.datalog" />
+    <None Include="PtrAndExcAnalysis\ExcAnalysisIntraProc.datalog" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

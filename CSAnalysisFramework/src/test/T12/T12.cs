@@ -7,20 +7,69 @@ namespace T12
         {
             Bar svar = new Bar(null, null);
             Foo f = new Foo();
-            svar.obj2 = f;
-            Foo z = svar.obj2;
+            Foo zzz;
+            FreshFoo(out zzz);
+            svar.objSec = f;
+            Foo z = svar.objSec;
             Bar rvar = svar;
+            rvar = Modify(rvar);
+            LocMod(rvar);
+            Bar fresh = new Bar(null,null);
+            Fresh(out fresh);
+            FreshFoo(out fresh.objFir);
+            FreshFoo(out fresh.objSec);
+        }
+
+        static void Fresh(out Bar fresh)
+        {
+            fresh = new Bar(new Foo(), new Foo());
+        }
+
+        static void FreshFoo(out Foo ff)
+        {
+            ff = new Foo();
+        }
+
+        static Bar Modify(Bar mod)
+        {
+            Foo orig = mod.GetF();
+            if (orig == null)
+            {
+                Foo repl = new Foo();
+                mod.SetF(repl);
+            }
+            return mod;
+        }
+
+        static void LocMod(Bar mod)
+        {
+            Foo orig = mod.GetF();
+            if (orig == null)
+            {
+                Foo repl = new Foo();
+                mod.SetF(repl);
+            }
         }
     }
     struct Bar
     {
-        public Foo obj1;
-        public Foo obj2;
+        public Foo objFir;
+        public Foo objSec;
 
         public Bar(Foo x1, Foo x2)
         {
-            obj1 = x1;
-            obj2 = x2;
+            objFir = x1;
+            objSec = x2;
+        }
+
+        public Foo GetF()
+        {
+            return objFir;
+        }
+
+        public void SetF(Foo o)
+        {
+            objFir = o;
         }
     }
 
