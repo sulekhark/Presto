@@ -177,6 +177,9 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
                 foreach (IFieldDefinition fld in ty.Fields)
                 {
                     FieldRefWrapper fldW = WrapperProvider.getFieldRefW(fld);
+                    ITypeDefinition fldType = fld.Type.ResolvedType;
+                    TypeRefWrapper fldTypeRefW = WrapperProvider.getTypeRefW(fldType);
+                    ProgramDoms.domT.Add(fldTypeRefW);
                     ProgramDoms.domF.Add(fldW);
                     if (fld.IsStatic)
                     {
@@ -317,7 +320,7 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
             ISet<IVariable> localVarSet = mBody.Variables;
             foreach (IVariable lclVar in localVarSet)
             {
-                if (!lclVar.IsParameter)
+                if (!lclVar.IsParameter) // Parameters are processed in ProcessParams
                 {
                     if (!lclVar.Type.IsValueType || lclVar.Type.ResolvedType.IsStruct)
                     {
@@ -325,8 +328,9 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
                         ProgramDoms.domV.Add(lclW);
                         ITypeReference varTypeRef = lclVar.Type;
                         TypeRefWrapper varTypeRefW = WrapperProvider.getTypeRefW(varTypeRef.ResolvedType);
+                        ProgramDoms.domT.Add(varTypeRefW);
                         ProgramRels.relVT.Add(lclW, varTypeRefW);
-                        if (lclVar.Type.ResolvedType.IsStruct && lclVar.Type.IsValueType && !lclVar.Name.ToString().StartsWith("$"))
+                        if (lclVar.Type.ResolvedType.IsStruct && lclVar.Type.IsValueType)
                         {
                             HeapAccWrapper hpW = WrapperProvider.getHeapAccW(lclVar);
                             ProgramDoms.domH.Add(hpW);
@@ -534,13 +538,8 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
             ProgramDoms.domH.Add(hpW);
             ProgramRels.relMAlloc.Add(mRefW, lhsW, hpW);
             ProgramRels.relHT.Add(hpW, objTypeW);
-            /*****
-            if (objTypeDef.IsStruct)
-            {
-                ProgramRels.relStructV.Add(lhsW);
-                ProgramRels.relStructH.Add(hpW);
-            }
-            ****/
+            // Note that lhsVar is a reference to a struct. Here the struct is allocated on the heap.
+            if (objTypeDef.IsStruct) ProgramRels.relStructH.Add(hpW);
 
             foreach (IFieldDefinition fld in objTypeDef.Fields)
             { 
