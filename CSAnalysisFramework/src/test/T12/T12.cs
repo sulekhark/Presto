@@ -20,9 +20,9 @@ namespace T12
             FreshFoo(out fresh.objSec);
         }
 
-        static void Fresh(out Bar fresh)
+        static void Fresh(out Bar freshparam)
         {
-            fresh = new Bar(new Foo(), new Foo());
+            freshparam = new Bar(new Foo(), new Foo());
         }
 
         static void FreshFoo(out Foo ff)

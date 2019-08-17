@@ -55,6 +55,9 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.ProgramFacts
 	    public static RelDelegateIV relDelegateIV;
 	    public static RelStructV relStructV;
         public static RelStructH relStructH;
+        public static RelStrMove relStrMove;
+        public static RelMove relMove;
+        public static RelVHfilter relVHfilter;
 
 
         public static Dictionary<string, Rel> nameToRelMap;
@@ -208,6 +211,15 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.ProgramFacts
 
             relStructH = new RelStructH();
             nameToRelMap.Add(relStructH.GetName(), relStructH);
+
+            relStrMove = new RelStrMove();
+            nameToRelMap.Add(relStrMove.GetName(), relStrMove);
+
+            relMove = new RelMove();
+            nameToRelMap.Add(relMove.GetName(), relMove);
+
+            relVHfilter = new RelVHfilter();
+            nameToRelMap.Add(relVHfilter.GetName(), relVHfilter);
 
         }
 

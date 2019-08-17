@@ -289,8 +289,9 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
                     ProgramRels.relMmethArg.Add(mRefW, paramNdx, paramW);
                     ITypeReference varTypeRef = param.Type;
                     TypeRefWrapper varTypeRefW = WrapperProvider.getTypeRefW(varTypeRef.ResolvedType);
-                    ProgramRels.relVT.Add(paramW, varTypeRefW);
-                    if (param.Type.ResolvedType.IsStruct)
+                    ProgramDoms.domT.Add(varTypeRefW);
+                    bool success = ProgramRels.relVT.Add(paramW, varTypeRefW);
+                    if (param.Type.ResolvedType.IsStruct && param.Type.IsValueType)
                     {
                         HeapAccWrapper hpW = WrapperProvider.getHeapAccW(param);
                         ProgramDoms.domH.Add(hpW);
@@ -316,27 +317,30 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
             ISet<IVariable> localVarSet = mBody.Variables;
             foreach (IVariable lclVar in localVarSet)
             {
-                if (!lclVar.Type.IsValueType || lclVar.Type.ResolvedType.IsStruct)
+                if (!lclVar.IsParameter)
                 {
-                    VariableWrapper lclW = WrapperProvider.getVarW(lclVar);
-                    ProgramDoms.domV.Add(lclW);
-                    ITypeReference varTypeRef = lclVar.Type;
-                    TypeRefWrapper varTypeRefW = WrapperProvider.getTypeRefW(varTypeRef.ResolvedType);
-                    ProgramRels.relVT.Add(lclW, varTypeRefW);
-                    if (lclVar.Type.ResolvedType.IsStruct)
+                    if (!lclVar.Type.IsValueType || lclVar.Type.ResolvedType.IsStruct)
                     {
-                        HeapAccWrapper hpW = WrapperProvider.getHeapAccW(lclVar);
-                        ProgramDoms.domH.Add(hpW);
-                        ProgramRels.relMAlloc.Add(mRefW, lclW, hpW);
-                        ProgramRels.relHT.Add(hpW, varTypeRefW);
-                        ProgramRels.relStructH.Add(hpW);
-                        ProgramRels.relStructV.Add(lclW);
-                    }
-                    if (addrTakenLocals.Contains(lclVar))
-                    {
-                        AddressWrapper varAddrW = WrapperProvider.getAddrW(lclVar);
-                        ProgramDoms.domX.Add(varAddrW);
-                        ProgramRels.relAddrOfVX.Add(lclW, varAddrW);
+                        VariableWrapper lclW = WrapperProvider.getVarW(lclVar);
+                        ProgramDoms.domV.Add(lclW);
+                        ITypeReference varTypeRef = lclVar.Type;
+                        TypeRefWrapper varTypeRefW = WrapperProvider.getTypeRefW(varTypeRef.ResolvedType);
+                        ProgramRels.relVT.Add(lclW, varTypeRefW);
+                        if (lclVar.Type.ResolvedType.IsStruct && lclVar.Type.IsValueType && !lclVar.Name.ToString().StartsWith("$"))
+                        {
+                            HeapAccWrapper hpW = WrapperProvider.getHeapAccW(lclVar);
+                            ProgramDoms.domH.Add(hpW);
+                            ProgramRels.relMAlloc.Add(mRefW, lclW, hpW);
+                            ProgramRels.relHT.Add(hpW, varTypeRefW);
+                            ProgramRels.relStructH.Add(hpW);
+                            ProgramRels.relStructV.Add(lclW);
+                        }
+                        if (addrTakenLocals.Contains(lclVar))
+                        {
+                            AddressWrapper varAddrW = WrapperProvider.getAddrW(lclVar);
+                            ProgramDoms.domX.Add(varAddrW);
+                            ProgramRels.relAddrOfVX.Add(lclW, varAddrW);
+                        }
                     }
                 }
             }
@@ -530,11 +534,13 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
             ProgramDoms.domH.Add(hpW);
             ProgramRels.relMAlloc.Add(mRefW, lhsW, hpW);
             ProgramRels.relHT.Add(hpW, objTypeW);
+            /*****
             if (objTypeDef.IsStruct)
             {
                 ProgramRels.relStructV.Add(lhsW);
                 ProgramRels.relStructH.Add(hpW);
             }
+            ****/
 
             foreach (IFieldDefinition fld in objTypeDef.Fields)
             { 

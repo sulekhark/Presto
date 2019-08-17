@@ -54,19 +54,19 @@ clinitTM(t:T,m:M) input                  # Type t contains static initializer me
 entryPtM(m:M) input                      # Method m is an entrypoint
 
 IHM(i:I,h:H,m:M)
-VHfilter(v:V,h:H)
+VHfilter(v:V,h:H) printtuples
 DelegateIH(i:I,h:H)
 DelReceiver(i:I,h:H)
 DelFunc(i:I,m:M)
 
 Alloc(l:V,h:H)
-Move(l:V,r:V)
+Move(l:V,r:V) printtuples
 InstFldRead(l:V,h:H,f:F)
 InstFldWrite(h:H,f:F,r:V)
 StatFldRead(l:V,f:F)
 StatFldWrite(f:F,r:V)
 
-StrMove(lh:H,rh:H)
+StrMove(lh:H,rh:H) printtuples
 
 AddrTakenLocal(l:V,r:V)
 AddrTakenInstFld(l:V,r:V,f:F)
@@ -115,8 +115,8 @@ IM(i,m1) :- DelFunc(i,m), DelReceiver(i,h), HT(h,t), cha(m,t,m1).
 IM(i,m) :- DelFunc(i,m), staticTM(t,m).
 
 # arguments and return/throw variables
-Move(v,u) :- IinvkArg(i,z,u), IM(i,m), MmethArg(m,z,v), !structV(u).
-Move(u,v) :- IinvkRet(i,z,u), IM(i,m), MmethRet(m,z,v), !structV(u).
+Move(v,u) :- IinvkArg(i,z,u), IM(i,m), MmethArg(m,z,v).
+Move(u,v) :- IinvkRet(i,z,u), IM(i,m), MmethRet(m,z,v).
 
 Alloc(l,h)   :- reachableM(m), MAlloc(m,l,h).
 Move(l,r)   :- reachableM(m), MMove(m,l,r).
@@ -134,13 +134,13 @@ AddrTakenFunc(l,m2) :- reachableM(m1), MAddrTakenFunc(m1,l,m2).
 DerefLeft(l,r) :- reachableM(m), MDerefLeft(m,l,r).
 DerefRight(l,r) :- reachableM(m), MDerefRight(m,l,r).
 
-VH(l,h) :- Alloc(l,h), VHfilter(l,h).
+VH(l,h) :- Alloc(l,h). ##### removed VHfilter(l,h)
 
-VH(l,h) :- Move(l,r), VH(r,h), VHfilter(l,h), !structV(l).
+VH(l,h) :- Move(l,r), VH(r,h), !structV(l). ##### removed VHfilter(l,h)
 StrMove(lh,rh) :- Move(l,r), VH(l,lh), VH(r,rh), structV(l).
 VX(l,x) :- Move(l,r), VX(r,x).
 
-VH(l,hfh) :- InstFldRead(l,h,f), HFH(h,f,hfh), VHfilter(l,hfh), !structV(l).
+VH(l,hfh) :- InstFldRead(l,h,f), HFH(h,f,hfh), !structV(l).  ##### removed VHfilter(l,hfh)
 StrMove(lh,hfh) :- InstFldRead(l,h,f), VH(l,lh), HFH(h,f,hfh), structV(l).
 VX(l,x) :- InstFldRead(l,h,f), HFX(h,f,x).
 
@@ -148,7 +148,7 @@ HFH(h,f,rh) :- InstFldWrite(h,f,r), VH(r,rh), !structV(r).
 StrMove(hfh,rh) :- InstFldWrite(h,f,r), HFH(h,f,hfh), VH(r,rh), structV(r).
 HFX(h,f,x) :- InstFldWrite(h,f,r), VX(r,x).
 
-VH(l,h) :- StatFldRead(l,f), FH(f,h), VHfilter(l,h), !structV(l).
+VH(l,h) :- StatFldRead(l,f), FH(f,h), !structV(l). ##### removed VHfilter(l,h)
 StrMove(lh,fh) :- StatFldRead(l,f), VH(l,lh), FH(f,fh), structV(l).
 VX(l,x) :- StatFldRead(l,f), FX(f,x).
 
@@ -158,14 +158,15 @@ FX(f,x) :- StatFldWrite(f,r), VX(r,x).
 
 
 # handling structs
-StrMove(lhfh,rhfh) :- StrMove(lh,rh), HFH(lh,f, lhfh), HFH(rh,f,rhfh), structH(lh), structH(rh).
-HFH(lh,f,rhfh) :- StrMove(lh,rh), !structH(lh), !structH(rh), HFH(rh,f,rhfh).
+StrMove(lhfh,rhfh) :- StrMove(lh,rh), HFH(lh,f, lhfh), HFH(rh,f,rhfh), structH(lhfh), structH(rhfh).
+HFH(lh,f,rhfh) :- StrMove(lh,rh), !structH(rhfh), HFH(rh,f,rhfh).
 
 
 # Handling & operator
 # v1 = &v2, v1 = &v2.f, v1 = &f, v1 = &m
-VH(v1,h) :- AddrTakenLocal(v1,v2), VH(v2,h), structV(v2).
-VX(v1,x) :- AddrTakenLocal(v1,v2), AddrOfVX(v2,x), !structV(v2).
+# VH(v1,h) :- AddrTakenLocal(v1,v2), VH(v2,h), structV(v2).
+# VX(v1,x) :- AddrTakenLocal(v1,v2), AddrOfVX(v2,x), !structV(v2).
+VX(v1,x) :- AddrTakenLocal(v1,v2), AddrOfVX(v2,x).
 VX(v1,x) :- AddrTakenInstFld(v1,v2,f), VH(v2,h2), AddrOfHFX(h2,f,x).
 VX(v1,x) :- AddrTakenStatFld(v1,f), AddrOfFX(f,x).
 VX(v1,x) :- AddrTakenFunc(v1,m), AddrOfMX(m,x).
@@ -223,3 +224,16 @@ MM(m,n) :- IM(i,n), MI(m,i).
 .include "sub.datalog"
 .include "VirtIM.datalog"
 .include "VT.datalog"
+.include "AddrOfFX.datalog"
+.include "AddrOfHFX.datalog"
+.include "AddrOfMX.datalog"
+.include "AddrOfVX.datalog"
+.include "DelegateIV.datalog"
+.include "MAddrTakenFunc.datalog"
+.include "MAddrTakenInstFld.datalog"
+.include "MAddrTakenLocal.datalog"
+.include "MAddrTakenStatFld.datalog"
+.include "MDerefLeft.datalog"
+.include "MDerefRight.datalog"
+.include "structH.datalog"
+.include "structV.datalog"

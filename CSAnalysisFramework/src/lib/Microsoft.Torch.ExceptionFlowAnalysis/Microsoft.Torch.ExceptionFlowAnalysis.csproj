@@ -189,6 +189,7 @@
     <Compile Include="ProgramFacts\Relations\RelMmethArg.cs" />
     <Compile Include="ProgramFacts\Relations\RelMmethRet.cs" />
     <Compile Include="ProgramFacts\Relations\RelMMove.cs" />
+    <Compile Include="ProgramFacts\Relations\RelMove.cs" />
     <Compile Include="ProgramFacts\Relations\RelMStatFldRead.cs" />
     <Compile Include="ProgramFacts\Relations\RelMStatFldWrite.cs" />
     <Compile Include="ProgramFacts\Relations\RelReachableI.cs" />
@@ -197,6 +198,7 @@
     <Compile Include="ProgramFacts\Relations\RelRootM.cs" />
     <Compile Include="ProgramFacts\Relations\RelStaticTF.cs" />
     <Compile Include="ProgramFacts\Relations\RelStaticTM.cs" />
+    <Compile Include="ProgramFacts\Relations\RelStrMove.cs" />
     <Compile Include="ProgramFacts\Relations\RelStructH.cs" />
     <Compile Include="ProgramFacts\Relations\RelStructV.cs" />
     <Compile Include="ProgramFacts\Relations\RelSub.cs" />
@@ -206,6 +208,7 @@
     <Compile Include="ProgramFacts\Relations\RelStatIM.cs" />
     <Compile Include="ProgramFacts\Relations\RelVT.cs" />
     <Compile Include="ProgramFacts\Relations\RelVX.cs" />
+    <Compile Include="ProgramFacts\Relations\VHfilter.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Utils\IndexMap.cs" />
     <Compile Include="Utils\ArraySet.cs" />
