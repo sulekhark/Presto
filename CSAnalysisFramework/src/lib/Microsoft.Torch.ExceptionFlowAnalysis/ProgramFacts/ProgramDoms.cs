@@ -14,6 +14,7 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.ProgramFacts
         public static DomC domC;   // domain of contexts
         public static DomZ domZ;   // domain of integer indexes
         public static DomX domX;   // domain of addresses
+        public static DomEH domEH; // domain of exception handlers
 
         public static void Initialize()
         {
@@ -27,6 +28,7 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.ProgramFacts
             domC = new DomC();
             domZ = new DomZ();
             domX = new DomX();
+            domEH = new DomEH();
         }
 
         public static void Save()
@@ -41,6 +43,7 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.ProgramFacts
             domC.Save();
             domZ.Save();
             domX.Save();
+            domEH.Save();
         }
 
         public static string DomUniqueString(string domName, int idx)
@@ -85,9 +88,13 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.ProgramFacts
             {
                 return ProgramDoms.domX.ToUniqueString(idx);
             }
+            else if (domName == ProgramDoms.domEH.GetName())
+            {
+                return ProgramDoms.domEH.ToUniqueString(idx);
+            }
             else
             {
-                return "";
+                return "UNKNOWN";
             }
         }
 

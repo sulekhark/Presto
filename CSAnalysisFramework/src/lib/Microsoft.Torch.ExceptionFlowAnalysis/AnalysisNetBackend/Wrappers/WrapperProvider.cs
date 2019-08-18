@@ -27,6 +27,9 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetBackend.Wrappers
         private readonly static IDictionary<Instruction, HeapAccWrapper> InstToHeapAccWrapperMap;
         private readonly static IDictionary<IVariable, HeapAccWrapper> VarToHeapAccWrapperMap;
 
+        //ExHandlerWrapper dictionary
+        private readonly static IDictionary<Instruction, ExHandlerWrapper> InstToExHandlerWrapperMap;
+
         static readonly FieldReferenceComparer frc;
         static WrapperProvider()
         {
@@ -49,6 +52,8 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetBackend.Wrappers
 
             InstToHeapAccWrapperMap = new Dictionary<Instruction, HeapAccWrapper>(idc);
             VarToHeapAccWrapperMap = new Dictionary<IVariable, HeapAccWrapper>(vc);
+
+            InstToExHandlerWrapperMap = new Dictionary<Instruction, ExHandlerWrapper>(idc);
         }
 
         public static MethodRefWrapper getMethodRefW (IMethodReference methRef)
@@ -261,6 +266,21 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetBackend.Wrappers
                 HeapAccWrapper hpW = new HeapAccWrapper(instW);
                 InstToHeapAccWrapperMap[inst] = hpW;
                 return hpW;
+            }
+        }
+
+        public static ExHandlerWrapper getExHandlerW(Instruction inst)
+        {
+            if (InstToExHandlerWrapperMap.ContainsKey(inst))
+            {
+                return InstToExHandlerWrapperMap[inst];
+            }
+            else
+            {
+                InstructionWrapper instW = getInstW(inst);
+                ExHandlerWrapper ehW = new ExHandlerWrapper(instW);
+                InstToExHandlerWrapperMap[inst] = ehW;
+                return ehW;
             }
         }
     }

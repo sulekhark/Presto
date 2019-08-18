@@ -9,8 +9,6 @@ sub(t1:T,t2:T) input                     # Type t1 is a subtype of Type t2
 InRange(eh:EH,p:P) input                 # An exception raised at Program point P could potentially be caught by ExceptionHandler eh
 PrevEH(eh1:EH,eh2:EH) input              # ExceptionHandler eh1 immediately precedes eh2
 TypeEH(eh:EH,t:T) input                  # ExceptionHandler eh handles exceptions of Type t
-VarEH(eh:EH,v:V)  input                  # ExceptionHandler eh has the formal paramter as Variable v
-ThrowPV(p:P,v:V)  input                  # Instruction p throws Variable v
 
 
 # Intermediate/Output relations
@@ -29,3 +27,8 @@ BeforeEH(eh1,eh2) :- PrevEH(eh1,eh2).
 BeforeEH(eh1,eh3) :- BeforeEH(eh1,eh2), PrevEH(eh2,eh3).
 InfeasibleEH(eh,t,p) :- PossibleEH(eh,t,p), PossibleEH(ehb,t,p), BeforeEH(ehb,eh).
 FinalEH(eh,t,p) :- PossibleEH(eh,t,p), !InfeasibleEH(eh,t,p).
+
+.include "sub.datalog"
+.include "InRange.datalog"
+.include "PrevEH.datalog"
+.include "TypeEH.datalog"

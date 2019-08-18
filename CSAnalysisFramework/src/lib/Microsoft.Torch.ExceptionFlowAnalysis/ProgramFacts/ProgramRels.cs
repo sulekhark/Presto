@@ -58,6 +58,14 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.ProgramFacts
         public static RelStrMove relStrMove;
         public static RelMove relMove;
         public static RelVHfilter relVHfilter;
+        public static RelVarEH relVarEH;
+        public static RelThrowPV relThrowPV;
+        public static RelInRange relInRange;
+        public static RelPrevEH relPrevEH;
+        public static RelTypeEH relTypeEH;
+        public static RelFinalEH relFinalEH;
+        public static RelThrowMH relThrowMH;
+        public static RelCatchVH relCatchVH;
 
 
         public static Dictionary<string, Rel> nameToRelMap;
@@ -221,6 +229,30 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.ProgramFacts
             relVHfilter = new RelVHfilter();
             nameToRelMap.Add(relVHfilter.GetName(), relVHfilter);
 
+            relVarEH = new RelVarEH();
+            nameToRelMap.Add(relVarEH.GetName(), relVarEH);
+
+            relThrowPV = new RelThrowPV();
+            nameToRelMap.Add(relThrowPV.GetName(), relThrowPV);
+
+            relInRange = new RelInRange();
+            nameToRelMap.Add(relInRange.GetName(), relInRange);
+
+            relPrevEH = new RelPrevEH();
+            nameToRelMap.Add(relPrevEH.GetName(), relPrevEH);
+
+            relTypeEH = new RelTypeEH();
+            nameToRelMap.Add(relTypeEH.GetName(), relTypeEH);
+
+            relFinalEH = new RelFinalEH();
+            nameToRelMap.Add(relFinalEH.GetName(), relFinalEH);
+
+            relThrowMH = new RelThrowMH();
+            nameToRelMap.Add(relThrowMH.GetName(), relThrowMH);
+
+            relCatchVH = new RelCatchVH();
+            nameToRelMap.Add(relCatchVH.GetName(), relCatchVH);
+
         }
 
         public static void Save()
@@ -264,6 +296,11 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.ProgramFacts
 	        relDelegateIV.Save();
 	        relStructV.Save();
             relStructH.Save();
+            relVarEH.Save();
+            relThrowPV.Save();
+            relInRange.Save();
+            relPrevEH.Save();
+            relTypeEH.Save();
         }
     }
 }
