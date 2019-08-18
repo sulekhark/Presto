@@ -1,4 +1,4 @@
-﻿.include "T.dom"                         # domain of types
+.include "T.dom"                         # domain of types
 .include "EH.dom"                        # domain of exception handlers
 .include "P.dom"                         # domain of program points
 
@@ -22,7 +22,7 @@ FinalEH(eh:EH,t:T,p:P)  printtuples      # ExceptionHandler eh catches an except
 
 #Rules
 PossibleEH(eh,t,p) :- InRange(eh,p), TypeEH(eh,t).
-PossibleEH(eh,s,p) :- Possible(eh,t,p), sub(s,t).
+PossibleEH(eh,s,p) :- PossibleEH(eh,t,p), sub(s,t).
 BeforeEH(eh1,eh2) :- PrevEH(eh1,eh2).
 BeforeEH(eh1,eh3) :- BeforeEH(eh1,eh2), PrevEH(eh2,eh3).
 InfeasibleEH(eh,t,p) :- PossibleEH(eh,t,p), PossibleEH(ehb,t,p), BeforeEH(ehb,eh).

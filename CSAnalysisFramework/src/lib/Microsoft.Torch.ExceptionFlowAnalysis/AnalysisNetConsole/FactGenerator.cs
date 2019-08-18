@@ -41,6 +41,7 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
             System.Console.WriteLine("==========================================");
             ProcessParams(mBody, mRefW);
             ProcessLocals(mBody, mRefW);
+            ExHandlerWrapper prevEhW = null;
 
             // Going through the instructions via cfg nodes instead of directly iterating over the instructions
             // of the methodBody becuase Phi instructions may not have been inserted in the insts of the methodBody.
@@ -100,6 +101,16 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
                         ReturnInstruction retInst = instruction as ReturnInstruction;
                         ProcessRetInst(retInst, mRefW);
                     }
+                    else if (instruction is ThrowInstruction)
+                    {
+                        ThrowInstruction throwInst = instruction as ThrowInstruction;
+                        ProcessThrowInst(throwInst, instW);
+                    }
+                    else if (instruction is CatchInstruction)
+                    {
+                        CatchInstruction catchInst = instruction as CatchInstruction;
+                        prevEhW = ProcessCatchInst(catchInst, prevEhW);
+                    }
                     else if (instruction is InitializeObjectInstruction)
                     {
                          // Ignore
@@ -116,9 +127,9 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
                     {
                         // Ignore
                     }
+                    
                     else if (instruction is BreakpointInstruction || instruction is TryInstruction ||
-                             instruction is FaultInstruction || instruction is FinallyInstruction ||
-                             instruction is CatchInstruction || instruction is ThrowInstruction)
+                             instruction is FaultInstruction || instruction is FinallyInstruction)
                     {
                         // Ignore
                     }
@@ -134,6 +145,8 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
                     }
                 }
             }
+
+            ComputeExceptionRanges(cfgList);
         }
 
         public void GenerateTypeAndMethodFacts()
@@ -601,7 +614,9 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
             if (done) return;
 
             ProgramDoms.domI.Add(instW);
+            ProgramDoms.domP.Add(instW);  // At present, for throw/catch processing
             ProgramRels.relMI.Add(mRefW, instW);
+            ProgramRels.relPI.Add(instW, instW);
             if (invkInst.HasResult)
             {
                 IVariable lhsVar = invkInst.Result;
@@ -736,6 +751,70 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
                 ProgramRels.relMmethRet.Add(mRefW, 0, retW);
             }
             return;
+        }
+
+        void ProcessThrowInst(ThrowInstruction throwInst, InstructionWrapper instW)
+        {
+            ProgramDoms.domP.Add(instW);
+            IVariable throwVar = throwInst.Operand;
+            VariableWrapper varW = WrapperProvider.getVarW(throwVar);
+            ProgramRels.relThrowPV.Add(instW, varW);
+        }
+
+        ExHandlerWrapper ProcessCatchInst(CatchInstruction catchInst, ExHandlerWrapper prevEhW)
+        {
+            ExHandlerWrapper currEhW = WrapperProvider.getExHandlerW(catchInst);
+            ProgramDoms.domEH.Add(currEhW);
+            IVariable catchVar = catchInst.Result;
+            VariableWrapper varW = WrapperProvider.getVarW(catchVar);
+            ITypeDefinition catchType = catchVar.Type.ResolvedType;
+            TypeRefWrapper typeRefW = WrapperProvider.getTypeRefW(catchType);
+            ProgramRels.relVarEH.Add(currEhW, varW);
+            ProgramRels.relTypeEH.Add(currEhW, typeRefW);
+            if (prevEhW != null) ProgramRels.relPrevEH.Add(prevEhW, currEhW);
+            return currEhW;
+        }
+
+        void ComputeExceptionRanges(IList<CFGNode> cfgList)
+        {
+            IDictionary<int, ExHandlerWrapper> nodeidToWrapperMap = new Dictionary<int, ExHandlerWrapper>();
+            foreach (CFGNode node in cfgList)
+            {
+                CatchInstruction catchInst = FindCatchInstruction(node);
+                if (catchInst != null)
+                {
+                    ExHandlerWrapper catchW = WrapperProvider.getExHandlerW(catchInst);
+                    nodeidToWrapperMap[node.Id] = catchW;
+                }
+            }
+
+            foreach (CFGNode node in cfgList)
+            {
+                foreach (var instruction in node.Instructions)
+                {
+                    if (instruction is MethodCallInstruction || instruction is ThrowInstruction)
+                    {
+                        InstructionWrapper instW = WrapperProvider.getInstW(instruction);
+                        foreach (CFGNode succ in node.Successors)
+                        {
+                            if (nodeidToWrapperMap.ContainsKey(succ.Id))
+                            {
+                                ExHandlerWrapper catchW = nodeidToWrapperMap[succ.Id];
+                                ProgramRels.relInRange.Add(catchW, instW);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        CatchInstruction FindCatchInstruction(CFGNode node)
+        {
+            foreach (var instruction in node.Instructions)
+            {
+                if (instruction is CatchInstruction) return (instruction as CatchInstruction);
+            }
+            return null;
         }
     }
 }
