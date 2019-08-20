@@ -77,7 +77,7 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.Z3Interface
                         }
                         vals[i] = Int32.Parse(idxStr);
                     }
-                    currRel.Add(vals);
+                    if (currRel != null) currRel.Add(vals);
                 }
             }
             // All other lines

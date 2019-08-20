@@ -43,6 +43,17 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.ProgramFacts
             {
                 swDom.WriteLine(name + " " + sz);
             }
+
+            // Create a dummy relation for each dom (containing all the dom elements).
+            // This is to make Z3 assign the same dom ids as we do.
+            // Most likely this is required because of using Z3 via the commandline interface.
+            string relName = "rel" + name;
+            string relFileName = relName + ".datalog";
+            string relPath = Path.Combine(dirName, relFileName);
+            using (StreamWriter swRel = new StreamWriter(relPath))
+            {
+                for (int i = 0; i < sz; i++) swRel.WriteLine(relName + "(" + i + ").");
+            }
         }
 
         public void Save()

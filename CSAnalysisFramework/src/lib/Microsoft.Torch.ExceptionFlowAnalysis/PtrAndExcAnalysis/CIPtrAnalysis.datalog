@@ -11,6 +11,8 @@
 # Relations
 ###
 
+relV(v:V) input
+relH(h:H) input
 HT(h:H,t:T) input                        # AllocSite h has Type t
 cha(n:M,t:T,m:M) input                   # For receiver object of Type t, virtual/interface/overridable Method n resolves to Method m.
 sub(t1:T,t2:T) input                     # Type t1 is a subtype of Type t2
@@ -196,6 +198,9 @@ rootM(m) :- entryPtM(m).
 rootM(m) :- reachableT(t), clinitTM(t,m).
 MM(m,n) :- IM(i,n), MI(m,i).
 
+
+.include "relV.datalog"
+.include "relH.datalog"
 .include "cha.datalog"
 .include "classT.datalog"
 .include "clinitTM.datalog"

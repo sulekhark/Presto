@@ -104,12 +104,12 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
                     else if (instruction is ThrowInstruction)
                     {
                         ThrowInstruction throwInst = instruction as ThrowInstruction;
-                        ProcessThrowInst(throwInst, instW);
+                        ProcessThrowInst(throwInst, instW, mRefW);
                     }
                     else if (instruction is CatchInstruction)
                     {
                         CatchInstruction catchInst = instruction as CatchInstruction;
-                        prevEhW = ProcessCatchInst(catchInst, prevEhW);
+                        prevEhW = ProcessCatchInst(catchInst, prevEhW, mRefW);
                     }
                     else if (instruction is InitializeObjectInstruction)
                     {
@@ -232,6 +232,16 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
                 {
                     TypeRefWrapper subTyW = WrapperProvider.getTypeRefW(subTy);
                     ProgramRels.relSub.Add(subTyW, tyW);
+                }
+
+                if (ty.FullName().StartsWith("System.Exception"))
+                {
+                    ProgramRels.relExceptionType.Add(tyW);
+                    foreach (ITypeDefinition subTy in cha.GetAllSubtypes(ty))
+                    {
+                        TypeRefWrapper subTyW = WrapperProvider.getTypeRefW(subTy);
+                        ProgramRels.relExceptionType.Add(subTyW);
+                    }
                 }
            }
 
@@ -753,18 +763,19 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
             return;
         }
 
-        void ProcessThrowInst(ThrowInstruction throwInst, InstructionWrapper instW)
+        void ProcessThrowInst(ThrowInstruction throwInst, InstructionWrapper instW, MethodRefWrapper mRefW)
         {
             ProgramDoms.domP.Add(instW);
             IVariable throwVar = throwInst.Operand;
             VariableWrapper varW = WrapperProvider.getVarW(throwVar);
-            ProgramRels.relThrowPV.Add(instW, varW);
+            ProgramRels.relThrowPV.Add(mRefW, instW, varW);
         }
 
-        ExHandlerWrapper ProcessCatchInst(CatchInstruction catchInst, ExHandlerWrapper prevEhW)
+        ExHandlerWrapper ProcessCatchInst(CatchInstruction catchInst, ExHandlerWrapper prevEhW, MethodRefWrapper mRefW)
         {
             ExHandlerWrapper currEhW = WrapperProvider.getExHandlerW(catchInst);
             ProgramDoms.domEH.Add(currEhW);
+            ProgramRels.relMEH.Add(mRefW, currEhW);
             IVariable catchVar = catchInst.Result;
             VariableWrapper varW = WrapperProvider.getVarW(catchVar);
             ITypeDefinition catchType = catchVar.Type.ResolvedType;

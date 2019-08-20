@@ -2,25 +2,25 @@
 
 namespace Microsoft.Torch.ExceptionFlowAnalysis.ProgramFacts.Relations
 {
-    public class RelThrowPV : Rel
+    public class RelCalleeAt : Rel
     {
-        public RelThrowPV() : base(3, "ThrowPV")
+        public RelCalleeAt() : base(3, "CalleeAt")
         {
             domNames = new string[3];
             domNames[0] = ProgramDoms.domM.GetName();
             domNames[1] = ProgramDoms.domP.GetName();
-            domNames[2] = ProgramDoms.domV.GetName();
+            domNames[2] = ProgramDoms.domM.GetName();
         }
 
-        public bool Add(MethodRefWrapper mRefW, InstructionWrapper instW, VariableWrapper varW)
+        public bool Add(MethodRefWrapper methW, InstructionWrapper instW, MethodRefWrapper calleeW)
         {
             int[] iarr = new int[3];
 
-            iarr[0] = ProgramDoms.domM.IndexOf(mRefW);
+            iarr[0] = ProgramDoms.domM.IndexOf(methW);
             if (iarr[0] == -1) return false;
             iarr[1] = ProgramDoms.domP.IndexOf(instW);
             if (iarr[1] == -1) return false;
-            iarr[2] = ProgramDoms.domV.IndexOf(varW);
+            iarr[2] = ProgramDoms.domM.IndexOf(calleeW);
             if (iarr[2] == -1) return false;
             return base.Add(iarr);
         }

@@ -67,6 +67,11 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.ProgramFacts
         public static RelThrowMH relThrowMH;
         public static RelCatchVH relCatchVH;
         public static RelPI relPI;
+        public static RelCalleeAt relCalleeAt;
+        public static RelMEH relMEH;
+        public static RelExceptionType relExceptionType;
+        public static RelEscapeT relEscapeT;
+        public static RelFinalMTP relFinalMTP;
 
 
         public static Dictionary<string, Rel> nameToRelMap;
@@ -257,6 +262,21 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.ProgramFacts
             relPI = new RelPI();
             nameToRelMap.Add(relPI.GetName(), relPI);
 
+            relCalleeAt = new RelCalleeAt();
+            nameToRelMap.Add(relCalleeAt.GetName(), relCalleeAt);
+
+            relMEH = new RelMEH();
+            nameToRelMap.Add(relMEH.GetName(), relMEH);
+
+            relExceptionType = new RelExceptionType();
+            nameToRelMap.Add(relExceptionType.GetName(), relExceptionType);
+
+            relEscapeT = new RelEscapeT();
+            nameToRelMap.Add(relEscapeT.GetName(), relEscapeT);
+
+            relFinalMTP = new RelFinalMTP();
+            nameToRelMap.Add(relFinalMTP.GetName(), relFinalMTP);
+
         }
 
         public static void Save()
@@ -306,6 +326,8 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.ProgramFacts
             relPrevEH.Save();
             relTypeEH.Save();
             relPI.Save();
+            relMEH.Save();
+            relExceptionType.Save();
         }
     }
 }

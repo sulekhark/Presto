@@ -13,10 +13,12 @@
 # Relations
 ###
 
+relV(v:V) input
+relH(h:H) input
 HT(h:H,t:T) input                        # Allocation site h allocates an object of Type t
 MI(m:M,i:I) input                        # Method m contains InvokeStmt i
 VarEH(eh:EH,v:V)  input                  # ExceptionHandler eh has the formal paramter as Variable v
-ThrowPV(p:P,v:V)  input                  # Instruction p throws Variable v
+ThrowPV(m:M,p:P,v:V)  input              # Instruction p of Method m throws Variable v
 PI(p:P,i:I) input                        # Connects program points that are invoke statements to corresponding entries in domI
 
 MmethArg(m:M,n:Z,v:V) input              # Variable v is the nth parameter of Method m
@@ -51,6 +53,7 @@ structH(h:H) input                       # Heap element h is of type struct
 IM(i:I,m:M) input                        # InvokeStmt i may call Method m
 reachableM(m:M) input                    # Methods reachable from Main method or entry point methods
 FinalEH(eh:EH,t:T,p:P) input             # ExceptionHandler eh catches an exception of Type t thrown at Program point p.
+EscapeT(m:M,t:T,p:P) input               # Exception of type t if thrown at Program Point p, escapes Method m.
 
 # Below six relations are "input" but will also grow.
 VH(v:V,h:H)  printtuples                 # Variable v may point to AllocSite h
@@ -69,7 +72,7 @@ StatFldRead(l:V,f:F)
 StatFldWrite(f:F,r:V)
 
 StrMove(lh:H,rh:H)
-CalleeAt(m:M,p:P,mcallee:M)
+CalleeAt(m:M,p:P,mcallee:M) printtuples
 
 AddrTakenLocal(l:V,r:V)
 AddrTakenInstFld(l:V,r:V,f:F)
@@ -156,14 +159,16 @@ StatFldRead(l,f) :- DerefRight(l,r), VX(r,x), AddrOfFX(f,x).
 
 # Propagating exception points-to
 CalleeAt(m,p,mcallee) :- MI(m,i), IM(i,mcallee), PI(p,i).
-ThrowMH(m,h) :- ThrowPV(p,v), VH(v,h), HT(h,t), !FinalEH(eh,t,p).
-ThrowMH(m,h) :- CalleeAt(m,p,mcallee), ThrowMH(mcallee,h), HT(h,t), !FinalEH(eh,t,p).
-CatchVH(v,h) :- ThrowPV(p,v), VH(v,h), HT(h,t), FinalEH(eh,t,p), VarEH(eh,v).
+ThrowMH(m,h) :- ThrowPV(m,p,v), VH(v,h), HT(h,t), EscapeT(m,t,p).
+ThrowMH(m,h) :- CalleeAt(m,p,mcallee), ThrowMH(mcallee,h), HT(h,t), EscapeT(m,t,p).
+CatchVH(ehv,h) :- ThrowPV(m,p,v), VH(v,h), HT(h,t), FinalEH(eh,t,p), VarEH(eh,ehv).
 CatchVH(v,h) :- CalleeAt(m,p,mcallee), ThrowMH(mcallee,h), HT(h,t), FinalEH(eh,t,p), VarEH(eh,v).
 VH(v,h) :- CatchVH(v,h).
 
 
 
+.include "relV.datalog"
+.include "relH.datalog"
 .include "HT.datalog"
 .include "MI.datalog"
 .include "VarEH.datalog"
@@ -200,3 +205,5 @@ VH(v,h) :- CatchVH(v,h).
 .include "HFH.datalog"
 .include "HFX.datalog"
 .include "PI.datalog"
+.include "FinalEH.datalog"
+.include "EscapeT.datalog"

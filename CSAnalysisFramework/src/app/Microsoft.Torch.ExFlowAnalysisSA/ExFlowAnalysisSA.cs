@@ -18,8 +18,8 @@ namespace Microsoft.Torch.ExFlowAnalysisSA
             // ByteCodeAnalyzer.GenerateEDBFacts(@"C:\Users\t-sukulk\work\FromGithub\bmk\azure-storage-net\Lib\Common.Split\NetFx\bin\Debug\Microsoft.Azure.Storage.Common.dll");
             // ByteCodeAnalyzer.GenerateEDBFacts(@"C:\Users\t-sukulk\work\FromGithub\bmk\azure-storage-net\Lib\WindowsDesktop.Split\File\bin\Debug\Microsoft.Azure.Storage.File.dll");
 
-            ConfigParams.DatalogDir = @"C:\Users\t-sukulk\source\repos\CSAnalysisFramework\CSAnalysisFramework\src\test\T14\temp";
-            ByteCodeAnalyzer.GenerateEDBFacts(@"C:\Users\t-sukulk\source\repos\CSAnalysisFramework\CSAnalysisFramework\src\test\T14\bin\Debug\T14.exe");
+            ConfigParams.DatalogDir = @"C:\Users\t-sukulk\source\repos\CSAnalysisFramework\CSAnalysisFramework\src\test\T11\temp";
+            ByteCodeAnalyzer.GenerateEDBFacts(@"C:\Users\t-sukulk\source\repos\CSAnalysisFramework\CSAnalysisFramework\src\test\T11\bin\Debug\T11.exe");
 
             // ConfigParams.DatalogDir = @"C:\Users\t-sukulk\work\Test\storage-blob-dotnet-getting-started\BlobStorage\temp";
             // ByteCodeAnalyzer.GenerateEDBFacts(@"C:\Users\t-sukulk\work\Test\storage-blob-dotnet-getting-started\BlobStorage\bin\Debug\BlobStorage.exe");
