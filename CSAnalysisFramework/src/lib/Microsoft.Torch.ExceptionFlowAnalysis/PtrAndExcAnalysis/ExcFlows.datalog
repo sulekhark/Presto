@@ -1,0 +1,29 @@
+.include "T.dom"                         # domain of types
+.include "M.dom"                         # domain of methods
+.include "H.dom"                         # domain of allocation sites
+.include "V.dom"                         # domain of variables
+
+
+relH(h:H) input
+relT(t:T) input
+ThrowMH(m:M,h:H) input                   # The exception object h escapes Method m.
+CatchVH(v:V,h:H) input                   # Variable v which is the formal parameter of some catch handler, points-to exception object h.
+ExceptionType(t:T) input                 # Type t is an exception type
+HT(h:H,t:T) input                        # Allocation site h as Type t
+entryPtM(m:M) input                      # Entry point methods of the assembly.
+
+Caught(t:T,h:H) printtuples              # h is an exception object of Type t that is caught somewhere within the application
+Escaping(t:T,h:H) printtuples            # h is an exception object of Type t that is escaping from the application
+
+
+# Rules
+Escaping(t,h) :- ThrowMH(m,h), HT(h,t), ExceptionType(t), entryPtM(m).
+Caught(t,h) :- CatchVH(v,h), HT(h,t), ExceptionType(t), !Escaping(t,h).
+
+.include "relH.datalog"
+.include "relT.datalog"
+.include "ThrowMH.datalog"
+.include "CatchVH.datalog"
+.include "ExceptionType.datalog"
+.include "HT.datalog"
+.include "entryPtM.datalog"

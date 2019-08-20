@@ -1,17 +1,15 @@
 ﻿using System;
-using System.Threading.Tasks;
 
-
-namespace T13
+namespace T15
 {
-    class T13
+    class T15
     {
         static void Main(string[] args)
         {
             B b = new B();
             Foo foo = new Foo();
             string s = "";
-            A a = null;
+            A a;
             try
             {
                 a = foo.FooEntry(b);
@@ -23,10 +21,11 @@ namespace T13
             }
             finally
             {
-                B result = foo.FooDoAsync();
+                B[] result = foo.FooDoMore();
+                for (int i = 0; i < 10; i++) result[i].BProcess();
                 Console.WriteLine("Done: {0}", s);
             }
-            
+
         }
     }
 
@@ -61,48 +60,36 @@ namespace T13
 
         public void FooProcess(A a)
         {
-            if (a == null) throw new NullReferenceException();
+            a.AProcess();
         }
 
-        public B FooDoAsync()
+        public B[] FooDoMore()
         {
-            Task<B> res = DoAsyncWork();
-            return res.Result;
-        }
-
-        public async Task<B> DoAsyncWork()
-        {
-            B res = null;
-            try
-            {
-                res = await MyAsyncTask();
-            }
-            catch (Exception e)
-            {
-                throw e;
-            }
-            return res;
-        }
-
-        public Task<B> MyAsyncTask()
-        {
-            Task<B> tmo;
-            B xxx;
-            tmo = Task.Run(() =>
-            {
-                xxx = new B();
-                if (xxx == null) throw new NullReferenceException();
-                return xxx;
-            });
-            return tmo;
+            B[] arrayB = new B[10];
+            for (int i = 0; i < 10; i++) arrayB[i] = new B();
+            return arrayB;
         }
     }
 
-    class A
+    struct A
     {
         public B pri;
         public B sec;
+
+        public void AProcess()
+        {
+            if (pri == null)
+            {
+                throw new NullReferenceException();
+            }
+        }
     }
 
-    class B { }
+    class B
+    {
+        public void BProcess()
+        {
+            throw new NullReferenceException();
+        }
+    }
 }

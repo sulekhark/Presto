@@ -18,8 +18,8 @@ namespace Microsoft.Torch.ExFlowAnalysisSA
             // ByteCodeAnalyzer.GenerateEDBFacts(@"C:\Users\t-sukulk\work\FromGithub\bmk\azure-storage-net\Lib\Common.Split\NetFx\bin\Debug\Microsoft.Azure.Storage.Common.dll");
             // ByteCodeAnalyzer.GenerateEDBFacts(@"C:\Users\t-sukulk\work\FromGithub\bmk\azure-storage-net\Lib\WindowsDesktop.Split\File\bin\Debug\Microsoft.Azure.Storage.File.dll");
 
-            ConfigParams.DatalogDir = @"C:\Users\t-sukulk\source\repos\CSAnalysisFramework\CSAnalysisFramework\src\test\T11\temp";
-            ByteCodeAnalyzer.GenerateEDBFacts(@"C:\Users\t-sukulk\source\repos\CSAnalysisFramework\CSAnalysisFramework\src\test\T11\bin\Debug\T11.exe");
+            ConfigParams.DatalogDir = @"C:\Users\t-sukulk\source\repos\CSAnalysisFramework\CSAnalysisFramework\src\test\T15\temp";
+            ByteCodeAnalyzer.GenerateEDBFacts(@"C:\Users\t-sukulk\source\repos\CSAnalysisFramework\CSAnalysisFramework\src\test\T15\bin\Debug\T15.exe");
 
             // ConfigParams.DatalogDir = @"C:\Users\t-sukulk\work\Test\storage-blob-dotnet-getting-started\BlobStorage\temp";
             // ByteCodeAnalyzer.GenerateEDBFacts(@"C:\Users\t-sukulk\work\Test\storage-blob-dotnet-getting-started\BlobStorage\bin\Debug\BlobStorage.exe");
@@ -32,6 +32,8 @@ namespace Microsoft.Torch.ExFlowAnalysisSA
             z3Cmd2.RunAnalysis(@"C:\Users\t-sukulk\source\repos\CSAnalysisFramework\CSAnalysisFramework\src\lib\Microsoft.Torch.ExceptionFlowAnalysis\PtrAndExcAnalysis\ExcAnalysisIntraProc.datalog");
             Z3CommandLineInvoke z3Cmd3 = new Z3CommandLineInvoke();
             z3Cmd3.RunAnalysis(@"C:\Users\t-sukulk\source\repos\CSAnalysisFramework\CSAnalysisFramework\src\lib\Microsoft.Torch.ExceptionFlowAnalysis\PtrAndExcAnalysis\ExcAnalysisInterProc.datalog");
+            Z3CommandLineInvoke z3Cmd4 = new Z3CommandLineInvoke();
+            z3Cmd4.RunAnalysis(@"C:\Users\t-sukulk\source\repos\CSAnalysisFramework\CSAnalysisFramework\src\lib\Microsoft.Torch.ExceptionFlowAnalysis\PtrAndExcAnalysis\ExcFlows.datalog");
         }
     }
 }

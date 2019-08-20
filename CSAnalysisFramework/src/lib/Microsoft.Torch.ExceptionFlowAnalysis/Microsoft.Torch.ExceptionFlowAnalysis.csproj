@@ -159,6 +159,8 @@
     <Compile Include="ProgramFacts\ProgramDoms.cs" />
     <Compile Include="ProgramFacts\ProgramRels.cs" />
     <Compile Include="ProgramFacts\Rel.cs" />
+    <Compile Include="ProgramFacts\Relations\RelCaught.cs" />
+    <Compile Include="ProgramFacts\Relations\RelEscaping.cs" />
     <Compile Include="ProgramFacts\Relations\RelFinalMTP.cs" />
     <Compile Include="ProgramFacts\Relations\RelAddrOfFX.cs" />
     <Compile Include="ProgramFacts\Relations\RelAddrOfHFX.cs" />
@@ -236,6 +238,7 @@
     <None Include="PtrAndExcAnalysis\CIPtrAnalysis.datalog" />
     <None Include="PtrAndExcAnalysis\ExcAnalysisInterProc.datalog" />
     <None Include="PtrAndExcAnalysis\ExcAnalysisIntraProc.datalog" />
+    <None Include="PtrAndExcAnalysis\ExcFlows.datalog" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
