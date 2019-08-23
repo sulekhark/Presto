@@ -165,12 +165,14 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
                 {
                     ITypeDefinition cl = meth.ContainingTypeDefinition;
                     TypeRefWrapper clW = WrapperProvider.getTypeRefW(cl);
+                    ProgramDoms.domT.Add(clW);
                     ProgramRels.relStaticTM.Add(clW, methW);
                 }
                 if (meth.IsStaticConstructor)
                 {
                     ITypeDefinition cl = meth.ContainingTypeDefinition;
                     TypeRefWrapper clW = WrapperProvider.getTypeRefW(cl);
+                    ProgramDoms.domT.Add(clW);
                     ProgramRels.relClinitTM.Add(clW, methW);
                 }
             }
@@ -683,6 +685,10 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
             IMethodDefinition callTgtDef = callTgt.ResolvedMethod;
             ITypeDefinition declType = callTgtDef.ContainingTypeDefinition;
 
+            if (declType.IsDelegate)
+            {
+
+            }
             if (declType.IsDelegate && callTgtDef.IsConstructor)
             {
                 IList<IVariable> invkArgs = invkInst.Arguments;
@@ -695,7 +701,7 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
                 ProgramRels.relMInstFldWrite.Add(mRefW, delegateVarW, dummyElemW, funcPtrVarW);
                 return true;
             }
-            else if (declType.IsDelegate && callTgt.GetName() == "Invoke")
+            else if (declType.IsDelegate && callTgt.Name.ToString() == "Invoke")
             {
                 ProgramDoms.domI.Add(instW);
                 ProgramRels.relMI.Add(mRefW, instW);
@@ -724,7 +730,7 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
                 }
                 return true;
             }
-            else if (declType.IsDelegate && callTgt.GetName() == "Combine")
+            else if (declType.FullName().Equals("System.Delegate") && callTgt.Name.ToString() == "Combine")
             {
                 if (!invkInst.HasResult) Console.WriteLine("WARNING: Delegate Combine function has no return register.");
                 VariableWrapper lhsVarW = WrapperProvider.getVarW(invkInst.Result);

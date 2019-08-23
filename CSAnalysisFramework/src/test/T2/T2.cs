@@ -30,5 +30,30 @@ namespace T2_NS
 
     public class NotReq
     {
+        public void Foo()
+        {
+            try { Bar();}
+            catch (Exception e)
+            {
+                Exception e1 = Check(e);
+                if (e1 != null) throw e1;
+            }
+        }
+
+        public void Bar()
+        {
+            try
+            {
+                FieldAccessException fae;
+                fae = new FieldAccessException();
+                throw fae;
+            }
+            catch (ArgumentNullException ane) { Console.WriteLine(ane.Message); }
+        }
+
+        public Exception Check(Exception e)
+        {
+            return e;
+        }
     }
 }

@@ -113,7 +113,7 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
             {
                 foreach (IMethodDefinition tyMeth in ty.Methods)
                 {
-                    if (MemberHelper.SignaturesAreEqual(meth, tyMeth)) return tyMeth;
+                    if (MemberHelper.SignaturesAreEqual(meth, tyMeth) && meth.Name.ToString().Equals(tyMeth.Name.ToString())) return tyMeth;
                 }
             }
             return null;

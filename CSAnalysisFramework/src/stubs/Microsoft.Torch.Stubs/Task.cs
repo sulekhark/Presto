@@ -30,6 +30,11 @@ namespace Microsoft.Torch.Stubs
         {
             return ta;
         }
+
+        public void Wait()
+        {
+            if (e != null) throw e;
+        }
     }
     public class Task<TResult> : Task
     {

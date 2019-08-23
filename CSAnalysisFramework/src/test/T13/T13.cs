@@ -67,6 +67,7 @@ namespace T13
         public B FooDoAsync()
         {
             Task<B> res = DoAsyncWork();
+            res.Wait();
             return res.Result;
         }
 

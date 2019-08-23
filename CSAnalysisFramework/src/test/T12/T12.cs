@@ -9,6 +9,7 @@ namespace T12
             Foo f = new Foo();
             Foo zzz;
             FreshFoo(out zzz);
+            FreshFoo1(ref f);
             svar.objSec = f;
             Foo z = svar.objSec;
             Bar rvar = svar;
@@ -20,9 +21,15 @@ namespace T12
             FreshFoo(out fresh.objSec);
         }
 
+        
         static void Fresh(out Bar freshparam)
         {
             freshparam = new Bar(new Foo(), new Foo());
+        }
+
+        static void FreshFoo1(ref Foo ff)
+        {
+            ff = new Foo();
         }
 
         static void FreshFoo(out Foo ff)

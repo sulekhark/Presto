@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Threading.Tasks;
 
 namespace T7NS
 {
@@ -96,7 +97,6 @@ namespace T7NS
             info = s;
         }
     }
-
     struct Bar
     {
         public Foo obj1;

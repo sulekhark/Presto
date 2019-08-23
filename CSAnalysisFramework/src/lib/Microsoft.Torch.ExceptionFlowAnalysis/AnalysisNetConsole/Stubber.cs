@@ -131,7 +131,7 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
                 ITypeDefinition containingType = m.ContainingTypeDefinition;
                 containingType = Stubs.GetStubType(containingType);
                 if (containingType == null) return null; // This entire containingType is to be ignored.
-                if (methToAnalyze.IsGeneric) methToAnalyze = Generics.GetTemplate(m);
+                if (methToAnalyze is IGenericMethodInstance) methToAnalyze = Generics.GetTemplate(m);
                 methToAnalyze = Utils.GetStubMatchMethod(containingType, methToAnalyze);
                 if (methToAnalyze == null) return null; // containingType itself is stubbed, but the stub does not define a method equivalent to m.
                 if (methToAnalyze.IsGeneric) methToAnalyze = Generics.GetInstantiatedMeth(methToAnalyze, m);

@@ -163,7 +163,8 @@ HFH(lh,f,rhfh) :- StrMove(lh,rh), !structH(rhfh), HFH(rh,f,rhfh).
 
 # Handling & operator
 # v1 = &v2, v1 = &v2.f, v1 = &f, v1 = &m
-VX(v1,x) :- AddrTakenLocal(v1,v2), AddrOfVX(v2,x).
+VX(v1,x) :- AddrTakenLocal(v1,v2), AddrOfVX(v2,x), !structV(v2).
+VH(v1,h) :- AddrTakenLocal(v1,v2), VH(v2,h), structV(v2).
 VX(v1,x) :- AddrTakenInstFld(v1,v2,f), VH(v2,h2), AddrOfHFX(h2,f,x).
 VX(v1,x) :- AddrTakenStatFld(v1,f), AddrOfFX(f,x).
 VX(v1,x) :- AddrTakenFunc(v1,m), AddrOfMX(m,x).
