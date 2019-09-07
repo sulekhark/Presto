@@ -11,49 +11,49 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Docs", "Docs", "{79C66793-6
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{AE2D211D-4EA0-4BCC-8E6F-A3F833635FD0}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.Torch.ExamineCatchBlock", "CSAnalysisFramework\src\app\Microsoft.Torch.ExamineCatchBlock\Microsoft.Torch.ExamineCatchBlock.csproj", "{A906EE51-515F-43E6-98C9-DC524F526869}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.Torch.ExamineCatchBlock", "DAFFODIL\src\app\Microsoft.Torch.ExamineCatchBlock\Microsoft.Torch.ExamineCatchBlock.csproj", "{A906EE51-515F-43E6-98C9-DC524F526869}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.Torch.ExFlowAnalysisSA", "CSAnalysisFramework\src\app\Microsoft.Torch.ExFlowAnalysisSA\Microsoft.Torch.ExFlowAnalysisSA.csproj", "{DBD052FC-CEA9-41E6-B26A-85DAD56A001A}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.Torch.ExFlowAnalysisSA", "DAFFODIL\src\app\Microsoft.Torch.ExFlowAnalysisSA\Microsoft.Torch.ExFlowAnalysisSA.csproj", "{DBD052FC-CEA9-41E6-B26A-85DAD56A001A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.Torch.ExceptionFlowAnalysis", "CSAnalysisFramework\src\lib\Microsoft.Torch.ExceptionFlowAnalysis\Microsoft.Torch.ExceptionFlowAnalysis.csproj", "{60A1151A-D3BB-4C0E-B92D-9D124D1B076B}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.Torch.ExceptionFlowAnalysis", "DAFFODIL\src\lib\Microsoft.Torch.ExceptionFlowAnalysis\Microsoft.Torch.ExceptionFlowAnalysis.csproj", "{60A1151A-D3BB-4C0E-B92D-9D124D1B076B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "T1", "CSAnalysisFramework\src\test\T1\T1.csproj", "{924A4038-6914-4216-8DE0-2902CC319AC7}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "T1", "DAFFODIL\src\test\T1\T1.csproj", "{924A4038-6914-4216-8DE0-2902CC319AC7}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "T2", "CSAnalysisFramework\src\test\T2\T2.csproj", "{8EE06A58-1EB5-4CFD-81B5-23961ACB0C92}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "T2", "DAFFODIL\src\test\T2\T2.csproj", "{8EE06A58-1EB5-4CFD-81B5-23961ACB0C92}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "T3", "CSAnalysisFramework\src\test\T3\T3.csproj", "{030FAD87-3A09-459A-A8FB-90400512653C}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "T3", "DAFFODIL\src\test\T3\T3.csproj", "{030FAD87-3A09-459A-A8FB-90400512653C}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "T4", "CSAnalysisFramework\src\test\T4\T4.csproj", "{A5B2A369-55E4-4D0A-AC56-E455DC05134B}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "T4", "DAFFODIL\src\test\T4\T4.csproj", "{A5B2A369-55E4-4D0A-AC56-E455DC05134B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "T5", "CSAnalysisFramework\src\test\T5\T5.csproj", "{2E27CE73-6F91-49A8-BD86-8B391D04FDE5}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "T5", "DAFFODIL\src\test\T5\T5.csproj", "{2E27CE73-6F91-49A8-BD86-8B391D04FDE5}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "T6", "CSAnalysisFramework\src\test\T6\T6.csproj", "{1150D764-A665-463B-8F3C-9621279DBD27}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "T6", "DAFFODIL\src\test\T6\T6.csproj", "{1150D764-A665-463B-8F3C-9621279DBD27}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "T7", "CSAnalysisFramework\src\test\T7\T7.csproj", "{0115F350-4386-4FF8-9477-DF10983951AD}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "T7", "DAFFODIL\src\test\T7\T7.csproj", "{0115F350-4386-4FF8-9477-DF10983951AD}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "T8", "CSAnalysisFramework\src\test\T8\T8.csproj", "{1AB6EF4B-C1D7-402C-98EB-3749495702DB}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "T8", "DAFFODIL\src\test\T8\T8.csproj", "{1AB6EF4B-C1D7-402C-98EB-3749495702DB}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "T9", "CSAnalysisFramework\src\test\T9\T9.csproj", "{D3A93302-4850-4344-B738-7311E0415326}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "T9", "DAFFODIL\src\test\T9\T9.csproj", "{D3A93302-4850-4344-B738-7311E0415326}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "T10", "CSAnalysisFramework\src\test\T10\T10.csproj", "{1D57B2F1-3323-47DE-8C63-20979957F663}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "T10", "DAFFODIL\src\test\T10\T10.csproj", "{1D57B2F1-3323-47DE-8C63-20979957F663}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "T11", "CSAnalysisFramework\src\test\T11\T11.csproj", "{9157A809-2A62-4A3B-A371-814648E3BEFF}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "T11", "DAFFODIL\src\test\T11\T11.csproj", "{9157A809-2A62-4A3B-A371-814648E3BEFF}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "T12", "CSAnalysisFramework\src\test\T12\T12.csproj", "{041013BE-6D01-496A-AA15-9F9AD7065694}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "T12", "DAFFODIL\src\test\T12\T12.csproj", "{041013BE-6D01-496A-AA15-9F9AD7065694}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "T13", "CSAnalysisFramework\src\test\T13\T13.csproj", "{AB6BDCAA-8D72-43F8-BB1C-ECBA11862B5B}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "T13", "DAFFODIL\src\test\T13\T13.csproj", "{AB6BDCAA-8D72-43F8-BB1C-ECBA11862B5B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "T14", "CSAnalysisFramework\src\test\T14\T14.csproj", "{F03DABB9-A16A-48B7-B1D1-3E1E17C6E3E9}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "T14", "DAFFODIL\src\test\T14\T14.csproj", "{F03DABB9-A16A-48B7-B1D1-3E1E17C6E3E9}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Stubs", "Stubs", "{F8677B83-ED88-47BD-819E-2E9D62328F38}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.Torch.Stubs", "CSAnalysisFramework\src\stubs\Microsoft.Torch.Stubs\Microsoft.Torch.Stubs.csproj", "{A89DDF60-5CE4-4901-A120-80BDF51B6662}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.Torch.Stubs", "DAFFODIL\src\stubs\Microsoft.Torch.Stubs\Microsoft.Torch.Stubs.csproj", "{A89DDF60-5CE4-4901-A120-80BDF51B6662}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "T15", "CSAnalysisFramework\src\test\T15\T15.csproj", "{3EECDD7D-93FE-4759-95B5-AAC94E47E643}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "T15", "DAFFODIL\src\test\T15\T15.csproj", "{3EECDD7D-93FE-4759-95B5-AAC94E47E643}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "T16", "CSAnalysisFramework\src\test\T16\T16.csproj", "{556785BB-6EDA-4E58-ABD7-2D4721EE9EE0}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "T16", "DAFFODIL\src\test\T16\T16.csproj", "{556785BB-6EDA-4E58-ABD7-2D4721EE9EE0}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "T17", "CSAnalysisFramework\src\test\T17\T17.csproj", "{649DB5CC-62B4-4C60-AC42-CCC6DD053750}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "T17", "DAFFODIL\src\test\T17\T17.csproj", "{649DB5CC-62B4-4C60-AC42-CCC6DD053750}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
