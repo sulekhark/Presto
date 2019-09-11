@@ -72,13 +72,13 @@ namespace Microsoft.Torch.Stubs
 
         public void SetException(Exception exception)
         {
-            Task.e = exception;
+            Task.mdl_exception = exception;
         }
 
         public void SetResult(TResult result)
         {
             // TODO: if (result == null)
-            Task.Result = result;
+            Task.m_result = result;
         }
     }
 }
