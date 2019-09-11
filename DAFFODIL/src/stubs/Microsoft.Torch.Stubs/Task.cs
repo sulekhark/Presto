@@ -181,14 +181,19 @@ namespace Microsoft.Torch.Stubs
                     Action<Task, object> actto = m_action as Action<Task, object>;
                     actto(mdl_antecedentTask, m_stateObject);
                 }
-                
+                this.m_parent.mdl_exception = mdl_exception;
                 mdl_continuationTask.Start();
+
+                // To model for flow-insensitive pointer analysis, the lines below are not really required. 
+                m_action = null;
+                mdl_continuationTask = null;
             }
             catch (Exception e)
             {
                 // Actual code (see System.Threading.Tasks.Task.InternalRunSynchronously) wraps e in TaskSchedulerException
                 // Ignoring the above while modeling.
                 mdl_exception = e;
+                this.m_parent.mdl_exception = mdl_exception;
                 throw e;
             }
             // Not modeled any of the scheduler exceptions
@@ -367,6 +372,75 @@ namespace Microsoft.Torch.Stubs
                     CancellationToken cancellationToken, TaskCreationOptions creationOptions) : this(function, state)
         { m_parent = t_currentTask; }
 
+
+        public new void Start()
+        {
+            t_currentTask = this;
+            try
+            {
+                if (m_action is Action)
+                {
+                    Action act = m_action as Action;
+                    act();
+                }
+                else if (m_action is Action<object>)
+                {
+                    Action<object> acto = m_action as Action<object>;
+                    acto(m_stateObject);
+                }
+                else if (m_action is Action<Task> && mdl_isContinuationTask)
+                {
+                    Action<Task> actt = m_action as Action<Task>;
+                    actt(mdl_antecedentTask);
+                }
+                else if (m_action is Action<Task, object> && mdl_isContinuationTask)
+                {
+                    Action<Task, object> actto = m_action as Action<Task, object>;
+                    actto(mdl_antecedentTask, m_stateObject);
+                }
+                else if (m_action is Func<Task, TResult> && mdl_isContinuationTask)
+                {
+                    Func<Task, TResult> actf = m_action as Func<Task, TResult>;
+                    m_result = actf(mdl_antecedentTask);
+                }
+                else if (m_action is Func<Task, object, TResult> && mdl_isContinuationTask)
+                {
+                    Func<Task, object, TResult> actfo = m_action as Func<Task, object, TResult>;
+                    m_result = actfo(mdl_antecedentTask, m_stateObject);
+                }
+                /*****
+                 * SRK: Not sure how to model continuation tasks whose antecedent result type is the generic type TAntecedentResult
+                 * All the four chunks of ContinueWith in this class are like this.
+                else if (m_action is Action<Task<TAntecedentResult>>)
+                {
+                    Action<Task<TAntecedentResult>> actft = m_action as Action<Task<TAntecedentResult>>;
+                    Task<TAntecedentResult> mdl_ante = mdl_antecedentTask as Task<TAntecedentResult>;
+                    actft(mdl_ante);
+                }
+                *****/
+                this.m_parent.mdl_exception = mdl_exception;
+                mdl_continuationTask.Start();
+
+                // To model for flow-insensitive pointer analysis, the lines below are not really required. 
+                m_action = null;
+                mdl_continuationTask = null;
+            }
+            catch (Exception e)
+            {
+                // Actual code (see System.Threading.Tasks.Task.InternalRunSynchronously) wraps e in TaskSchedulerException
+                // Ignoring the above while modeling.
+                mdl_exception = e;
+                this.m_parent.mdl_exception = mdl_exception;
+                throw e;
+            }
+            // Not modeled any of the scheduler exceptions
+            throw new InvalidOperationException("Task_Start_TaskCompleted");
+            throw new InvalidOperationException("Task_Start_Promise");
+            throw new InvalidOperationException("Task_Start_ContinuationTask");
+            throw new InvalidOperationException("Task_Start_AlreadyStarted");
+        }
+
+
         public Task ContinueWith(Action<Task<TResult>> continuationAction)
         {
             Task task = new Task(continuationAction, null, t_currentTask);
@@ -444,6 +518,21 @@ namespace Microsoft.Torch.Stubs
         public new TaskAwaiter<TResult> GetAwaiter()
         {
             return new TaskAwaiter<TResult>(this);
+        }
+
+        internal bool TrySetException(object exceptionObject)
+        {
+            mdl_exception = exceptionObject as Exception;
+            this.m_parent.mdl_exception = mdl_exception;
+            return true;
+        }
+
+        internal bool TrySetResult(TResult result)
+        {
+            m_result = result;
+            this.m_parent.mdl_exception = mdl_exception;
+            Exception ex = GetExceptions(true);
+            return true;
         }
     }
 }
