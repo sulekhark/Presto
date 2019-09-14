@@ -29,7 +29,7 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
             prefixesToSuppress.Add("System.Text");
             prefixesToSuppress.Add("System.Threading");
             prefixesToSuppress.Add("System.Xml");
-
+            prefixesToSuppress.Add("Microsoft.Cci");
         }
 
         public static void SetupFactGenerator(FactGenerator fg)
@@ -95,7 +95,7 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
             if (methToAdd.IsGeneric) instMeth = Generics.RecordInfo(methToAdd, m, matches);
             if (!rtaAnalyzer.visitedMethods.Contains(instMeth) && !rtaAnalyzer.methods.Contains(instMeth))
             {
-                System.Console.WriteLine("SRK_DBG: Adding method: {0}", instMeth.GetName());
+                rtaAnalyzer.rtaLogSW.WriteLine("SRK_DBG: Adding method: {0}", instMeth.GetName());
                 rtaAnalyzer.methods.Add(instMeth);
             }
             return instMeth;
@@ -112,7 +112,7 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
             }
             if (!rtaAnalyzer.visitedClasses.Contains(toAdd) && !rtaAnalyzer.classes.Contains(toAdd))
             {
-                System.Console.WriteLine("SRK_DBG: Adding class: {0}", toAdd.FullName());
+                rtaAnalyzer.rtaLogSW.WriteLine("SRK_DBG: Adding class: {0}", toAdd.FullName());
                 rtaAnalyzer.classes.Add(toAdd);
                 rtaAnalyzer.classWorkList.Add(toAdd);
             }

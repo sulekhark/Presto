@@ -1,5 +1,6 @@
 ﻿
 using System;
+using System.IO;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -27,7 +28,9 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
         public ISet<IVariable> addrTakenLocals;
         public ISet<IMethodDefinition> addrTakenMethods;
 
-        public FactGenerator() {
+        public StreamWriter tacLogSW;
+        public FactGenerator(StreamWriter sw) {
+            tacLogSW = sw;
             //Create a hypothetical field that represents all array elements
             FieldRefWrapper nullFieldRefW = new FieldRefWrapper(null);
             ProgramDoms.domF.Add(nullFieldRefW);
@@ -36,9 +39,9 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
         public void GenerateFacts(MethodBody mBody, ControlFlowGraph cfg)
         {
             MethodRefWrapper mRefW = WrapperProvider.getMethodRefW(mBody.MethodDefinition, mBody);
-            System.Console.WriteLine();
-            System.Console.WriteLine(mBody.MethodDefinition.Name);
-            System.Console.WriteLine("==========================================");
+            tacLogSW.WriteLine();
+            tacLogSW.WriteLine(mBody.MethodDefinition.Name);
+            tacLogSW.WriteLine("==========================================");
             ProcessParams(mBody, mRefW);
             ProcessLocals(mBody, mRefW);
             ExHandlerWrapper prevEhW = null;
@@ -52,12 +55,12 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
                 foreach (CFGNode n in node.Successors) succStr.Append(n.Id + " ");
                 StringBuilder predStr = new StringBuilder("P: ");
                 foreach (CFGNode n in node.Predecessors) predStr.Append(n.Id + " ");
-                System.Console.WriteLine("----- BB {0} {1} {2} -----", node.Id, succStr.ToString(), predStr.ToString());
+                tacLogSW.WriteLine("----- BB {0} {1} {2} -----", node.Id, succStr.ToString(), predStr.ToString());
                 foreach (var instruction in node.Instructions)
                 {
-                    System.Console.WriteLine("{0}", instruction.ToString());
-                    // System.Console.WriteLine("{0}", instruction.GetType().ToString());
-                    // System.Console.WriteLine();
+                    tacLogSW.WriteLine("{0}", instruction.ToString());
+                    // tacLogSW.WriteLine("{0}", instruction.GetType().ToString());
+                    // tacLogSW.WriteLine();
                     InstructionWrapper instW = WrapperProvider.getInstW(instruction);
                     ProgramDoms.domP.Add(instW);
 
@@ -490,7 +493,7 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
             }
             else
             {
-                System.Console.WriteLine("Load Inst: {0}   {1}", rhsOperand.GetType(), rhsOperand.ToString());
+                System.Console.WriteLine("WARNING: unhandled: Load Inst: {0}   {1}", rhsOperand.GetType(), rhsOperand.ToString());
             }
             return;
         }
@@ -548,7 +551,7 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
             }
             else
             {
-                System.Console.WriteLine("Store Inst: {0}   {1}", lhs.GetType(), lhs.ToString());
+                System.Console.WriteLine("WARNING: unhandled: Store Inst: {0}   {1}", lhs.GetType(), lhs.ToString());
             }
             return;
         }
@@ -773,6 +776,10 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
         {
             ProgramDoms.domP.Add(instW);
             IVariable throwVar = throwInst.Operand;
+            if (throwVar == null)
+            {
+
+            }
             VariableWrapper varW = WrapperProvider.getVarW(throwVar);
             ProgramRels.relThrowPV.Add(mRefW, instW, varW);
         }

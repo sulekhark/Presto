@@ -1,5 +1,6 @@
 ﻿
 using System.Collections.Generic;
+using System.IO;
 using System.Diagnostics;
 using System.Linq;
 using Microsoft.Cci;
@@ -31,9 +32,9 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
         public readonly ISet<IVariable> addrTakenLocals;
         public readonly ISet<IMethodDefinition> addrTakenMethods;
 
-        
+        public StreamWriter rtaLogSW;
 
-        public RTAAnalyzer(bool rootIsExe)
+        public RTAAnalyzer(bool rootIsExe, StreamWriter sw)
         {
             TypeDefinitionComparer tdc = new TypeDefinitionComparer();
             MethodReferenceDefinitionComparer mdc = MethodReferenceDefinitionComparer.Default;
@@ -53,6 +54,7 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
             methods = new HashSet<IMethodDefinition>(mdc);
             types = new HashSet<ITypeDefinition>(tdc);
             this.rootIsExe = rootIsExe;
+            this.rtaLogSW = sw;
 
             addrTakenInstFlds = new HashSet<IFieldDefinition>(frc);
             addrTakenStatFlds = new HashSet<IFieldDefinition>(frc);

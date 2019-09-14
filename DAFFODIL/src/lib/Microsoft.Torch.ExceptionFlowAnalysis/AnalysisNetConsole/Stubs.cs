@@ -34,7 +34,7 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
         {
             foreach (ITypeDefinition ty in stubsModule.GetAllTypes().OfType<INamedTypeDefinition>().ToList())
             {
-                System.Console.WriteLine("SRK_DBG: Adding stub: {0}  {1}", ty.FullName(), ty.GetType());
+                // System.Console.WriteLine("SRK_DBG: Adding stub: {0}  {1}", ty.FullName(), ty.GetType());
                 NameToTypeDefMap.Add(ty.FullName(), ty);
             }
         }

@@ -73,10 +73,10 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
 
         static void DoRTA(IMetadataHost host, MetadataVisitor visitor, IModule rootModule, bool rootIsExe)
         {
-            rtaAnalyzer = new RTAAnalyzer(rootIsExe);
+            StreamWriter rtaLogSW = new StreamWriter(Path.Combine(ConfigParams.LogDir, "rta_log.txt"));
+            rtaAnalyzer = new RTAAnalyzer(rootIsExe, rtaLogSW);
             visitor.SetupRTAAnalyzer(rtaAnalyzer);
             Stubber.SetupRTAAnalyzer(rtaAnalyzer);
-            Generics.SetupRTAAnalyzer(rtaAnalyzer);
             Stubs.SetupInternFactory(host.InternFactory);
             Generics.SetupInternFactory(host.InternFactory);
             IModule stubsModule = GetModule(host, ConfigParams.StubsPath);
@@ -88,11 +88,11 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
             int startClassCnt = 0, startMethCnt = 0;
             while (changeInCount)
             {
-                Console.WriteLine();
-                Console.WriteLine("Starting RTA ITERATION:{0}", iterationCount);
+                rtaLogSW.WriteLine();
+                rtaLogSW.WriteLine("Starting RTA ITERATION:{0}", iterationCount);
                 startClassCnt = rtaAnalyzer.classes.Count;
                 startMethCnt = rtaAnalyzer.methods.Count;
-                Console.WriteLine("Counts: classes:{0}   methods:{1}", startClassCnt, startMethCnt);
+                rtaLogSW.WriteLine("Counts: classes:{0}   methods:{1}", startClassCnt, startMethCnt);
                 rtaAnalyzer.classWorkList.Clear();
                 rtaAnalyzer.visitedClasses.Clear();
                 rtaAnalyzer.ignoredClasses.Clear();
@@ -109,30 +109,32 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
                 if (rtaAnalyzer.classes.Count == startClassCnt && rtaAnalyzer.methods.Count == startMethCnt) changeInCount = false;
             }
             Copy(rtaAnalyzer.allocClasses, rtaAnalyzer.classes);
-            System.Console.WriteLine();
-            System.Console.WriteLine();
+            rtaLogSW.WriteLine();
+            rtaLogSW.WriteLine();
             foreach (IMethodDefinition m in rtaAnalyzer.methods)
             {
-                System.Console.WriteLine(m.GetName());
+                rtaLogSW.WriteLine(m.GetName());
             }
-            System.Console.WriteLine();
-            System.Console.WriteLine();
+            rtaLogSW.WriteLine();
+            rtaLogSW.WriteLine();
             foreach (IMethodDefinition m in rtaAnalyzer.entryPtMethods)
             {
-                System.Console.WriteLine(m.GetName());
+                rtaLogSW.WriteLine(m.GetName());
             }
-            System.Console.WriteLine();
-            System.Console.WriteLine();
+            rtaLogSW.WriteLine();
+            rtaLogSW.WriteLine();
             foreach (ITypeDefinition m in rtaAnalyzer.classes)
             {
-                System.Console.WriteLine(m.FullName());
+                rtaLogSW.WriteLine(m.FullName());
             }
-            System.Console.WriteLine("+++++++++++++++ RTA DONE ++++++++++++++++++");
+            rtaLogSW.WriteLine("+++++++++++++++ RTA DONE ++++++++++++++++++");
+            rtaLogSW.Close();
         }
 
         static void GenerateFacts(IMetadataHost host, MetadataVisitor visitor)
         {
-            factGen = new FactGenerator();
+            StreamWriter tacLogSW = new StreamWriter(Path.Combine(ConfigParams.LogDir, "tac_log.txt"));
+            factGen = new FactGenerator(tacLogSW);
 
             factGen.classes = rtaAnalyzer.classes;
             factGen.methods = rtaAnalyzer.methods;
@@ -153,6 +155,7 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
                 visitor.Traverse(ty);
             }
             factGen.CheckDomX();
+            tacLogSW.Close();
         }
 
         static void CopyAll(ISet<ITypeDefinition> srcSet, IList<ITypeDefinition> dstList)

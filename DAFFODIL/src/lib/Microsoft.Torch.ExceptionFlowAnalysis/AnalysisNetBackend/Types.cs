@@ -58,8 +58,16 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetBackend
 
 		public ITypeReference ArrayElementType(ITypeReference arrayType)
 		{
-			var type = arrayType as IArrayTypeReference;
-			return type.ElementType;
+            if (arrayType.TypeCode == PrimitiveTypeCode.Reference)
+            {
+                ITypeReference tgtType = (arrayType as IManagedPointerTypeReference).TargetType;
+                return (tgtType as IArrayTypeReference).ElementType;
+            }
+            else
+            {
+                var type = arrayType as IArrayTypeReference;
+                return type.ElementType;
+            }
 		}
 
 		public ITypeReference PointerTargetType(ITypeReference pointerType)
@@ -397,7 +405,9 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetBackend
 						case PrimitiveTypeCode.UInt64:
 						case PrimitiveTypeCode.IntPtr:
 						case PrimitiveTypeCode.UIntPtr:
-							return left;
+                        case PrimitiveTypeCode.Float32:
+                        case PrimitiveTypeCode.Float64:
+                            return left;
 
 						case PrimitiveTypeCode.NotPrimitive:
 							// Assume rh type is an enum.

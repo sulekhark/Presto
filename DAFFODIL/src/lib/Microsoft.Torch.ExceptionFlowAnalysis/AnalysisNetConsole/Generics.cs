@@ -6,18 +6,12 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
 {
     public static class Generics
     {
-        private static RTAAnalyzer rtaAnalyzer;
         private static IInternFactory internFactory;
         private static readonly IDictionary<uint, IDictionary<string, IMethodDefinition>> stubTemplateInstMap;
 
         static Generics()
         {
             stubTemplateInstMap = new Dictionary<uint, IDictionary<string, IMethodDefinition>>();
-        }
-
-        public static void SetupRTAAnalyzer(RTAAnalyzer rta)
-        {
-            rtaAnalyzer = rta;
         }
 
         public static void SetupInternFactory(IInternFactory ifactory)

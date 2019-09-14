@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Edgardo Zoppi.  All Rights Reserved.  Licensed under the MIT License.  See License.txt in the project root for license information.
 
 using System;
+using System.IO;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -109,7 +110,7 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
                         // Add only the Main method as entry point
                         if (Utils.IsMainMethod(methodDefinition))
                         {
-                            System.Console.WriteLine("Adding main method: {0}", methodDefinition.GetName());
+                            rtaAnalyzer.rtaLogSW.WriteLine("Adding main method: {0}", methodDefinition.GetName());
                             IMethodDefinition addedMeth = Stubber.CheckAndAdd(methodDefinition);
                             // The assumption is that addedMeth is not a template method. Here it is safe because it holds for the main method.
                             if (addedMeth != null) rtaAnalyzer.entryPtMethods.Add(addedMeth);
@@ -122,6 +123,7 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
                         {
                             // Otherwise, add all public methods as entry points
                             IMethodDefinition addedMeth = Stubber.CheckAndAdd(methodDefinition);
+                            rtaAnalyzer.rtaLogSW.WriteLine("Adding method: {0}", methodDefinition.GetName());
                             // The assumption here is that addedMeth is not a template method.
                             // TODO: It may be the case that this assumption does not hold in some cases.
                             if (addedMeth != null) rtaAnalyzer.entryPtMethods.Add(addedMeth);
@@ -131,7 +133,7 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
                 if (rtaAnalyzer.methods.Contains(methodDefinition) && !rtaAnalyzer.visitedMethods.Contains(methodDefinition))
                 {
                     rtaAnalyzer.visitedMethods.Add(methodDefinition);
-                    Console.WriteLine("SRK_DBG: Visiting method: {0}", methodDefinition.GetName());
+                    // rtaAnalyzer.rtaLogSW.WriteLine("SRK_DBG: Visiting method: {0}", methodDefinition.GetName());
                     rtaAnalyzer.VisitMethod(methodBody, cfg);
                 }
                 else
@@ -157,7 +159,7 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
                 {
                     rtaAnalyzer.visitedClasses.Add(typeDefinition);
                     if (!typeDefinition.IsValueType || typeDefinition.IsStruct) ProcessStaticConstructors(typeDefinition);
-                    Console.WriteLine("SRK_DBG: Visiting class: {0}",typeDefinition.FullName());
+                    // rtaAnalyzer.rtaLogSW.WriteLine("SRK_DBG: Visiting class: {0}",typeDefinition.FullName());
                     TraverseMethods(typeDefinition);
                 }
                 else
@@ -169,7 +171,7 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
             {
                 if (factGen.classes.Contains(typeDefinition))
                 {
-                    System.Console.WriteLine(typeDefinition.FullName());
+                    factGen.tacLogSW.WriteLine("FactGeneration: Traversing class: {0}", typeDefinition.FullName());
                     TraverseMethods(typeDefinition);
                 }
             }
