@@ -53,7 +53,7 @@ structH(h:H) input                       # Heap element h is of type struct
 IM(i:I,m:M) input                        # InvokeStmt i may call Method m
 reachableM(m:M) input                    # Methods reachable from Main method or entry point methods
 FinalEH(eh:EH,t:T,p:P) input             # ExceptionHandler eh catches an exception of Type t thrown at Program point p.
-EscapeT(m:M,t:T,p:P) input               # Exception of type t if thrown at Program Point p, escapes Method m.
+EscapeMTP(m:M,t:T,p:P) input             # Exception of type t if thrown at Program Point p, escapes Method m.
 
 # Below six relations are "input" but will also grow.
 VH(v:V,h:H)  printtuples                 # Variable v may point to AllocSite h
@@ -159,8 +159,8 @@ StatFldRead(l,f) :- DerefRight(l,r), VX(r,x), AddrOfFX(f,x).
 
 # Propagating exception points-to
 CalleeAt(m,p,mcallee) :- MI(m,i), IM(i,mcallee), PI(p,i).
-ThrowMH(m,h) :- ThrowPV(m,p,v), VH(v,h), HT(h,t), EscapeT(m,t,p).
-ThrowMH(m,h) :- CalleeAt(m,p,mcallee), ThrowMH(mcallee,h), HT(h,t), EscapeT(m,t,p).
+ThrowMH(m,h) :- ThrowPV(m,p,v), VH(v,h), HT(h,t), EscapeMTP(m,t,p).
+ThrowMH(m,h) :- CalleeAt(m,p,mcallee), ThrowMH(mcallee,h), HT(h,t), EscapeMTP(m,t,p).
 CatchVH(ehv,h) :- ThrowPV(m,p,v), VH(v,h), HT(h,t), FinalEH(eh,t,p), VarEH(eh,ehv).
 CatchVH(v,h) :- CalleeAt(m,p,mcallee), ThrowMH(mcallee,h), HT(h,t), FinalEH(eh,t,p), VarEH(eh,v).
 VH(v,h) :- CatchVH(v,h).
@@ -206,4 +206,5 @@ VH(v,h) :- CatchVH(v,h).
 .include "HFX.datalog"
 .include "PI.datalog"
 .include "FinalEH.datalog"
-.include "EscapeT.datalog"
+.include "EscapeMTP.datalog"
+

@@ -18,13 +18,14 @@ ExceptionType(t:T) input                 # Type t is an exception type
 
 
 # Intermediate/Output relations
+MPfilter(m:M,p:P)                        # Throw points (and method invokes) p in method m.
 BeforeEH(eh1:EH,eh2:EH)                  # Transitive closure of PrevEH
 PossibleEH(eh:EH.t:T,p:P)                # If the instruction at Program point p throws an exception of Type t, ExceptionHAndler eh may catch it.
                                          # Ignores order of the catch blocks.
 InfeasibleEH(eh:EH,t:T,p:P)              # It is infeasible for ExceptionHandler eh to catch an exception of Type t thrown at Program point p because
                                          # of ordering i.e. some earlier catch block is catching exceptions of the same type.
-FinalEH(eh:EH,t:T,p:P)  printtuples      # ExceptionHandler eh catches an exception of Type t thrown at Program point p.
-EscapeT(m:M,t:T,p:P) printtuples         # Exception of type t if thrown at Program Point p, escapes Method m.
+FinalEH(eh:EH,t:T,p:P) printtuples       # ExceptionHandler eh catches an exception of Type t thrown at Program point p.
+EscapeMTP(m:M,t:T,p:P) printtuples       # Exception of type t if thrown at Program Point p, escapes Method m.
 FinalMTP(m:M,t:T,p:P) printtuples
 
 
@@ -36,7 +37,8 @@ BeforeEH(eh1,eh3) :- BeforeEH(eh1,eh2), PrevEH(eh2,eh3).
 InfeasibleEH(eh,t,p) :- PossibleEH(eh,t,p), PossibleEH(ehb,t,p), BeforeEH(ehb,eh).
 FinalEH(eh,t,p) :- PossibleEH(eh,t,p), !InfeasibleEH(eh,t,p).
 FinalMTP(m,t,p) :- MEH(m,eh), FinalEH(eh,t,p).
-EscapeT(m,t1,p) :- !FinalMTP(m,t1,p), ExceptionType(t1).
+MPfilter(m,p) :- FinalMTP(m,t,p).
+EscapeMTP(m,t1,p) :- !FinalMTP(m,t1,p), ExceptionType(t1), MPfilter(m,p).
 
 
 .include "relT.datalog"
@@ -48,3 +50,4 @@ EscapeT(m,t1,p) :- !FinalMTP(m,t1,p), ExceptionType(t1).
 .include "TypeEH.datalog"
 .include "MEH.datalog"
 .include "ExceptionType.datalog"
+
