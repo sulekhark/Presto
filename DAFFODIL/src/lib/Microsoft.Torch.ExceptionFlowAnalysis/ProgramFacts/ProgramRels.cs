@@ -70,7 +70,7 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.ProgramFacts
         public static RelCalleeAt relCalleeAt;
         public static RelMEH relMEH;
         public static RelExceptionType relExceptionType;
-        public static RelEscapeT relEscapeT;
+        public static RelEscapeMTP relEscapeMTP;
         public static RelFinalMTP relFinalMTP;
         public static RelEscaping relEscaping;
         public static RelCaught relCaught;
@@ -273,8 +273,8 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.ProgramFacts
             relExceptionType = new RelExceptionType();
             nameToRelMap.Add(relExceptionType.GetName(), relExceptionType);
 
-            relEscapeT = new RelEscapeT();
-            nameToRelMap.Add(relEscapeT.GetName(), relEscapeT);
+            relEscapeMTP = new RelEscapeMTP();
+            nameToRelMap.Add(relEscapeMTP.GetName(), relEscapeMTP);
 
             relFinalMTP = new RelFinalMTP();
             nameToRelMap.Add(relFinalMTP.GetName(), relFinalMTP);

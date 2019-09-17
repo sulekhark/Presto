@@ -18,26 +18,27 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
 	public class MetadataVisitor
 	{
 		private readonly IMetadataHost host;
-		private ISourceLocationProvider sourceLocationProvider;
         private FactGenerator factGen;
         private RTAAnalyzer rtaAnalyzer;
         public static readonly IDictionary<IMethodDefinition, ISet<IMethodDefinition>> genericMethodMap;
+        public static IDictionary<ITypeDefinition, ISourceLocationProvider> classToPdbMap;
 
         static MetadataVisitor()
         {
             MethodReferenceDefinitionComparer mdc = MethodReferenceDefinitionComparer.Default;
+            TypeDefinitionComparer tdc = new TypeDefinitionComparer();
             genericMethodMap = new Dictionary<IMethodDefinition, ISet<IMethodDefinition>>(mdc);
+            classToPdbMap = new Dictionary<ITypeDefinition, ISourceLocationProvider>(tdc);
         }
 
-        public MetadataVisitor(IMetadataHost host, ISourceLocationProvider sourceLocationProvider)
+        public MetadataVisitor(IMetadataHost host)
 		{
 			this.host = host;
-			this.sourceLocationProvider = sourceLocationProvider;
         }
 
-        public void SetupSrcLocProvider(ISourceLocationProvider slp)
+        public void SetupSrcLocProviders(Assembly rootAssembly, Assembly stubsAssembly, ISet<ITypeDefinition> classes)
         {
-            sourceLocationProvider = slp;
+            
         }
 
         public void SetupFactGenerator(FactGenerator factGen)
@@ -50,6 +51,18 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
             this.rtaAnalyzer = rtaAnalyzer;
         }
 
+        PdbReader GetPdbReader(string assemblyPath)
+        {
+            var pdbFileName = Path.ChangeExtension(assemblyPath, "pdb");
+
+            if (File.Exists(pdbFileName))
+            {
+                using (var pdbStream = File.OpenRead(pdbFileName))
+                    return new PdbReader(pdbStream, host);
+            }
+            return null;
+        }
+
         public void Traverse(IMethodDefinition methodDefinition)
 		{
             // System.Console.WriteLine("Traversing: {0}", methodDefinition.GetName());
@@ -57,6 +70,12 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
             if (methodDefinition.IsExternal) return;
             if (methodDefinition.IsAbstract) return;
 
+            ITypeDefinition containingDefn = methodDefinition.ContainingTypeDefinition;
+            ISourceLocationProvider sourceLocationProvider = null;
+            if (containingDefn != null)
+            {
+                if (classToPdbMap.ContainsKey(containingDefn)) sourceLocationProvider = classToPdbMap[containingDefn];
+            }
             var disassembler = new Disassembler(host, methodDefinition, sourceLocationProvider);
 			var methodBody = disassembler.Execute();
 

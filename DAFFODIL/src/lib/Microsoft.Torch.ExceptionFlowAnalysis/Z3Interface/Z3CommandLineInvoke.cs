@@ -5,62 +5,54 @@ using Microsoft.Torch.ExceptionFlowAnalysis.Common;
 
 namespace Microsoft.Torch.ExceptionFlowAnalysis.Z3Interface
 {
-    public class Z3CommandLineInvoke
+    public static class Z3CommandLineInvoke
     {
-        Process processCp;
-        Process processZ3;
-
-        public Z3CommandLineInvoke()
+        public static void CopyFiles(string destDir)
         {
-            processCp = new Process();
-            processZ3 = new Process();
+            Process pr1 = new Process();
+            CopyFile(pr1, Path.Combine(ConfigParams.AnalysesPath, "CIPtrAnalysis.datalog"), destDir);
+            Process pr2 = new Process();
+            CopyFile(pr2, Path.Combine(ConfigParams.AnalysesPath, "ExcAnalysisIntraProc.datalog"), destDir);
+            Process pr3 = new Process();
+            CopyFile(pr3, Path.Combine(ConfigParams.AnalysesPath, "ExcAnalysisInterProc.datalog"), destDir);
+            Process pr4 = new Process();
+            CopyFile(pr4, Path.Combine(ConfigParams.AnalysesPath, "ExcFlows.datalog"), destDir);
+            Process pr5 = new Process();
+            CopyFile(pr5, Path.Combine(ConfigParams.AnalysesPath, "parse_z3_out.py"), destDir);
+            Process pr6 = new Process();
+            CopyFile(pr6, Path.Combine(ConfigParams.AnalysesPath, "run_all.sh"), destDir);
         }
 
-        public void RunAnalysis(string analysisToRun)
+        private static void CopyFile(Process pr, string filePath, string destDir)
         {
-            CopyFile(analysisToRun, ConfigParams.DatalogDir);
-            string analysisName = Path.GetFileName(analysisToRun);
-            LaunchZ3(analysisName, ConfigParams.DatalogDir);
-        }
+            pr.EnableRaisingEvents = true;
+            pr.OutputDataReceived += new System.Diagnostics.DataReceivedEventHandler(CopyOutputDataReceived);
+            pr.ErrorDataReceived += new System.Diagnostics.DataReceivedEventHandler(CopyErrorDataReceived);
+            pr.Exited += new System.EventHandler(CopyExited);
 
-        private void CopyFile(string filePath, string destDir)
-        {
-            processCp.EnableRaisingEvents = true;
-            processCp.OutputDataReceived += new System.Diagnostics.DataReceivedEventHandler(CopyOutputDataReceived);
-            processCp.ErrorDataReceived += new System.Diagnostics.DataReceivedEventHandler(CopyErrorDataReceived);
-            processCp.Exited += new System.EventHandler(CopyExited);
+            pr.StartInfo.FileName = "cmd.exe";
+            pr.StartInfo.UseShellExecute = false;
+            pr.StartInfo.RedirectStandardInput = true;
+            pr.StartInfo.RedirectStandardError = true;
+            pr.StartInfo.RedirectStandardOutput = true;
 
-            processCp.StartInfo.FileName = "cmd.exe";
-            processCp.StartInfo.UseShellExecute = false;
-            processCp.StartInfo.RedirectStandardInput = true;
-            processCp.StartInfo.RedirectStandardError = true;
-            processCp.StartInfo.RedirectStandardOutput = true;
-
-            processCp.Start();
-            processCp.BeginErrorReadLine();
-            processCp.BeginOutputReadLine();
-            using (StreamWriter sw = processCp.StandardInput)
+            pr.Start();
+            pr.BeginErrorReadLine();
+            pr.BeginOutputReadLine();
+            using (StreamWriter sw = pr.StandardInput)
             {
                 sw.WriteLine("copy /Y " + filePath + " " + destDir);
             }
             //We want a blocking call
-            processCp.WaitForExit();
+            pr.WaitForExit();
         }
 
-        private void CopyExited(object sender, EventArgs e)
+        private static void CopyExited(object sender, EventArgs e)
         {
-            Console.WriteLine(string.Format("Copy exited with code {0}\n", processCp.ExitCode.ToString()));
+            Console.WriteLine(string.Format("Copy exited\n"));
         }
 
-        private void CopyErrorDataReceived(object sender, DataReceivedEventArgs e)
-        {
-            if (!String.IsNullOrWhiteSpace(e.Data))
-            {
-                System.Console.WriteLine(e.Data);
-            }
-        }
-
-        private void CopyOutputDataReceived(object sender, DataReceivedEventArgs e)
+        private static void CopyErrorDataReceived(object sender, DataReceivedEventArgs e)
         {
             if (!String.IsNullOrWhiteSpace(e.Data))
             {
@@ -68,35 +60,44 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.Z3Interface
             }
         }
 
-        private void LaunchZ3(string analysisToRun, string executionDir)
+        private static void CopyOutputDataReceived(object sender, DataReceivedEventArgs e)
         {
-            processZ3.EnableRaisingEvents = true;
-            processZ3.OutputDataReceived += new System.Diagnostics.DataReceivedEventHandler(Z3OutputDataReceived);
-            processZ3.ErrorDataReceived += new System.Diagnostics.DataReceivedEventHandler(Z3ErrorDataReceived);
-            processZ3.Exited += new System.EventHandler(Z3Exited);
+            if (!String.IsNullOrWhiteSpace(e.Data))
+            {
+                System.Console.WriteLine(e.Data);
+            }
+        }
+
+        public static void LaunchZ3(string analysisToRun, string executionDir)
+        {
+            Process pr = new Process();
+            pr.EnableRaisingEvents = true;
+            pr.OutputDataReceived += new System.Diagnostics.DataReceivedEventHandler(Z3OutputDataReceived);
+            pr.ErrorDataReceived += new System.Diagnostics.DataReceivedEventHandler(Z3ErrorDataReceived);
+            pr.Exited += new System.EventHandler(Z3Exited);
 
             
-            processZ3.StartInfo.FileName = ConfigParams.Z3ExePath;
-            processZ3.StartInfo.Arguments = analysisToRun;
-            processZ3.StartInfo.UseShellExecute = false;
-            processZ3.StartInfo.RedirectStandardError = true;
-            processZ3.StartInfo.RedirectStandardOutput = true;
-            processZ3.StartInfo.WorkingDirectory = executionDir;
+            pr.StartInfo.FileName = ConfigParams.Z3ExePath;
+            pr.StartInfo.Arguments = analysisToRun;
+            pr.StartInfo.UseShellExecute = false;
+            pr.StartInfo.RedirectStandardError = true;
+            pr.StartInfo.RedirectStandardOutput = true;
+            pr.StartInfo.WorkingDirectory = executionDir;
 
-            processZ3.Start();
-            processZ3.BeginErrorReadLine();
+            pr.Start();
+            pr.BeginErrorReadLine();
             // Raises the OutputDataReceived event for each line of output
-            processZ3.BeginOutputReadLine();
+            pr.BeginOutputReadLine();
             //We want a blocking call (at present)
-            processZ3.WaitForExit();
+            pr.WaitForExit();
         }
 
-        private void Z3Exited(object sender, EventArgs e)
+        private static void Z3Exited(object sender, EventArgs e)
         {
-            Console.WriteLine(string.Format("Z3 exited with code {0}\n", processZ3.ExitCode.ToString()));
+            Console.WriteLine(string.Format("Z3 exited\n"));
         }
 
-        private void Z3ErrorDataReceived(object sender, DataReceivedEventArgs e)
+        private static void Z3ErrorDataReceived(object sender, DataReceivedEventArgs e)
         {
             if (!String.IsNullOrWhiteSpace(e.Data))
             {
@@ -105,7 +106,7 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.Z3Interface
             }
         }
 
-        private void Z3OutputDataReceived(object sender, DataReceivedEventArgs e)
+        private static void Z3OutputDataReceived(object sender, DataReceivedEventArgs e)
         {
             if (!String.IsNullOrWhiteSpace(e.Data))
             {

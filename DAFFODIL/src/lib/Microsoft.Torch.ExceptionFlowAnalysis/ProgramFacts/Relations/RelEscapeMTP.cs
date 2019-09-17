@@ -3,9 +3,9 @@
 
 namespace Microsoft.Torch.ExceptionFlowAnalysis.ProgramFacts.Relations
 {
-    public class RelEscapeT : Rel
+    public class RelEscapeMTP : Rel
     {
-        public RelEscapeT() : base(3, "EscapeT")
+        public RelEscapeMTP() : base(3, "EscapeMTP")
         {
             domNames = new string[3];
             domNames[0] = ProgramDoms.domM.GetName();

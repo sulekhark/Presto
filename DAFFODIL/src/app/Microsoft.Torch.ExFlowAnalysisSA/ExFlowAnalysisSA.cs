@@ -13,6 +13,7 @@ namespace Microsoft.Torch.ExFlowAnalysisSA
         {
             ConfigParams.Z3ExePath = @"C:\Users\torch\work\DAFFODIL\DAFFODIL\packages\Z3-4.1\bin\z3.exe";
             ConfigParams.StubsPath = @"C:\Users\torch\work\DAFFODIL\DAFFODIL\src\stubs\Microsoft.Torch.Stubs\bin\Debug\Microsoft.Torch.Stubs.dll";
+            ConfigParams.AnalysesPath = @"C:\Users\torch\work\DAFFODIL\DAFFODIL\src\lib\Microsoft.Torch.ExceptionFlowAnalysis\PtrAndExcAnalysis";
             ProgramDoms.Initialize();
             ProgramRels.Initialize();
 
@@ -20,26 +21,22 @@ namespace Microsoft.Torch.ExFlowAnalysisSA
             // ConfigParams.LogDir = @"C:\Users\torch\work\FromGithub\bmk1\storage\good\storage\src\Azure\Storage.Net.Microsoft.Azure.Storage\logs";
             // ByteCodeAnalyzer.GenerateEDBFacts(@"C:\Users\torch\work\FromGithub\bmk1\storage\good\storage\src\Azure\Storage.Net.Microsoft.Azure.Storage\bin\Debug\net452\Storage.Net.Microsoft.Azure.Storage.dll");
 
-            // ConfigParams.DatalogDir = @"C:\Users\torch\work\DAFFODIL\DAFFODIL\src\test\T13\temp";
-            // ConfigParams.LogDir = @"C:\Users\torch\work\DAFFODIL\DAFFODIL\src\test\T13\logs";
-            // ByteCodeAnalyzer.GenerateEDBFacts(@"C:\Users\torch\work\DAFFODIL\DAFFODIL\src\test\T13\bin\Debug\T13.exe");
+            ConfigParams.DatalogDir = @"C:\Users\torch\work\DAFFODIL\DAFFODIL\src\test\T13\temp";
+            ConfigParams.LogDir = @"C:\Users\torch\work\DAFFODIL\DAFFODIL\src\test\T13\logs";
+            ByteCodeAnalyzer.GenerateEDBFacts(@"C:\Users\torch\work\DAFFODIL\DAFFODIL\src\test\T13\bin\Debug\T13.exe");
 
-            ConfigParams.DatalogDir = @"C:\Users\torch\work\Test\storage-blob-dotnet-getting-started\BlobStorage\temp";
-            ConfigParams.LogDir = @"C:\Users\torch\work\Test\storage-blob-dotnet-getting-started\BlobStorage\logs";
-            ByteCodeAnalyzer.GenerateEDBFacts(@"C:\Users\torch\work\Test\storage-blob-dotnet-getting-started\BlobStorage\bin\Debug\BlobStorage.exe");
+            // ConfigParams.DatalogDir = @"C:\Users\torch\work\Test\storage-blob-dotnet-getting-started\BlobStorage\temp";
+            // ConfigParams.LogDir = @"C:\Users\torch\work\Test\storage-blob-dotnet-getting-started\BlobStorage\logs";
+            // ByteCodeAnalyzer.GenerateEDBFacts(@"C:\Users\torch\work\Test\storage-blob-dotnet-getting-started\BlobStorage\bin\Debug\BlobStorage.exe");
 
             ProgramDoms.Save();
             ProgramRels.Save();
            
-            Z3CommandLineInvoke z3Cmd1 = new Z3CommandLineInvoke();
-            z3Cmd1.RunAnalysis(@"C:\Users\torch\work\DAFFODIL\DAFFODIL\src\lib\Microsoft.Torch.ExceptionFlowAnalysis\PtrAndExcAnalysis\CIPtrAnalysis.datalog");
-            Z3CommandLineInvoke z3Cmd2 = new Z3CommandLineInvoke();
-            z3Cmd2.RunAnalysis(@"C:\Users\torch\work\DAFFODIL\DAFFODIL\src\lib\Microsoft.Torch.ExceptionFlowAnalysis\PtrAndExcAnalysis\ExcAnalysisIntraProc.datalog");
-            Z3CommandLineInvoke z3Cmd3 = new Z3CommandLineInvoke();
-            z3Cmd3.RunAnalysis(@"C:\Users\torch\work\DAFFODIL\DAFFODIL\src\lib\Microsoft.Torch.ExceptionFlowAnalysis\PtrAndExcAnalysis\ExcAnalysisInterProc.datalog");
-            Z3CommandLineInvoke z3Cmd4 = new Z3CommandLineInvoke();
-            z3Cmd4.RunAnalysis(@"C:\Users\torch\work\DAFFODIL\DAFFODIL\src\lib\Microsoft.Torch.ExceptionFlowAnalysis\PtrAndExcAnalysis\ExcFlows.datalog");
-           
+            Z3CommandLineInvoke.CopyFiles(ConfigParams.DatalogDir);
+            Z3CommandLineInvoke.LaunchZ3("CIPtrAnalysis.datalog", ConfigParams.DatalogDir);
+            Z3CommandLineInvoke.LaunchZ3("ExcAnalysisIntraProc.datalog", ConfigParams.DatalogDir);     
+            Z3CommandLineInvoke.LaunchZ3("ExcAnalysisInterProc.datalog", ConfigParams.DatalogDir);         
+            Z3CommandLineInvoke.LaunchZ3("ExcFlows.datalog", ConfigParams.DatalogDir);
         }
     }
 }

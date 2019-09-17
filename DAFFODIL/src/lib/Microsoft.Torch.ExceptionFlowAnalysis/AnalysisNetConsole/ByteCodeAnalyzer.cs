@@ -1,5 +1,4 @@
-﻿using System;
-using System.IO;
+﻿using System.IO;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Cci;
@@ -17,35 +16,20 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
             using (var host = new PeReader.DefaultHost())
             {
                 Types.Initialize(host);
-                var visitor = new MetadataVisitor(host, null);
-                IModule rootModule = GetModule(host, input);
-                PdbReader pdbReader = GetPdbReader(host, input);
-                visitor.SetupSrcLocProvider(pdbReader);
-                bool rootIsExe = false;
-                if (rootModule.Kind == ModuleKind.ConsoleApplication) rootIsExe = true;
-                DoRTA(host, visitor, rootModule, rootIsExe);
-                GenerateFacts(host, visitor);
+                var visitor = new MetadataVisitor(host);
+                Assembly rootAssembly = GetAssembly(host, input);
+                Assembly stubsAssembly = GetAssembly(host, ConfigParams.StubsPath);
+                DoRTA(host, visitor, rootAssembly, stubsAssembly);
+                GenerateFacts(visitor);
             }
         }
 
-        static PdbReader GetPdbReader(IMetadataHost host, string assemblyPath)
-        {
-            var pdbFileName = Path.ChangeExtension(assemblyPath, "pdb");
-
-            if (File.Exists(pdbFileName))
-            {
-                using (var pdbStream = File.OpenRead(pdbFileName))
-                return new PdbReader(pdbStream, host);
-            }
-            return null;
-        }
-
-        static IModule GetModule(IMetadataHost host, string assemblyPath)
+       
+        static Assembly GetAssembly(IMetadataHost host, string assemblyPath)
         {
             var assembly = new Assembly(host);
             assembly.Load(assemblyPath);
-            IModule module = assembly.Module;
-            return module;
+            return assembly;
         }
 
         static void Initialize(ISet<ITypeDefinition> classesSet, ISet<ITypeDefinition> entryPtList, IModule rootModule, bool rootIsExe)
@@ -71,21 +55,24 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
             }
         }
 
-        static void DoRTA(IMetadataHost host, MetadataVisitor visitor, IModule rootModule, bool rootIsExe)
+        static void DoRTA(IMetadataHost host, MetadataVisitor visitor, Assembly rootAssembly, Assembly stubsAssembly)
         {
+            IModule rootModule = rootAssembly.Module;
+            IModule stubsModule = stubsAssembly.Module;
+            bool rootIsExe = false;
+            if (rootModule.Kind == ModuleKind.ConsoleApplication) rootIsExe = true;
             StreamWriter rtaLogSW = new StreamWriter(Path.Combine(ConfigParams.LogDir, "rta_log.txt"));
             rtaAnalyzer = new RTAAnalyzer(rootIsExe, rtaLogSW);
             visitor.SetupRTAAnalyzer(rtaAnalyzer);
             Stubber.SetupRTAAnalyzer(rtaAnalyzer);
             Stubs.SetupInternFactory(host.InternFactory);
             Generics.SetupInternFactory(host.InternFactory);
-            IModule stubsModule = GetModule(host, ConfigParams.StubsPath);
             Stubs.SetupStubs(stubsModule);
             Initialize(rtaAnalyzer.classes, rtaAnalyzer.entryPtClasses, rootModule, rootIsExe);
 
             int iterationCount = 0;
             bool changeInCount = true;
-            int startClassCnt = 0, startMethCnt = 0;
+            int startClassCnt, startMethCnt;
             while (changeInCount)
             {
                 rtaLogSW.WriteLine();
@@ -129,12 +116,14 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
             }
             rtaLogSW.WriteLine("+++++++++++++++ RTA DONE ++++++++++++++++++");
             rtaLogSW.Close();
+            visitor.SetupSrcLocProviders(rootAssembly, stubsAssembly, rtaAnalyzer.classes);
         }
 
-        static void GenerateFacts(IMetadataHost host, MetadataVisitor visitor)
+        static void GenerateFacts(MetadataVisitor visitor)
         {
             StreamWriter tacLogSW = new StreamWriter(Path.Combine(ConfigParams.LogDir, "tac_log.txt"));
-            factGen = new FactGenerator(tacLogSW);
+            StreamWriter factGenLogSW = new StreamWriter(Path.Combine(ConfigParams.LogDir, "factgen_log.txt"));
+            factGen = new FactGenerator(tacLogSW, factGenLogSW);
 
             factGen.classes = rtaAnalyzer.classes;
             factGen.methods = rtaAnalyzer.methods;

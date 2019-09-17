@@ -29,8 +29,11 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
         public ISet<IMethodDefinition> addrTakenMethods;
 
         public StreamWriter tacLogSW;
-        public FactGenerator(StreamWriter sw) {
-            tacLogSW = sw;
+        public StreamWriter factGenLogSW;
+
+        public FactGenerator(StreamWriter sw1, StreamWriter sw2) {
+            tacLogSW = sw1;
+            factGenLogSW = sw2;
             //Create a hypothetical field that represents all array elements
             FieldRefWrapper nullFieldRefW = new FieldRefWrapper(null);
             ProgramDoms.domF.Add(nullFieldRefW);
@@ -506,7 +509,7 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
             }
             else
             {
-                if (sInst.Result.Type.ResolvedType.IsStruct)
+                if (sInst.Operand.Type.ResolvedType.IsStruct)
                 {
                     ProcessStore(sInst, mRefW, true);
                 }
@@ -776,12 +779,16 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
         {
             ProgramDoms.domP.Add(instW);
             IVariable throwVar = throwInst.Operand;
-            if (throwVar == null)
+            if (throwVar != null)
             {
-
+                VariableWrapper varW = WrapperProvider.getVarW(throwVar);
+                ProgramRels.relThrowPV.Add(mRefW, instW, varW);
             }
-            VariableWrapper varW = WrapperProvider.getVarW(throwVar);
-            ProgramRels.relThrowPV.Add(mRefW, instW, varW);
+            else
+            {
+                // TODO: Handle the case when the throwInst is rethrow
+            }
+            
         }
 
         ExHandlerWrapper ProcessCatchInst(CatchInstruction catchInst, ExHandlerWrapper prevEhW, MethodRefWrapper mRefW)

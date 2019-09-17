@@ -21,6 +21,7 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <PlatformTarget>x64</PlatformTarget>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -173,7 +174,7 @@
     <Compile Include="ProgramFacts\Relations\RelClinitTM.cs" />
     <Compile Include="ProgramFacts\Relations\RelDelegateIV.cs" />
     <Compile Include="ProgramFacts\Relations\RelEntryPtM.cs" />
-    <Compile Include="ProgramFacts\Relations\RelEscapeT.cs" />
+    <Compile Include="ProgramFacts\Relations\RelEscapeMTP.cs" />
     <Compile Include="ProgramFacts\Relations\RelExceptionType.cs" />
     <Compile Include="ProgramFacts\Relations\RelFH.cs" />
     <Compile Include="ProgramFacts\Relations\RelFinalEH.cs" />
@@ -239,6 +240,8 @@
     <None Include="PtrAndExcAnalysis\ExcAnalysisInterProc.datalog" />
     <None Include="PtrAndExcAnalysis\ExcAnalysisIntraProc.datalog" />
     <None Include="PtrAndExcAnalysis\ExcFlows.datalog" />
+    <None Include="PtrAndExcAnalysis\parse_z3_out.py" />
+    <None Include="PtrAndExcAnalysis\run_all.sh" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

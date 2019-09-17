@@ -207,4 +207,3 @@ VH(v,h) :- CatchVH(v,h).
 .include "PI.datalog"
 .include "FinalEH.datalog"
 .include "EscapeMTP.datalog"
-
