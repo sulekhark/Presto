@@ -68,7 +68,10 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
             Stubs.SetupInternFactory(host.InternFactory);
             Generics.SetupInternFactory(host.InternFactory);
             Stubs.SetupStubs(stubsModule);
-            Initialize(rtaAnalyzer.classes, rtaAnalyzer.entryPtClasses, rootModule, rootIsExe);
+
+            bool diskLoadSuccessful = false;
+            if (ConfigParams.LoadSavedScope) diskLoadSuccessful = rtaAnalyzer.LoadSavedScope(host);
+            if (!diskLoadSuccessful) Initialize(rtaAnalyzer.classes, rtaAnalyzer.entryPtClasses, rootModule, rootIsExe);
 
             int iterationCount = 0;
             bool changeInCount = true;
@@ -116,6 +119,7 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
             }
             rtaLogSW.WriteLine("+++++++++++++++ RTA DONE ++++++++++++++++++");
             rtaLogSW.Close();
+            rtaAnalyzer.SaveScope(host);
             visitor.SetupSrcLocProviders(rootAssembly, stubsAssembly, rtaAnalyzer.classes);
         }
 

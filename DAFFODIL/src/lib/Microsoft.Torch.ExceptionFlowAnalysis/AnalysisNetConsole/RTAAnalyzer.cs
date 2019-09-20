@@ -1,13 +1,14 @@
 ﻿
 using System.Collections.Generic;
 using System.IO;
-using System.Diagnostics;
 using System.Linq;
 using Microsoft.Cci;
 using Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetBackend.Model;
 using Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetBackend;
 using Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetBackend.ThreeAddressCode.Values;
 using Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetBackend.ThreeAddressCode.Instructions;
+using Microsoft.Torch.ExceptionFlowAnalysis.Common;
+using System;
 
 namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
 {
@@ -250,6 +251,102 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
                         }
                     }
                 }
+            }
+        }
+
+        private bool CheckIfValid(string modulesPath, string classesPath, string methodsPath)
+        {
+            bool IsValid = true;
+            if (!File.Exists(modulesPath) || (new FileInfo(modulesPath).Length == 0)) IsValid = false;
+            if (!File.Exists(classesPath) || (new FileInfo(classesPath).Length == 0)) IsValid = false;
+            if (!File.Exists(methodsPath) || (new FileInfo(methodsPath).Length == 0)) IsValid = false;
+            return IsValid;
+        }
+
+        public bool LoadSavedScope(IMetadataHost host)
+        {
+            string modulesFN = Path.Combine(ConfigParams.SaveScopePath, "modules.txt");
+            string classesFN = Path.Combine(ConfigParams.SaveScopePath, "classes.txt");
+            string methodsFN = Path.Combine(ConfigParams.SaveScopePath, "methods.txt");
+            bool valid = CheckIfValid(modulesFN, classesFN, methodsFN);
+            if (!valid) return false;
+
+            List<string> moduleNames = new List<string>();
+            IDictionary<string, IModule> moduleNameToModuleMap = new Dictionary<string, IModule>();
+            IDictionary<IModule, IList<string>> bucketedClasses = new Dictionary<IModule, IList<string>>();
+            using (StreamReader sr = new StreamReader(modulesFN))
+            {
+                string line;
+                while ((line = sr.ReadLine()) != null)
+                {
+                    line = line.Trim();
+                    if (!string.IsNullOrEmpty(line))
+                    {
+                        string[] parts = line.Split();
+                        string moduleName = parts[0];
+                        string fileName = parts[1];
+                        moduleNames.Add(moduleName);
+                        IModule module = host.LoadUnitFrom(fileName) as IModule;
+                        moduleNameToModuleMap[moduleName] = module;
+                        bucketedClasses[module] = new List<string>();
+                        List<INamedTypeDefinition> l = module.GetAllTypes().OfType<INamedTypeDefinition>().ToList();
+                        Console.WriteLine("Module: {0}   Num elements: {1}", moduleName, l.Count);
+
+                        if (module == null || module == Dummy.Module || module == Dummy.Assembly)
+                            throw new Exception("The input is not a valid CLR module or assembly.");
+                    }
+                }
+                moduleNames.Sort();
+                moduleNames.Reverse();
+            }
+
+            using (StreamReader sr = new StreamReader(classesFN))
+            {
+                string line;
+                while ((line = sr.ReadLine()) != null)
+                {
+                    line = line.Trim();
+                    foreach (string modName in moduleNames)
+                    {
+                        if (line.StartsWith(modName)) bucketedClasses[moduleNameToModuleMap[modName]].Add(line);
+                    }
+                }
+            }
+            foreach (IModule module in bucketedClasses.Keys)
+            {
+                IList<string> clNameList = bucketedClasses[module];
+                foreach (string clName in clNameList)
+                {
+                    INamedTypeDefinition clTypDefn = UnitHelper.FindType(host.NameTable, module, clName);
+                    if (clTypDefn != null) classes.Add(clTypDefn);
+                }
+            }
+            using (StreamReader sr = new StreamReader(methodsFN))
+            {
+                string line;
+                while ((line = sr.ReadLine()) != null)
+                {
+
+                }
+            }
+            return true;
+        }
+
+        public void SaveScope(IMetadataHost host)
+        {
+            string modulesFN = "modules.txt";
+            StreamWriter modulesSW = new StreamWriter(Path.Combine(ConfigParams.SaveScopePath, modulesFN));
+            List<IModule> moduleList = host.LoadedUnits.OfType<IModule>().ToList();
+            foreach (IModule module in moduleList)
+            {
+                modulesSW.WriteLine(module.Name.Value + " " + module.Location);
+            }
+            modulesSW.Close();
+
+            string classesFN = "classes.txt";
+            StreamWriter classesSW = new StreamWriter(Path.Combine(ConfigParams.SaveScopePath, classesFN));
+            foreach (ITypeDefinition cl in classes)
+            {
             }
         }
     }

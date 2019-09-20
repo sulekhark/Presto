@@ -11,6 +11,8 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.Common
         public static string Z3ExePath { get; set; }
         public static string StubsPath { get; set; }
         public static string AnalysesPath { get; set; }
+        public static bool LoadSavedScope { get; set; }
+        public static string SaveScopePath { get; set; }
 
         public static void LoadConfig(string filePath)
         {
@@ -41,6 +43,18 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.Common
                         {
                             AnalysesPath = line.Split()[1];
                         }
+                        else if (line.StartsWith("SaveScopePath= "))
+                        {
+                            SaveScopePath = line.Split()[1];
+                        }
+                        else if (line.StartsWith("LoadSavedScope= "))
+                        {
+                            string boolStr = line.Split()[1];
+                            if (boolStr == "true")
+                                LoadSavedScope = true;
+                            else
+                                LoadSavedScope = false;
+                        }
                     } catch (Exception e)
                     {
                         Console.WriteLine("Got Exception: {0}", e.Message);
@@ -58,6 +72,8 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.Common
                 sw.WriteLine("Z3ExePath= {0}", Z3ExePath);
                 sw.WriteLine("StubsPath= {0}", StubsPath);
                 sw.WriteLine("AnalysesPath= {0}", AnalysesPath);
+                sw.WriteLine("SaveScopePath= {0}", SaveScopePath);
+                sw.WriteLine("LoadSavedScope= {0}", LoadSavedScope ? "true" : "false");
             }
         }
     }
