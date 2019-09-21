@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using Microsoft.Cci;
+using Microsoft.Cci.Immutable;
 using Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetBackend.Model;
 using Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetBackend;
 using Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetBackend.ThreeAddressCode.Values;
@@ -254,26 +255,18 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
             }
         }
 
-        private bool CheckIfValid(string modulesPath, string classesPath, string methodsPath)
+        private bool CheckIfValid(string modulesPath, string classesPath, string entClassesPath, string methodsPath)
         {
             bool IsValid = true;
             if (!File.Exists(modulesPath) || (new FileInfo(modulesPath).Length == 0)) IsValid = false;
             if (!File.Exists(classesPath) || (new FileInfo(classesPath).Length == 0)) IsValid = false;
+            if (!File.Exists(entClassesPath) || (new FileInfo(entClassesPath).Length == 0)) IsValid = false;
             if (!File.Exists(methodsPath) || (new FileInfo(methodsPath).Length == 0)) IsValid = false;
             return IsValid;
         }
 
-        public bool LoadSavedScope(IMetadataHost host)
+        private void LoadSavedModules(IMetadataHost host, string modulesFN, IDictionary<string, IModule> moduleNameToModuleMap)
         {
-            string modulesFN = Path.Combine(ConfigParams.SaveScopePath, "modules.txt");
-            string classesFN = Path.Combine(ConfigParams.SaveScopePath, "classes.txt");
-            string methodsFN = Path.Combine(ConfigParams.SaveScopePath, "methods.txt");
-            bool valid = CheckIfValid(modulesFN, classesFN, methodsFN);
-            if (!valid) return false;
-
-            List<string> moduleNames = new List<string>();
-            IDictionary<string, IModule> moduleNameToModuleMap = new Dictionary<string, IModule>();
-            IDictionary<IModule, IList<string>> bucketedClasses = new Dictionary<IModule, IList<string>>();
             using (StreamReader sr = new StreamReader(modulesFN))
             {
                 string line;
@@ -282,53 +275,130 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
                     line = line.Trim();
                     if (!string.IsNullOrEmpty(line))
                     {
-                        string[] parts = line.Split();
-                        string moduleName = parts[0];
-                        string fileName = parts[1];
-                        moduleNames.Add(moduleName);
+                        int ndx = line.IndexOf(" LOCATION:");
+                        string fileName = line.Substring(ndx + 10);
+                        string moduleName = line.Substring(0, ndx).Split(':')[1];
                         IModule module = host.LoadUnitFrom(fileName) as IModule;
                         moduleNameToModuleMap[moduleName] = module;
-                        bucketedClasses[module] = new List<string>();
                         List<INamedTypeDefinition> l = module.GetAllTypes().OfType<INamedTypeDefinition>().ToList();
                         Console.WriteLine("Module: {0}   Num elements: {1}", moduleName, l.Count);
-
                         if (module == null || module == Dummy.Module || module == Dummy.Assembly)
                             throw new Exception("The input is not a valid CLR module or assembly.");
                     }
                 }
-                moduleNames.Sort();
-                moduleNames.Reverse();
             }
+        }
 
+        private void LoadSavedClasses(IMetadataHost host, string classesFN, IDictionary<string, IModule> moduleNameToModuleMap,
+                                      IDictionary<string, ITypeDefinition> classNameToTypeMap, bool isEntryPt)
+        {
             using (StreamReader sr = new StreamReader(classesFN))
             {
                 string line;
                 while ((line = sr.ReadLine()) != null)
                 {
                     line = line.Trim();
-                    foreach (string modName in moduleNames)
+                    int ndxOfMod = line.IndexOf(" MODULE:");
+                    string modName = line.Substring(ndxOfMod).Split(':')[1];
+                    string classAndArgs = line.Substring(0, ndxOfMod);
+                    int ndxOfArgs = classAndArgs.IndexOf(" ARGS:");
+                    string className = classAndArgs.Substring(0, ndxOfArgs).Split(':')[1];
+                    string args = classAndArgs.Substring(ndxOfArgs + 6);
+
+                    IModule module = moduleNameToModuleMap[modName];
+                    ITypeDefinition clTypDefn;
+                    if (args.Length > 0)
                     {
-                        if (line.StartsWith(modName)) bucketedClasses[moduleNameToModuleMap[modName]].Add(line);
+                        IList<ITypeReference> genArgs = getArgsList(args, classNameToTypeMap);
+                        // ASSUMPTION: for code in below line: a compiler-generated class that has the spl char '<' in its
+                        // name is never generic.
+                        int targNdx = className.IndexOf('<');
+                        string clname = className.Substring(0, targNdx);
+                        clTypDefn = UnitHelper.FindType(host.NameTable, module, clname, genArgs.Count);
+                        GenericTypeInstanceReference gtyRef = new GenericTypeInstanceReference
+                                                                (clTypDefn as INamedTypeReference, genArgs, host.InternFactory);
+                        clTypDefn = gtyRef.ResolvedType;
+                    }
+                    else
+                    {
+                        clTypDefn = UnitHelper.FindType(host.NameTable, module, className);
+                    }
+                    if (clTypDefn != null)
+                    {
+                        if (isEntryPt)
+                        {
+                            entryPtClasses.Add(clTypDefn);
+                        }
+                        else
+                        {
+                            classes.Add(clTypDefn);
+                        }
+                        classNameToTypeMap[clTypDefn.FullName()] = clTypDefn;
                     }
                 }
             }
-            foreach (IModule module in bucketedClasses.Keys)
+        }
+
+        private IList<ITypeReference> getArgsList(string args, IDictionary<string, ITypeDefinition> classNameToTypeMap)
+        {
+            IList<ITypeReference> argsList = new List<ITypeReference>();
+            string[] parts = args.Split(',');
+            foreach (string part in parts)
             {
-                IList<string> clNameList = bucketedClasses[module];
-                foreach (string clName in clNameList)
-                {
-                    INamedTypeDefinition clTypDefn = UnitHelper.FindType(host.NameTable, module, clName);
-                    if (clTypDefn != null) classes.Add(clTypDefn);
-                }
+                ITypeDefinition argTy = classNameToTypeMap[part];
+                argsList.Add(argTy);
             }
+            return argsList;
+        }
+
+        private void LoadSavedMethods(IMetadataHost host, string methodsFN,
+                                      IDictionary<string, ITypeDefinition> classNameToTypeMap,
+                                      IDictionary<string, IMethodDefinition> methodNameToMethodMap)
+        {
             using (StreamReader sr = new StreamReader(methodsFN))
             {
                 string line;
                 while ((line = sr.ReadLine()) != null)
                 {
-
+                    line = line.Trim();
+                    int ndxOfClass = line.IndexOf(" CLASS:");
+                    string className = line.Substring(ndxOfClass).Split(':')[1];
+                    string methAndArgs = line.Substring(0, ndxOfClass);
+                    int ndxOfArgs = methAndArgs.IndexOf(" ARGS:");
+                    string methName = methAndArgs.Substring(0, ndxOfArgs).Split(':')[1];
+                    string args = methAndArgs.Substring(ndxOfArgs + 6);
+                  
+                    ITypeDefinition cl = classNameToTypeMap[className];
+                    IMethodDefinition methDefn = Utils.GetMethodByFullName(cl, methName);
+                    if (methDefn.IsGeneric && args.Length > 0)
+                    {
+                        IList<ITypeReference> genArgs = getArgsList(args, classNameToTypeMap);
+                        GenericMethodInstance newInstMeth = new GenericMethodInstance(methDefn, genArgs, host.InternFactory);
+                        methDefn = newInstMeth;
+                    }
+                    methodNameToMethodMap[methDefn.FullName()] = methDefn;
+                    if (methDefn != null) methods.Add(methDefn);
                 }
             }
+        }
+
+        public bool LoadSavedScope(IMetadataHost host)
+        {
+            string modulesFN = Path.Combine(ConfigParams.SaveScopePath, "modules.txt");
+            string classesFN = Path.Combine(ConfigParams.SaveScopePath, "classes.txt");
+            string entClassesFN = Path.Combine(ConfigParams.SaveScopePath, "entrypt_classes.txt");
+            string methodsFN = Path.Combine(ConfigParams.SaveScopePath, "methods.txt");
+            bool valid = CheckIfValid(modulesFN, classesFN, entClassesFN, methodsFN);
+            if (!valid) return false;
+           
+            IDictionary<string, IModule> moduleNameToModuleMap = new Dictionary<string, IModule>();
+            IDictionary<string, ITypeDefinition> classNameToTypeMap = new Dictionary<string, ITypeDefinition>();
+            IDictionary<string, IMethodDefinition> methodNameToMethodMap = new Dictionary<string, IMethodDefinition>();
+
+            LoadSavedModules(host, modulesFN, moduleNameToModuleMap);
+            LoadSavedClasses(host, classesFN, moduleNameToModuleMap, classNameToTypeMap, false);
+            LoadSavedClasses(host, entClassesFN, moduleNameToModuleMap, classNameToTypeMap, true);
+            LoadSavedMethods(host, methodsFN, classNameToTypeMap, methodNameToMethodMap);
             return true;
         }
 
@@ -337,9 +407,11 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
             string modulesFN = "modules.txt";
             StreamWriter modulesSW = new StreamWriter(Path.Combine(ConfigParams.SaveScopePath, modulesFN));
             List<IModule> moduleList = host.LoadedUnits.OfType<IModule>().ToList();
+            ISet<ITypeDefinition> processedGenericTypes = new HashSet<ITypeDefinition>();
+
             foreach (IModule module in moduleList)
             {
-                modulesSW.WriteLine(module.Name.Value + " " + module.Location);
+                modulesSW.WriteLine("MODULE:" + module.Name.Value + " LOCATION:" + module.Location);
             }
             modulesSW.Close();
 
@@ -347,6 +419,73 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
             StreamWriter classesSW = new StreamWriter(Path.Combine(ConfigParams.SaveScopePath, classesFN));
             foreach (ITypeDefinition cl in classes)
             {
+                IModule mod = TypeHelper.GetDefiningUnit(cl) as IModule;
+                if (cl is IGenericTypeInstance)
+                {
+                    ProcessGenericType(cl, classesSW, mod, processedGenericTypes);
+                }
+                else
+                {
+                    classesSW.WriteLine("CLASS:" + cl.FullName() + " ARGS: MODULE:" + mod.Name.Value);
+                }
+            }
+            classesSW.Close();
+
+            string entClassesFN = "entrypt_classes.txt";
+            StreamWriter entClassesSW = new StreamWriter(Path.Combine(ConfigParams.SaveScopePath, entClassesFN));
+            foreach (ITypeDefinition cl in entryPtClasses)
+            {
+                IModule mod = TypeHelper.GetDefiningUnit(cl) as IModule;
+                entClassesSW.WriteLine("CLASS:" + cl.FullName() + " ARGS: MODULE:" + mod.Name.Value);
+            }
+            entClassesSW.Close();
+
+            string methodsFN = "methods.txt";
+            StreamWriter methodsSW = new StreamWriter(Path.Combine(ConfigParams.SaveScopePath, methodsFN));
+            foreach (IMethodDefinition meth in methods)
+            {
+                string argStr = "";
+                IMethodDefinition methToRecord = meth;
+                if (meth is IGenericMethodInstance)
+                {
+                    IGenericMethodInstance genericM = meth as IGenericMethodInstance;
+                    IEnumerable<ITypeReference> genericArgs = genericM.GenericArguments;
+                    foreach (ITypeReference ty in genericArgs)
+                    {
+                        ITypeDefinition tyDefn = ty.ResolvedType;
+                        argStr += tyDefn.FullName() + ",";
+                    }
+                    if (!argStr.Equals("")) argStr = argStr.TrimEnd(',');
+                    methToRecord = genericM.GenericMethod.ResolvedMethod;
+                }
+                methodsSW.WriteLine("METHOD:" + methToRecord.FullName() + " ARGS:" + argStr + " CLASS:" + 
+                                    methToRecord.ContainingTypeDefinition.FullName());
+            }
+            methodsSW.Close();
+        }
+
+        private void ProcessGenericType(ITypeDefinition cl, StreamWriter classesSW,
+                                        IModule mod, ISet<ITypeDefinition> processedGenericTypes)
+        {
+            IGenericTypeInstance gcl = cl as IGenericTypeInstance;
+            if (gcl != null && !processedGenericTypes.Contains(gcl))
+            {
+                INamedTypeDefinition templateType = gcl.GenericType.ResolvedType;
+                IEnumerable<ITypeReference> genArgs = gcl.GenericArguments;
+                string argStr = "";
+                foreach (ITypeReference ty in genArgs)
+                {
+                    ITypeDefinition tyDefn = ty.ResolvedType;
+                    if (tyDefn is IGenericTypeInstance)
+                    {
+                        IModule mod1 = TypeHelper.GetDefiningUnit(tyDefn) as IModule;
+                        ProcessGenericType(tyDefn, classesSW, mod1, processedGenericTypes);
+                    }
+                    argStr += tyDefn.FullName() + ",";
+                }
+                if (!argStr.Equals("")) argStr = argStr.TrimEnd(',');
+                classesSW.WriteLine("CLASS:" + templateType.FullName() + " ARGS:" + argStr + " MODULE:" + mod.Name.Value);
+                processedGenericTypes.Add(gcl);
             }
         }
     }
