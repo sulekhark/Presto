@@ -35,8 +35,9 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
         public readonly ISet<IMethodDefinition> addrTakenMethods;
 
         public StreamWriter rtaLogSW;
+        public IMetadataHost host;
 
-        public RTAAnalyzer(bool rootIsExe, StreamWriter sw)
+        public RTAAnalyzer(bool rootIsExe, StreamWriter sw, IMetadataHost h)
         {
             TypeDefinitionComparer tdc = new TypeDefinitionComparer();
             MethodReferenceDefinitionComparer mdc = MethodReferenceDefinitionComparer.Default;
@@ -57,6 +58,7 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
             types = new HashSet<ITypeDefinition>(tdc);
             this.rootIsExe = rootIsExe;
             this.rtaLogSW = sw;
+            this.host = h;
 
             addrTakenInstFlds = new HashSet<IFieldDefinition>(frc);
             addrTakenStatFlds = new HashSet<IFieldDefinition>(frc);
@@ -193,8 +195,9 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
                     {
                         MethodCallInstruction invkInst = instruction as MethodCallInstruction;
                         IMethodReference callTgt = invkInst.Method;
+                        ITypeReference containingType = callTgt.ContainingType;
+                        ITypeDefinition declType = containingType.ResolvedType;
                         IMethodDefinition callTgtDef = callTgt.ResolvedMethod;
-                        ITypeDefinition declType = callTgtDef.ContainingTypeDefinition;
                         ITypeDefinition addedType = Stubber.CheckAndAdd(declType);
                         IMethodDefinition addedMeth = Stubber.CheckAndAdd(callTgtDef);
                         MethodCallOperation callType = invkInst.Operation;
@@ -281,7 +284,6 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
                         IModule module = host.LoadUnitFrom(fileName) as IModule;
                         moduleNameToModuleMap[moduleName] = module;
                         List<INamedTypeDefinition> l = module.GetAllTypes().OfType<INamedTypeDefinition>().ToList();
-                        Console.WriteLine("Module: {0}   Num elements: {1}", moduleName, l.Count);
                         if (module == null || module == Dummy.Module || module == Dummy.Assembly)
                             throw new Exception("The input is not a valid CLR module or assembly.");
                     }
@@ -295,33 +297,97 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
             using (StreamReader sr = new StreamReader(classesFN))
             {
                 string line;
+
+                // Processing of the lines in classesFN is stateful: The nested classes of generic type instances occur
+                // immediately after the generic type instance itself.
+                int remainingNestedClasses = 0;
+                int state = 0; // 0 - non-nested processing, 1 - processing a gti with non-zero nested classes,
+                               // 2 - processing the nested classes themselves.
+                ITypeDefinition genericTypeInst = null;
+                IDictionary<string, ITypeDefinition> nestedTypeMap = new Dictionary<string, ITypeDefinition>();
+
                 while ((line = sr.ReadLine()) != null)
                 {
                     line = line.Trim();
+                    state = 0;
                     int ndxOfMod = line.IndexOf(" MODULE:");
-                    string modName = line.Substring(ndxOfMod).Split(':')[1];
+                    int ndxOfNestingInfo = line.IndexOf(" NESTED_");
+                    int modLen = (ndxOfNestingInfo > 0) ? ndxOfNestingInfo - ndxOfMod : line.Length - ndxOfMod;
+                    string modName = line.Substring(ndxOfMod, modLen).Split(':')[1];
+                    string nestedClassName = "";
+                    if (ndxOfNestingInfo > 0)
+                    {
+                        string nestingInfo = line.Substring(ndxOfNestingInfo);
+                        string[] parts = nestingInfo.Split(':');
+                        if (parts[0].Contains("_CNT"))
+                        {
+                            if (remainingNestedClasses > 0) Console.WriteLine("WARNING: LoadSavedClasses: Missing nested class.");
+                            remainingNestedClasses = Int32.Parse(parts[1]);
+                            state = 1;
+                        }
+                        else
+                        {
+                            nestedClassName = parts[1];
+                            remainingNestedClasses--;
+                            state = 2;
+                        }
+                    }
                     string classAndArgs = line.Substring(0, ndxOfMod);
                     int ndxOfArgs = classAndArgs.IndexOf(" ARGS:");
                     string className = classAndArgs.Substring(0, ndxOfArgs).Split(':')[1];
                     string args = classAndArgs.Substring(ndxOfArgs + 6);
 
-                    IModule module = moduleNameToModuleMap[modName];
-                    ITypeDefinition clTypDefn;
-                    if (args.Length > 0)
+                    if (state == 0 && remainingNestedClasses > 0) Console.WriteLine("WARNING: LoadSavedClasses: Missing nested class.");
+                    IModule module = null;
+                    if (modName != "") module = moduleNameToModuleMap[modName];
+                    ITypeDefinition clTypDefn = null;
+                    if (args.Length > 0 && module != null)
                     {
-                        IList<ITypeReference> genArgs = getArgsList(args, classNameToTypeMap);
-                        // ASSUMPTION: for code in below line: a compiler-generated class that has the spl char '<' in its
-                        // name is never generic.
-                        int targNdx = className.IndexOf('<');
-                        string clname = className.Substring(0, targNdx);
-                        clTypDefn = UnitHelper.FindType(host.NameTable, module, clname, genArgs.Count);
-                        GenericTypeInstanceReference gtyRef = new GenericTypeInstanceReference
-                                                                (clTypDefn as INamedTypeReference, genArgs, host.InternFactory);
-                        clTypDefn = gtyRef.ResolvedType;
+                        if (state == 0 || state == 1)
+                        {
+                            IList<ITypeReference> genArgs = getArgsList(args, classNameToTypeMap);
+                            if (genArgs == null) continue;
+                            // ASSUMPTION: for code in below line: a compiler-generated class that has the spl char '<' in its
+                            // name is never generic.
+                            int targNdx = className.IndexOf('<');
+                            string clname = className.Substring(0, targNdx);
+                            clTypDefn = UnitHelper.FindType(host.NameTable, module, clname, genArgs.Count);
+                            GenericTypeInstanceReference gtyRef = new GenericTypeInstanceReference
+                                                                    (clTypDefn as INamedTypeReference, genArgs, host.InternFactory);
+                            clTypDefn = gtyRef.ResolvedType;
+                            if (state == 1)
+                            {
+                                genericTypeInst = clTypDefn;
+                                FillNestedTypeMap(genericTypeInst, nestedTypeMap, "", true);
+                            }
+                        }
+                        else if (state == 2)
+                        {
+                            clTypDefn = null;
+                            if (nestedTypeMap.ContainsKey(nestedClassName)) clTypDefn = nestedTypeMap[nestedClassName];
+                            if (remainingNestedClasses == 0) nestedTypeMap.Clear();
+                        }
+                    }
+                    else if (className.EndsWith("[]") && module != null)
+                    {
+                        // TODO: Implement the multiple dimension case
+                        // string elemClassName = className.TrimEnd(']').TrimEnd('[');
+                        // ITypeDefinition elemTypDefn = UnitHelper.FindType(host.NameTable, module, elemClassName);
+                        // IArrayType aty = Matrix.GetMatrix(elemTypDefn, 1, host.InternFactory);
+                        // IArrayType aty1 = Matrix.GetMatrix(elemTypDefn, 1, null, null, host.InternFactory);
+                        // clTypDefn = aty;
+                        clTypDefn = null;
                     }
                     else
                     {
-                        clTypDefn = UnitHelper.FindType(host.NameTable, module, className);
+                        if (module != null)
+                        {
+                            clTypDefn = UnitHelper.FindType(host.NameTable, module, className);
+                        }
+                        else
+                        {
+                            clTypDefn = Dummy.TypeReference.ResolvedType;
+                        }
                     }
                     if (clTypDefn != null)
                     {
@@ -329,10 +395,7 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
                         {
                             entryPtClasses.Add(clTypDefn);
                         }
-                        else
-                        {
-                            classes.Add(clTypDefn);
-                        }
+                        classes.Add(clTypDefn);
                         classNameToTypeMap[clTypDefn.FullName()] = clTypDefn;
                     }
                 }
@@ -342,9 +405,10 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
         private IList<ITypeReference> getArgsList(string args, IDictionary<string, ITypeDefinition> classNameToTypeMap)
         {
             IList<ITypeReference> argsList = new List<ITypeReference>();
-            string[] parts = args.Split(',');
+            string[] parts = args.Split(';');
             foreach (string part in parts)
             {
+                if (!classNameToTypeMap.ContainsKey(part)) return null;
                 ITypeDefinition argTy = classNameToTypeMap[part];
                 argsList.Add(argTy);
             }
@@ -368,16 +432,31 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
                     string methName = methAndArgs.Substring(0, ndxOfArgs).Split(':')[1];
                     string args = methAndArgs.Substring(ndxOfArgs + 6);
                   
+                    if (!classNameToTypeMap.ContainsKey(className))
+                    {
+                        System.Console.WriteLine("WARNING: LoadSavedMethods: Skipping method {0}", methName);
+                        continue;
+                    }
                     ITypeDefinition cl = classNameToTypeMap[className];
                     IMethodDefinition methDefn = Utils.GetMethodByFullName(cl, methName);
                     if (methDefn.IsGeneric && args.Length > 0)
                     {
                         IList<ITypeReference> genArgs = getArgsList(args, classNameToTypeMap);
-                        GenericMethodInstance newInstMeth = new GenericMethodInstance(methDefn, genArgs, host.InternFactory);
-                        methDefn = newInstMeth;
+                        if (genArgs != null)
+                        {
+                            GenericMethodInstance newInstMeth = new GenericMethodInstance(methDefn, genArgs, host.InternFactory);
+                            methDefn = newInstMeth;
+                        }
+                        else
+                        {
+                            methDefn = null;
+                        }
                     }
-                    methodNameToMethodMap[methDefn.FullName()] = methDefn;
-                    if (methDefn != null) methods.Add(methDefn);
+                    if (methDefn != null)
+                    {
+                        methodNameToMethodMap[methDefn.FullName()] = methDefn;
+                        methods.Add(methDefn);
+                    }
                 }
             }
         }
@@ -407,10 +486,16 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
             string modulesFN = "modules.txt";
             StreamWriter modulesSW = new StreamWriter(Path.Combine(ConfigParams.SaveScopePath, modulesFN));
             List<IModule> moduleList = host.LoadedUnits.OfType<IModule>().ToList();
-            ISet<ITypeDefinition> processedGenericTypes = new HashSet<ITypeDefinition>();
+            TypeDefinitionComparer tdc = new TypeDefinitionComparer();
+            ISet<ITypeDefinition> processedTypes = new HashSet<ITypeDefinition>(tdc);
 
             foreach (IModule module in moduleList)
             {
+                if (module == null || module == Dummy.Module || module == Dummy.Assembly)
+                {
+                    System.Console.WriteLine("WARNING: SaveScope - modules: Dummy or null module - skipping.");
+                    continue;
+                }
                 modulesSW.WriteLine("MODULE:" + module.Name.Value + " LOCATION:" + module.Location);
             }
             modulesSW.Close();
@@ -419,14 +504,16 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
             StreamWriter classesSW = new StreamWriter(Path.Combine(ConfigParams.SaveScopePath, classesFN));
             foreach (ITypeDefinition cl in classes)
             {
+                if (processedTypes.Contains(cl)) continue;
                 IModule mod = TypeHelper.GetDefiningUnit(cl) as IModule;
                 if (cl is IGenericTypeInstance)
                 {
-                    ProcessGenericType(cl, classesSW, mod, processedGenericTypes);
+                    ProcessGenericType(cl, classesSW, mod, processedTypes);
                 }
                 else
                 {
                     classesSW.WriteLine("CLASS:" + cl.FullName() + " ARGS: MODULE:" + mod.Name.Value);
+                    processedTypes.Add(cl);
                 }
             }
             classesSW.Close();
@@ -453,9 +540,9 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
                     foreach (ITypeReference ty in genericArgs)
                     {
                         ITypeDefinition tyDefn = ty.ResolvedType;
-                        argStr += tyDefn.FullName() + ",";
+                        argStr += tyDefn.FullName() + ";";
                     }
-                    if (!argStr.Equals("")) argStr = argStr.TrimEnd(',');
+                    if (!argStr.Equals("")) argStr = argStr.TrimEnd(';');
                     methToRecord = genericM.GenericMethod.ResolvedMethod;
                 }
                 methodsSW.WriteLine("METHOD:" + methToRecord.FullName() + " ARGS:" + argStr + " CLASS:" + 
@@ -465,10 +552,10 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
         }
 
         private void ProcessGenericType(ITypeDefinition cl, StreamWriter classesSW,
-                                        IModule mod, ISet<ITypeDefinition> processedGenericTypes)
+                                        IModule mod, ISet<ITypeDefinition> processedTypes)
         {
             IGenericTypeInstance gcl = cl as IGenericTypeInstance;
-            if (gcl != null && !processedGenericTypes.Contains(gcl))
+            if (gcl != null && !processedTypes.Contains(gcl))
             {
                 INamedTypeDefinition templateType = gcl.GenericType.ResolvedType;
                 IEnumerable<ITypeReference> genArgs = gcl.GenericArguments;
@@ -479,14 +566,71 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
                     if (tyDefn is IGenericTypeInstance)
                     {
                         IModule mod1 = TypeHelper.GetDefiningUnit(tyDefn) as IModule;
-                        ProcessGenericType(tyDefn, classesSW, mod1, processedGenericTypes);
+                        ProcessGenericType(tyDefn, classesSW, mod1, processedTypes);
                     }
-                    argStr += tyDefn.FullName() + ",";
+                    else
+                    {
+                        if (!processedTypes.Contains(tyDefn))
+                        {
+                            IModule mod1 = TypeHelper.GetDefiningUnit(tyDefn) as IModule;
+                            classesSW.WriteLine("CLASS:" + tyDefn.FullName() + " ARGS:" + " MODULE:" + mod1.Name.Value);
+                            processedTypes.Add(tyDefn);
+                        }
+                    }
+                    argStr += tyDefn.FullName() + ";";
                 }
-                if (!argStr.Equals("")) argStr = argStr.TrimEnd(',');
-                classesSW.WriteLine("CLASS:" + templateType.FullName() + " ARGS:" + argStr + " MODULE:" + mod.Name.Value);
-                processedGenericTypes.Add(gcl);
+                if (!argStr.Equals("")) argStr = argStr.TrimEnd(';');
+
+                IDictionary<string, ITypeDefinition> nestedTypeMap = new Dictionary<string, ITypeDefinition>();
+                FillNestedTypeMap(gcl, nestedTypeMap, "", false);
+                int nestedCnt = nestedTypeMap.Count;
+                if (nestedCnt > 0)
+                    classesSW.WriteLine("CLASS:" + templateType.FullName() + " ARGS:" + argStr + " MODULE:" + mod.Name.Value +
+                                    " NESTED_CNT:" + nestedCnt);
+                else
+                    classesSW.WriteLine("CLASS:" + templateType.FullName() + " ARGS:" + argStr + " MODULE:" + mod.Name.Value);
+                processedTypes.Add(gcl);
+                foreach (KeyValuePair<string, ITypeDefinition> entry in nestedTypeMap)
+                {
+                    classesSW.WriteLine("CLASS:" + templateType.FullName() + " ARGS:" + argStr + " MODULE:" + mod.Name.Value +
+                                   " NESTED_CLASS:" + entry.Key);
+                    processedTypes.Add(entry.Value);
+                }
             }
+        }
+
+        private  void FillNestedTypeMap(ITypeDefinition gcl, IDictionary<string, ITypeDefinition> nestedTypeMap,
+                                        string prefix, bool fillAll)
+        {
+            foreach (ITypeReference ncl in gcl.NestedTypes)
+            {
+                ITypeDefinition nclDefn = ncl.ResolvedType;
+                string nclName = nclDefn.GetName();
+                string str = (prefix == "") ? nclName : prefix + "." + nclName;
+                if (fillAll || classes.Contains(nclDefn)) nestedTypeMap[str] = nclDefn;
+                FillNestedTypeMap(nclDefn, nestedTypeMap, str, fillAll);
+            }
+        }
+
+        public void Clear()
+        {
+            classWorkList.Clear();
+            entryPtClasses.Clear();
+            visitedClasses.Clear();
+            clinitProcessedClasses.Clear();
+            ignoredClasses.Clear();
+            visitedMethods.Clear();
+            ignoredMethods.Clear();
+            entryPtMethods.Clear();
+            allocClasses.Clear();
+            classes.Clear();
+            methods.Clear();
+            types.Clear();
+
+            addrTakenInstFlds.Clear();
+            addrTakenStatFlds.Clear();
+            addrTakenLocals.Clear();
+            addrTakenMethods.Clear();
         }
     }
 }

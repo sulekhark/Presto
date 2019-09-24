@@ -82,6 +82,7 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
             }
             
             ITypeDefinition containingType = m.ContainingTypeDefinition; // Test methToAdd's containingTypeDefinition
+            if (containingType.InternedKey == 0) return m; // Ignore methods from Cci's Dummy typeref.
             bool matches = MatchesSuppress(m);
             if (matches)
             {
@@ -103,6 +104,13 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
 
         public static ITypeDefinition CheckAndAdd(ITypeDefinition t)
         {
+            if (t is IGenericTypeInstance)
+            {
+                IGenericTypeInstance gty = t as IGenericTypeInstance;
+                IEnumerable<ITypeReference> genArgs = gty.GenericArguments;
+                foreach (ITypeReference garg in genArgs) CheckAndAdd(garg.ResolvedType);
+            }
+
             ITypeDefinition toAdd = t;
             bool matches = MatchesSuppress(t);
             if (matches)

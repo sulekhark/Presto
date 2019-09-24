@@ -7,11 +7,21 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
 {
     public static class Stubs
     {
-        static readonly IDictionary<string, string> NameToNameMap;
-        static readonly IDictionary<string, ITypeDefinition> NameToTypeDefMap;
+        static IDictionary<string, string> NameToNameMap;
+        static IDictionary<string, ITypeDefinition> NameToTypeDefMap;
         private static IInternFactory internFactory;
 
-        static Stubs()
+        public static void Clear()
+        {
+            NameToNameMap.Clear();
+            NameToTypeDefMap.Clear();
+        }
+        public static void SetupInternFactory(IInternFactory ifactory)
+        {
+            internFactory = ifactory;
+        }
+
+        public static void SetupStubs(IModule stubsModule)
         {
             NameToTypeDefMap = new Dictionary<string, ITypeDefinition>();
             NameToNameMap = new Dictionary<string, string>();
@@ -23,15 +33,7 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
             NameToNameMap.Add("System.Runtime.CompilerServices.TaskAwaiter", "Microsoft.Torch.Stubs.TaskAwaiter");
             NameToNameMap.Add("System.Runtime.CompilerServices.TaskAwaiter<TResult>", "Microsoft.Torch.Stubs.TaskAwaiter<TResult>");
             NameToNameMap.Add("System.Runtime.CompilerServices.IAsyncStateMachine", "Microsoft.Torch.Stubs.IAsyncStateMachine");
-        }
 
-        public static void SetupInternFactory(IInternFactory ifactory)
-        {
-            internFactory = ifactory;
-        }
-
-        public static void SetupStubs(IModule stubsModule)
-        {
             foreach (ITypeDefinition ty in stubsModule.GetAllTypes().OfType<INamedTypeDefinition>().ToList())
             {
                 // System.Console.WriteLine("SRK_DBG: Adding stub: {0}  {1}", ty.FullName(), ty.GetType());

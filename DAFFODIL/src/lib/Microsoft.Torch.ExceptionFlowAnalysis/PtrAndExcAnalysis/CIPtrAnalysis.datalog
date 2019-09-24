@@ -104,6 +104,7 @@ reachableI(i) :- MI(m,i), reachableM(m).
 
 # possibly-multiple-target call sites
 IM(i,m) :- reachableI(i), IinvkArg0(i,v), VH(v,h), IHM(i,h,m).
+IM(i,m) :- reachableI(i), IinvkArg0(i,v), VX(v,x), AddrOfVX(v1,x), VH(v1,h), IHM(i,h,m).
 # calls to static methods
 IM(i,m) :- reachableI(i), StatIM(i,m).
 # method call via delegates
@@ -137,7 +138,7 @@ VH(l,h) :- Alloc(l,h).
 
 VH(l,h) :- Move(l,r), VH(r,h), !structV(l).
 StrMove(lh,rh) :- Move(l,r), VH(l,lh), VH(r,rh), structV(l).
-VX(l,x) :- Move(l,r), VX(r,x).
+VX(l,x) :- Move(l,r), VX(r,x), !structV(l).
 
 VH(l,hfh) :- InstFldRead(l,h,f), HFH(h,f,hfh), !structV(l).
 StrMove(lh,hfh) :- InstFldRead(l,h,f), VH(l,lh), HFH(h,f,hfh), structV(l).

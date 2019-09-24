@@ -62,7 +62,7 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
             bool rootIsExe = false;
             if (rootModule.Kind == ModuleKind.ConsoleApplication) rootIsExe = true;
             StreamWriter rtaLogSW = new StreamWriter(Path.Combine(ConfigParams.LogDir, "rta_log.txt"));
-            rtaAnalyzer = new RTAAnalyzer(rootIsExe, rtaLogSW);
+            rtaAnalyzer = new RTAAnalyzer(rootIsExe, rtaLogSW, host);
             visitor.SetupRTAAnalyzer(rtaAnalyzer);
             Stubber.SetupRTAAnalyzer(rtaAnalyzer);
             Stubs.SetupInternFactory(host.InternFactory);
@@ -95,8 +95,8 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
                     rtaAnalyzer.classWorkList.RemoveAt(0);
                     visitor.Traverse(ty);
                 }
-                iterationCount++;
                 if (rtaAnalyzer.classes.Count == startClassCnt && rtaAnalyzer.methods.Count == startMethCnt) changeInCount = false;
+                iterationCount++;
             }
             Copy(rtaAnalyzer.allocClasses, rtaAnalyzer.classes);
             rtaLogSW.WriteLine();
@@ -118,9 +118,10 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
                 rtaLogSW.WriteLine(m.FullName());
             }
             rtaLogSW.WriteLine("+++++++++++++++ RTA DONE ++++++++++++++++++");
-            rtaLogSW.Close();
-            rtaAnalyzer.SaveScope(host);
+
+            if (!diskLoadSuccessful) rtaAnalyzer.SaveScope(host);
             visitor.SetupSrcLocProviders(rootAssembly, stubsAssembly, rtaAnalyzer.classes);
+            rtaLogSW.Close();
         }
 
         static void GenerateFacts(MetadataVisitor visitor)

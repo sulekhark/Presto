@@ -67,11 +67,11 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetBackend.Model
             var ydef = y as IMethodDefinition;
 
             return MemberHelper.MethodsAreEquivalent(x.ResolvedMethod, y.ResolvedMethod);
-            /***
+            /****
             if (xdef == null) xdef = x.ResolvedMethod;
             if (ydef == null) ydef = y.ResolvedMethod;
             return (xdef.InternedKey == ydef.InternedKey);
-            ***/
+            *****/
         }
     }
 }

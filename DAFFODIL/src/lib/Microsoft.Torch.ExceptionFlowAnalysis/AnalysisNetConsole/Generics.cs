@@ -14,6 +14,11 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
             stubTemplateInstMap = new Dictionary<uint, IDictionary<string, IMethodDefinition>>();
         }
 
+        public static void Clear()
+        {
+            stubTemplateInstMap.Clear();
+        }
+
         public static void SetupInternFactory(IInternFactory ifactory)
         {
             internFactory = ifactory;
@@ -54,9 +59,15 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
         {
             IGenericMethodInstance genericM = instMeth as IGenericMethodInstance;
             IEnumerable<ITypeReference> genericArgs = genericM.GenericArguments;
-            string argStr = genericArgs.ToString();
+            string argStr = "";
+            foreach (ITypeReference garg in genericArgs)
+            {
+                Stubber.CheckAndAdd(garg.ResolvedType);
+                argStr = argStr + garg.FullName() + ',';
+            }
+            argStr.TrimEnd(',');
             uint templateKey = templateMeth.InternedKey;
-            IDictionary<string, IMethodDefinition> instMap = null;
+            IDictionary<string, IMethodDefinition> instMap;
             if (stubTemplateInstMap.ContainsKey(templateKey))
             {
                 instMap = stubTemplateInstMap[templateKey];

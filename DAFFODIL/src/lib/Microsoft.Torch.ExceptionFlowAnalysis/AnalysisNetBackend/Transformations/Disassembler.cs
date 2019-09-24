@@ -848,6 +848,10 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetBackend.Transformatio
                     //    break;
                     case OperationCode.Volatile_:
                         break;
+                    case OperationCode.Readonly_:
+                        break;
+                    case OperationCode.Refanytype:
+                        break;
 					default:
 						System.Console.WriteLine("Unknown bytecode: {0}", op.OperationCode);
 						//throw new UnknownBytecodeException(bb, op);

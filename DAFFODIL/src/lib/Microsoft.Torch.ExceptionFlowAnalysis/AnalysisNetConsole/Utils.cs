@@ -119,6 +119,17 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
             return null;
         }
 
+        public static IMethodDefinition GetMatchingGenericInstance(ISet<IMethodDefinition> candidateInsts,
+                                                                   IGenericMethodInstance meth)
+        {
+            foreach (IMethodDefinition cmeth in candidateInsts)
+            {
+                if (MemberHelper.GenericMethodSignaturesAreEqual(meth, cmeth)) return cmeth;
+            }
+            return null;
+        }
+
+
         // Full Name but without containing name space should match: <method_name><<generic_param_if_present>>(<param_list>)
         // This is for finding the same method definition but in a stub namespace.
         public static IMethodDefinition GetStubMatchMethod(ITypeDefinition ty, IMethodDefinition meth)

@@ -1,6 +1,4 @@
-﻿// Copyright (c) Edgardo Zoppi.  All Rights Reserved.  Licensed under the MIT License.  See License.txt in the project root for license information.
-
-using System;
+﻿using System;
 using System.IO;
 using System.Collections.Generic;
 using System.Linq;
@@ -172,6 +170,7 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
 
         public void Traverse (ITypeDefinition typeDefinition)
         {
+            if (typeDefinition.InternedKey == 0) return; // Ignore Cci's Dummy type
             if (rtaAnalyzer != null)
             {
                 if (rtaAnalyzer.classes.Contains(typeDefinition) && !rtaAnalyzer.visitedClasses.Contains(typeDefinition))

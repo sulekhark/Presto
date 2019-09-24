@@ -279,29 +279,57 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
                     {
                         if (tyMeth.Visibility == TypeMemberVisibility.Private) continue;
                         if (tyMeth.IsConstructor) continue;
-                        if (!methods.Contains(tyMeth)) continue;
-                        MethodRefWrapper tyMethW = WrapperProvider.getMethodRefW(tyMeth);
-                        foreach (ITypeDefinition candidateTy in classes)
+                        if (!tyMeth.IsGeneric && !methods.Contains(tyMeth)) continue;
+                        ISet<IMethodDefinition> instantiatedMeths;
+                        if (tyMeth.IsGeneric && MetadataVisitor.genericMethodMap.ContainsKey(tyMeth))
                         {
-                            if (candidateTy is IArrayTypeReference) continue;
-                            if (candidateTy.IsAbstract || candidateTy.IsInterface) continue;
-                            TypeRefWrapper candidateTyW = WrapperProvider.getTypeRefW(candidateTy);
-                            bool implementationExists = false;
-                            if (tyIsInterface)
+                            instantiatedMeths = MetadataVisitor.genericMethodMap[tyMeth];
+                        }
+                        else
+                        {
+                            instantiatedMeths = new HashSet<IMethodDefinition>();
+                            instantiatedMeths.Add(tyMeth);
+                        }
+                        foreach (IMethodDefinition meth in instantiatedMeths)
+                        {
+                            MethodRefWrapper methW = WrapperProvider.getMethodRefW(meth);
+                            foreach (ITypeDefinition candidateTy in classes)
                             {
-                                implementationExists = Utils.ImplementsInterface(candidateTy, ty);
-                            }
-                            else
-                            {
-                                implementationExists = Utils.ExtendsClass(candidateTy, ty);
-                            }
-                            if (implementationExists)
-                            {
-                                IMethodDefinition candidateMeth = Utils.GetSignMatchMethod(candidateTy, tyMeth);
-                                if (candidateMeth != null && methods.Contains(candidateMeth))
+                                if (candidateTy is IArrayTypeReference) continue;
+                                if (candidateTy.IsAbstract || candidateTy.IsInterface) continue;
+                                TypeRefWrapper candidateTyW = WrapperProvider.getTypeRefW(candidateTy);
+                                bool implementationExists = false;
+                                if (tyIsInterface)
                                 {
-                                    MethodRefWrapper candidateMethW = WrapperProvider.getMethodRefW(candidateMeth);
-                                    ProgramRels.relCha.Add(tyMethW, candidateTyW, candidateMethW);
+                                    implementationExists = Utils.ImplementsInterface(candidateTy, ty);
+                                }
+                                else
+                                {
+                                    implementationExists = Utils.ExtendsClass(candidateTy, ty);
+                                }
+                                if (implementationExists)
+                                {
+                                    IMethodDefinition candidateMeth;
+                                    if (meth is IGenericMethodInstance)
+                                    {
+                                        candidateMeth = Utils.GetSignMatchMethod(candidateTy, tyMeth);
+                                        if (candidateMeth != null && MetadataVisitor.genericMethodMap.ContainsKey(candidateMeth))
+                                        {
+                                            ISet<IMethodDefinition> candidateInsts = MetadataVisitor.genericMethodMap[candidateMeth];
+                                            candidateMeth = Utils.GetMatchingGenericInstance(candidateInsts,
+                                                                                             (meth as IGenericMethodInstance));
+                                        }
+                                        else candidateMeth = null;
+                                    }
+                                    else
+                                    {
+                                        candidateMeth = Utils.GetSignMatchMethod(candidateTy, meth);
+                                    }
+                                    if (candidateMeth != null && methods.Contains(candidateMeth))
+                                    {
+                                        MethodRefWrapper candidateMethW = WrapperProvider.getMethodRefW(candidateMeth);
+                                        ProgramRels.relCha.Add(methW, candidateTyW, candidateMethW);
+                                    }
                                 }
                             }
                         }
@@ -492,7 +520,11 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
             }
             else if (rhsOperand is Constant)
             {
-                // System.Console.WriteLine("Load Constant");
+                // System.Console.WriteLine("WARNING: unhandled: Load Constant");
+            }
+            else if (rhsOperand is ArrayLengthAccess)
+            {
+                // System.Console.WriteLine("WARNING: unhandled: Load ArrayLengthAccess");
             }
             else
             {
@@ -634,7 +666,8 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
             ProgramDoms.domI.Add(instW);
             ProgramDoms.domP.Add(instW);  // At present, for throw/catch processing
             ProgramRels.relMI.Add(mRefW, instW);
-            ProgramRels.relPI.Add(instW, instW);
+            ProgramRels.relPI.Add(instW, instW); 
+            
             if (invkInst.HasResult)
             {
                 IVariable lhsVar = invkInst.Result;

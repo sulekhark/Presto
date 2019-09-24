@@ -102,7 +102,7 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetBackend.Model
 			{
 				AnalyzeInterface(type);
 			}
-			else if (type.IsEnum || type.IsDelegate)
+			else if (type.IsEnum || type.IsDelegate || (type is IArrayType))
 			{
 				// Nothing
 			}
