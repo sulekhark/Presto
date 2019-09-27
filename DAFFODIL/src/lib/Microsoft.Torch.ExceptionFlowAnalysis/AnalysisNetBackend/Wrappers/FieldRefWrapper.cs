@@ -1,14 +1,20 @@
 ﻿using Microsoft.Cci;
+using Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole;
+using Microsoft.Torch.ExceptionFlowAnalysis.ProgramFacts;
+
+
 
 namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetBackend.Wrappers
 {
-    public class FieldRefWrapper
+    public class FieldRefWrapper : IWrapper
     {
-        IFieldReference fld;
+        readonly IFieldReference fld;
+        readonly string typeName;
 
         public FieldRefWrapper(IFieldReference fld)
         {
             this.fld = fld;
+            typeName = (fld == null) ? "" : fld.ContainingType.FullName();
         }
 
         public override string ToString()
@@ -21,6 +27,12 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetBackend.Wrappers
             {
                 return fld.Name.Value;
             }
+        }
+
+        public string GetDesc()
+        {
+            string s = "CLASS:" + typeName;
+            return s;
         }
     }
 }

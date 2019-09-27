@@ -1,5 +1,4 @@
-﻿using Microsoft.Cci;
-using Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetBackend.ThreeAddressCode.Values;
+﻿using Microsoft.Torch.ExceptionFlowAnalysis.ProgramFacts;
 
 namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetBackend.Wrappers
 {
@@ -10,7 +9,7 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetBackend.Wrappers
         AddrF,
         AddrV
     }
-    public class AddressWrapper
+    public class AddressWrapper : IWrapper
     {
         MethodRefWrapper mRefW;
         InstructionWrapper instW;
@@ -63,7 +62,31 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetBackend.Wrappers
             }
             else
             {
-                return "unknown address entry";
+                return "UNK";
+            }
+        }
+
+        public string GetDesc()
+        {
+            if (kind == AddressKind.AddrM)
+            {
+                return mRefW.GetDesc();
+            }
+            else if (kind == AddressKind.AddrHF)
+            {
+                return instW.GetDesc() + "::" + fldRefW.GetDesc();
+            }
+            else if (kind == AddressKind.AddrF)
+            {
+                return (fldRefW.GetDesc());
+            }
+            else if (kind == AddressKind.AddrV)
+            {
+                return (varW.GetDesc());
+            }
+            else
+            {
+                return "UNK";
             }
         }
     }

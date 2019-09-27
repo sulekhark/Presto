@@ -19,14 +19,14 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
         private FactGenerator factGen;
         private RTAAnalyzer rtaAnalyzer;
         public static readonly IDictionary<IMethodDefinition, ISet<IMethodDefinition>> genericMethodMap;
-        public static IDictionary<ITypeDefinition, ISourceLocationProvider> classToPdbMap;
+        public static IDictionary<IModule, ISourceLocationProvider> moduleToPdbMap;
 
         static MetadataVisitor()
         {
             MethodReferenceDefinitionComparer mdc = MethodReferenceDefinitionComparer.Default;
             TypeDefinitionComparer tdc = new TypeDefinitionComparer();
             genericMethodMap = new Dictionary<IMethodDefinition, ISet<IMethodDefinition>>(mdc);
-            classToPdbMap = new Dictionary<ITypeDefinition, ISourceLocationProvider>(tdc);
+            moduleToPdbMap = new Dictionary<IModule, ISourceLocationProvider>();
         }
 
         public MetadataVisitor(IMetadataHost host)
@@ -34,10 +34,18 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
 			this.host = host;
         }
 
-        public void SetupSrcLocProviders(Assembly rootAssembly, Assembly stubsAssembly, ISet<ITypeDefinition> classes)
+        public void SetupSrcLocProviders(ISet<ITypeDefinition> classes)
         {
-            
+            List<IModule> moduleList = host.LoadedUnits.OfType<IModule>().ToList();
+            foreach (IModule module in moduleList)
+            {
+                if (!(module == null || module == Dummy.Module || module == Dummy.Assembly))
+                {
+                    moduleToPdbMap[module] = GetPdbReader(module.Location);
+                }
+            }
         }
+           
 
         public void SetupFactGenerator(FactGenerator factGen)
         {
@@ -52,7 +60,6 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
         PdbReader GetPdbReader(string assemblyPath)
         {
             var pdbFileName = Path.ChangeExtension(assemblyPath, "pdb");
-
             if (File.Exists(pdbFileName))
             {
                 using (var pdbStream = File.OpenRead(pdbFileName))
@@ -72,7 +79,8 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
             ISourceLocationProvider sourceLocationProvider = null;
             if (containingDefn != null)
             {
-                if (classToPdbMap.ContainsKey(containingDefn)) sourceLocationProvider = classToPdbMap[containingDefn];
+                IModule mod = TypeHelper.GetDefiningUnit(containingDefn) as IModule;
+                if (moduleToPdbMap.ContainsKey(mod)) sourceLocationProvider = moduleToPdbMap[mod];
             }
             var disassembler = new Disassembler(host, methodDefinition, sourceLocationProvider);
 			var methodBody = disassembler.Execute();

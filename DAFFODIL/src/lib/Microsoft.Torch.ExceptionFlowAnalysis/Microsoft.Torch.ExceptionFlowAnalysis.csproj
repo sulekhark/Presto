@@ -131,6 +131,7 @@
     <Compile Include="AnalysisNetBackend\Wrappers\FieldRefWrapper.cs" />
     <Compile Include="AnalysisNetBackend\Wrappers\HeapAccWrapper.cs" />
     <Compile Include="AnalysisNetBackend\Wrappers\InstructionWrapper.cs" />
+    <Compile Include="AnalysisNetBackend\Wrappers\IntWrapper.cs" />
     <Compile Include="AnalysisNetBackend\Wrappers\MethodRefWrapper.cs" />
     <Compile Include="AnalysisNetBackend\Wrappers\TypeRefWrapper.cs" />
     <Compile Include="AnalysisNetBackend\Wrappers\VariableWrapper.cs" />
@@ -157,6 +158,7 @@
     <Compile Include="ProgramFacts\Doms\DomV.cs" />
     <Compile Include="ProgramFacts\Doms\DomX.cs" />
     <Compile Include="ProgramFacts\Doms\DomZ.cs" />
+    <Compile Include="ProgramFacts\IWrapper.cs" />
     <Compile Include="ProgramFacts\ProgramDoms.cs" />
     <Compile Include="ProgramFacts\ProgramRels.cs" />
     <Compile Include="ProgramFacts\Rel.cs" />

@@ -1,11 +1,13 @@
-﻿namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetBackend.Wrappers
+﻿using Microsoft.Torch.ExceptionFlowAnalysis.ProgramFacts;
+
+namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetBackend.Wrappers
 {
     public enum HeapAccKind
     {
         HeapObj,
         StructObj
     }
-    public class HeapAccWrapper
+    public class HeapAccWrapper : IWrapper
     {
         InstructionWrapper instW;
         VariableWrapper varW;
@@ -35,7 +37,23 @@
             }
             else
             {
-                return "unknown entry in the heap";
+                return "UNK";
+            }
+        }
+
+        public string GetDesc()
+        {
+            if (kind == HeapAccKind.HeapObj)
+            {
+                return (instW.GetDesc());
+            }
+            else if (kind == HeapAccKind.StructObj)
+            {
+                return (varW.GetDesc());
+            }
+            else
+            {
+                return "UNK";
             }
         }
     }

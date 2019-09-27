@@ -60,17 +60,13 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetBackend.Wrappers
         {
             if (MethRefToWrapperMap.ContainsKey(methRef))
             {
-                // System.Console.WriteLine("SRK_DBG1: Returning existing");
                 MethodRefWrapper mRefW = MethRefToWrapperMap[methRef];
-                // System.Console.WriteLine("SRK_DBG: HELLO: {0}", mRefW.ToString());
                 return mRefW;
             }
             else
             {
-                // System.Console.WriteLine("SRK_DBG1: Creating new");
                 MethodRefWrapper mRefW = new MethodRefWrapper(methRef);
                 MethRefToWrapperMap.Add(methRef, mRefW);
-                // System.Console.WriteLine("SRK_DBG: HELLO: {0}", mRefW.ToString());
                 return mRefW;
             }
         }
@@ -80,17 +76,13 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetBackend.Wrappers
             if (MethRefToWrapperMap.ContainsKey(methRef))
             {
                 MethodRefWrapper mRefW = MethRefToWrapperMap[methRef];
-                // System.Console.WriteLine("SRK_DBG2: Calling update");
                 mRefW.Update(methBody);
-                // System.Console.WriteLine("SRK_DBG: HELLO: {0}", mRefW.ToString());
                 return mRefW;
             }
             else
             {
-                // System.Console.WriteLine("SRK_DBG2: Creating new");
                 MethodRefWrapper mRefW = new MethodRefWrapper(methRef, methBody);
                 MethRefToWrapperMap.Add(methRef, mRefW);
-                // System.Console.WriteLine("SRK_DBG: HELLO: {0}", mRefW.ToString());
                 return mRefW;
             }
         }
@@ -123,7 +115,7 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetBackend.Wrappers
             }
         }
 
-        public static InstructionWrapper getInstW(Instruction inst)
+        public static InstructionWrapper getInstW(Instruction inst, IMethodDefinition meth)
         {
             if (InstToWrapperMap.ContainsKey(inst))
             {
@@ -131,7 +123,7 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetBackend.Wrappers
             }
             else
             {
-                InstructionWrapper instW = new InstructionWrapper(inst);
+                InstructionWrapper instW = new InstructionWrapper(inst, meth);
                 InstToWrapperMap.Add(inst, instW);
                 return instW;
             }
@@ -166,7 +158,7 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetBackend.Wrappers
             }
         }
 
-        public static AddressWrapper getAddrW(Instruction inst, IFieldReference fldRef)
+        public static AddressWrapper getAddrW(Instruction inst, IFieldReference fldRef, IMethodDefinition meth)
         {
             if (InstFldRefToAddrWrapperMap.ContainsKey(inst))
             {
@@ -186,14 +178,14 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetBackend.Wrappers
                 IDictionary<IFieldReference, AddressWrapper> innerDict = new Dictionary<IFieldReference, AddressWrapper>(frc);
                 InstFldRefToAddrWrapperMap.Add(inst, innerDict);   
             }
-            InstructionWrapper instW = getInstW(inst);
+            InstructionWrapper instW = getInstW(inst, meth);
             FieldRefWrapper fldW = getFieldRefW(fldRef);
             AddressWrapper addW = new AddressWrapper(instW, fldW);
             InstFldRefToAddrWrapperMap[inst][fldRef] = addW;
             return addW;
         }
 
-        public static AddressWrapper getAddrW(Instruction newArrInst)
+        public static AddressWrapper getAddrW(Instruction newArrInst, IMethodDefinition meth)
         {
             if (ArrayToAddrWrapperMap.ContainsKey(newArrInst))
             {
@@ -201,7 +193,7 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetBackend.Wrappers
             }
             else
             {
-                InstructionWrapper instW = getInstW(newArrInst);
+                InstructionWrapper instW = getInstW(newArrInst, meth);
                 FieldRefWrapper fldW = ProgramDoms.domF.GetVal(0);
                 AddressWrapper addW = new AddressWrapper(instW, fldW);
                 ArrayToAddrWrapperMap[newArrInst] = addW;
@@ -254,7 +246,7 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetBackend.Wrappers
             }
         }
 
-        public static HeapAccWrapper getHeapAccW(Instruction inst)
+        public static HeapAccWrapper getHeapAccW(Instruction inst, IMethodDefinition meth)
         {
             if (InstToHeapAccWrapperMap.ContainsKey(inst))
             {
@@ -262,14 +254,14 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetBackend.Wrappers
             }
             else
             {
-                InstructionWrapper instW = getInstW(inst);
+                InstructionWrapper instW = getInstW(inst, meth);
                 HeapAccWrapper hpW = new HeapAccWrapper(instW);
                 InstToHeapAccWrapperMap[inst] = hpW;
                 return hpW;
             }
         }
 
-        public static ExHandlerWrapper getExHandlerW(Instruction inst)
+        public static ExHandlerWrapper getExHandlerW(Instruction inst, IMethodDefinition meth)
         {
             if (InstToExHandlerWrapperMap.ContainsKey(inst))
             {
@@ -277,7 +269,7 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetBackend.Wrappers
             }
             else
             {
-                InstructionWrapper instW = getInstW(inst);
+                InstructionWrapper instW = getInstW(inst, meth);
                 ExHandlerWrapper ehW = new ExHandlerWrapper(instW);
                 InstToExHandlerWrapperMap[inst] = ehW;
                 return ehW;

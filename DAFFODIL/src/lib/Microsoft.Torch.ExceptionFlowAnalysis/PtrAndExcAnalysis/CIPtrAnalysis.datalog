@@ -105,6 +105,8 @@ reachableI(i) :- MI(m,i), reachableM(m).
 # possibly-multiple-target call sites
 IM(i,m) :- reachableI(i), IinvkArg0(i,v), VH(v,h), IHM(i,h,m).
 IM(i,m) :- reachableI(i), IinvkArg0(i,v), VX(v,x), AddrOfVX(v1,x), VH(v1,h), IHM(i,h,m).
+IM(i,m) :- reachableI(i), IinvkArg0(i,v), VX(v,x), AddrOfHFX(h1,f,x), HFH(h1,f,h), IHM(i,h,m).
+IM(i,m) :- reachableI(i), IinvkArg0(i,v), VX(v,x), AddrOfFX(f1,x), FH(f1,h), IHM(i,h,m).
 # calls to static methods
 IM(i,m) :- reachableI(i), StatIM(i,m).
 # method call via delegates

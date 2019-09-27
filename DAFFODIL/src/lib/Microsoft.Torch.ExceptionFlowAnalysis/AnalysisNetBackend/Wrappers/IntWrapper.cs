@@ -2,23 +2,23 @@
 
 namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetBackend.Wrappers
 {
-    public class ExHandlerWrapper : IWrapper
+    public class IntWrapper : IWrapper
     {
-        readonly InstructionWrapper instW;
+        int val;
 
-        public ExHandlerWrapper(InstructionWrapper instW)
+        public IntWrapper(int n)
         {
-            this.instW = instW;
+            val = n;
         }
 
         public override string ToString()
         {
-            return instW.ToString();
+            return val.ToString();
         }
 
         public string GetDesc()
         {
-            return instW.GetDesc();
+            return "";
         }
     }
 }

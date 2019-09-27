@@ -5,7 +5,7 @@ using Microsoft.Torch.ExceptionFlowAnalysis.Common;
 
 namespace Microsoft.Torch.ExceptionFlowAnalysis.ProgramFacts
 {
-    public class Dom<T> : IndexMap<T>
+    public class Dom<T> : IndexMap<T> where T : IWrapper
     {
         protected readonly string name;
 
@@ -32,7 +32,7 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.ProgramFacts
                     for (int i = 0; i < sz; i++)
                     {
                         T val = GetVal(i);
-                        swMap.WriteLine(ToUniqueString(val));
+                        swMap.WriteLine(ToUniqueString(val) + "  " + val.GetDesc());
                     }
                 }
             }

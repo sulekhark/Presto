@@ -1,9 +1,11 @@
 ﻿using Microsoft.Cci;
 using Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole;
+using Microsoft.Torch.ExceptionFlowAnalysis.ProgramFacts;
+
 
 namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetBackend.Wrappers
 {
-    public class MethodRefWrapper
+    public class MethodRefWrapper : IWrapper
     {
         IMethodReference methRef;
         MethodBody methBody;
@@ -34,6 +36,12 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetBackend.Wrappers
         public override string ToString()
         {
             return methRef.FullName();
+        }
+
+        public string GetDesc()
+        {
+            string s = "CLASS:" + methRef.ContainingType.FullName();
+            return s;
         }
     }
 }

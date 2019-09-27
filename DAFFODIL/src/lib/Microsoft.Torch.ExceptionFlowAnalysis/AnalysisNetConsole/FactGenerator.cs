@@ -2,10 +2,8 @@
 using System;
 using System.IO;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 using Microsoft.Cci;
 using Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetBackend.Model;
 using Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetBackend;
@@ -13,7 +11,6 @@ using Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetBackend.Wrappers;
 using Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetBackend.ThreeAddressCode.Values;
 using Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetBackend.ThreeAddressCode.Instructions;
 using Microsoft.Torch.ExceptionFlowAnalysis.ProgramFacts;
-using Microsoft.Torch.ExceptionFlowAnalysis.ProgramFacts.Relations;
 
 namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
 {
@@ -41,9 +38,11 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
 
         public void GenerateFacts(MethodBody mBody, ControlFlowGraph cfg)
         {
-            MethodRefWrapper mRefW = WrapperProvider.getMethodRefW(mBody.MethodDefinition, mBody);
+            IMethodDefinition methDef = mBody.MethodDefinition;
+            IVariable currentCatchVar = null;
+            MethodRefWrapper mRefW = WrapperProvider.getMethodRefW(methDef, mBody);
             tacLogSW.WriteLine();
-            tacLogSW.WriteLine(mBody.MethodDefinition.Name);
+            tacLogSW.WriteLine(methDef.FullName());
             tacLogSW.WriteLine("==========================================");
             ProcessParams(mBody, mRefW);
             ProcessLocals(mBody, mRefW);
@@ -51,6 +50,10 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
 
             // Going through the instructions via cfg nodes instead of directly iterating over the instructions
             // of the methodBody becuase Phi instructions may not have been inserted in the insts of the methodBody.
+
+            // Program flow order is required for two reasons:
+            //    1) To make the dump of the tac code human-readable
+            //    2) To get the variable for "rethrow" from the immediately preceding catch block.
             IList<CFGNode> cfgList = Utils.getProgramFlowOrder(cfg);
             foreach (var node in cfgList)
             {
@@ -64,7 +67,7 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
                     tacLogSW.WriteLine("{0}", instruction.ToString());
                     // tacLogSW.WriteLine("{0}", instruction.GetType().ToString());
                     // tacLogSW.WriteLine();
-                    InstructionWrapper instW = WrapperProvider.getInstW(instruction);
+                    InstructionWrapper instW = WrapperProvider.getInstW(instruction, methDef);
                     ProgramDoms.domP.Add(instW);
 
                     if (instruction is LoadInstruction)
@@ -80,12 +83,12 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
                     else if (instruction is CreateObjectInstruction)
                     {
                         CreateObjectInstruction newObjInst = instruction as CreateObjectInstruction;
-                        ProcessCreateObjectInst(newObjInst, mRefW, instW);
+                        ProcessCreateObjectInst(newObjInst, mRefW, methDef);
                     }
                     else if (instruction is CreateArrayInstruction)
                     {
                         CreateArrayInstruction newArrInst = instruction as CreateArrayInstruction;
-                        ProcessCreateArrayInst(newArrInst, mRefW, instW);
+                        ProcessCreateArrayInst(newArrInst, mRefW, methDef);
                     }
                     else if (instruction is PhiInstruction)
                     {
@@ -110,12 +113,12 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
                     else if (instruction is ThrowInstruction)
                     {
                         ThrowInstruction throwInst = instruction as ThrowInstruction;
-                        ProcessThrowInst(throwInst, instW, mRefW);
+                        ProcessThrowInst(throwInst, instW, mRefW, currentCatchVar);
                     }
                     else if (instruction is CatchInstruction)
                     {
                         CatchInstruction catchInst = instruction as CatchInstruction;
-                        prevEhW = ProcessCatchInst(catchInst, prevEhW, mRefW);
+                        prevEhW = ProcessCatchInst(catchInst, prevEhW, mRefW, ref currentCatchVar, methDef);
                     }
                     else if (instruction is InitializeObjectInstruction)
                     {
@@ -152,7 +155,7 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
                 }
             }
 
-            ComputeExceptionRanges(cfgList);
+            ComputeExceptionRanges(cfgList, methDef);
         }
 
         public void GenerateTypeAndMethodFacts()
@@ -412,21 +415,14 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
 
         void ProcessLoadInst(LoadInstruction lInst, MethodRefWrapper mRefW)
         {
-            if (!lInst.Result.Type.IsValueType)
+            if (!lInst.Result.Type.IsValueType || lInst.Result.Type.ResolvedType.IsStruct)
             {
-                ProcessLoad(lInst, mRefW, false);
-            }
-            else
-            {
-                if (lInst.Result.Type.ResolvedType.IsStruct)
-                {
-                    ProcessLoad(lInst, mRefW, true);
-                }
+                ProcessLoad(lInst, mRefW);
             }
             return;
         }
 
-        void ProcessLoad(LoadInstruction lInst, MethodRefWrapper mRefW, bool isStruct)
+        void ProcessLoad(LoadInstruction lInst, MethodRefWrapper mRefW)
         {
             IVariable lhsVar = lInst.Result;
             VariableWrapper lhsW = WrapperProvider.getVarW(lhsVar);
@@ -535,21 +531,14 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
 
         void ProcessStoreInst(StoreInstruction sInst, MethodRefWrapper mRefW)
         {
-            if (!sInst.Operand.Type.IsValueType)
+            if (!sInst.Operand.Type.IsValueType || sInst.Operand.Type.ResolvedType.IsStruct)
             {
-                ProcessStore(sInst, mRefW, false);
-            }
-            else
-            {
-                if (sInst.Operand.Type.ResolvedType.IsStruct)
-                {
-                    ProcessStore(sInst, mRefW, true);
-                }
+                ProcessStore(sInst, mRefW);
             }
             return;
         }
 
-        void ProcessStore(StoreInstruction sInst, MethodRefWrapper mRefW, bool isStruct)
+        void ProcessStore(StoreInstruction sInst, MethodRefWrapper mRefW)
         {
             IVariable rhsVar = sInst.Operand;
             VariableWrapper rhsW = WrapperProvider.getVarW(rhsVar);
@@ -591,13 +580,13 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
             return;
         }
 
-        void ProcessCreateObjectInst(CreateObjectInstruction newObjInst, MethodRefWrapper mRefW, InstructionWrapper instW)
+        void ProcessCreateObjectInst(CreateObjectInstruction newObjInst, MethodRefWrapper mRefW, IMethodDefinition methDef)
         {
             IVariable lhsVar = newObjInst.Result;
             VariableWrapper lhsW = WrapperProvider.getVarW(lhsVar);
             ITypeDefinition objTypeDef = newObjInst.AllocationType.ResolvedType;
             TypeRefWrapper objTypeW = WrapperProvider.getTypeRefW(objTypeDef);
-            HeapAccWrapper hpW = WrapperProvider.getHeapAccW(newObjInst);
+            HeapAccWrapper hpW = WrapperProvider.getHeapAccW(newObjInst, methDef);
             ProgramDoms.domH.Add(hpW);
             ProgramRels.relMAlloc.Add(mRefW, lhsW, hpW);
             ProgramRels.relHT.Add(hpW, objTypeW);
@@ -611,7 +600,7 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
                     if (addrTakenInstFlds.Contains(fld))
                     {
                         FieldRefWrapper fldW = WrapperProvider.getFieldRefW(fld);
-                        AddressWrapper allocfldAddrW = WrapperProvider.getAddrW(newObjInst, fld);
+                        AddressWrapper allocfldAddrW = WrapperProvider.getAddrW(newObjInst, fld, methDef);
                         ProgramDoms.domX.Add(allocfldAddrW);
                         ProgramRels.relAddrOfHFX.Add(hpW, fldW, allocfldAddrW);
                     }
@@ -620,20 +609,20 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
             return;
         }
 
-        void ProcessCreateArrayInst(CreateArrayInstruction newArrInst, MethodRefWrapper mRefW, InstructionWrapper instW)
+        void ProcessCreateArrayInst(CreateArrayInstruction newArrInst, MethodRefWrapper mRefW, IMethodDefinition methDef)
         {
             IVariable lhsVar = newArrInst.Result;
             VariableWrapper lhsW = WrapperProvider.getVarW(lhsVar);
             ITypeDefinition elemTypeDef = newArrInst.ElementType.ResolvedType;
             TypeRefWrapper elemTypeW = WrapperProvider.getTypeRefW(elemTypeDef);
-            HeapAccWrapper hpW = WrapperProvider.getHeapAccW(newArrInst);
+            HeapAccWrapper hpW = WrapperProvider.getHeapAccW(newArrInst, methDef);
             ProgramDoms.domH.Add(hpW);
             ProgramRels.relMAlloc.Add(mRefW, lhsW, hpW);
             ProgramRels.relHT.Add(hpW, elemTypeW);
 
             // By default, create an entry in domX for the array as potential address-taken.
             FieldRefWrapper fldW = ProgramDoms.domF.GetVal(0);
-            AddressWrapper arrayAddrW = WrapperProvider.getAddrW(newArrInst);
+            AddressWrapper arrayAddrW = WrapperProvider.getAddrW(newArrInst, methDef);
             ProgramDoms.domX.Add(arrayAddrW);
             ProgramRels.relAddrOfHFX.Add(hpW, fldW, arrayAddrW);
             return;
@@ -808,28 +797,24 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
             return;
         }
 
-        void ProcessThrowInst(ThrowInstruction throwInst, InstructionWrapper instW, MethodRefWrapper mRefW)
+        void ProcessThrowInst(ThrowInstruction throwInst, InstructionWrapper instW, MethodRefWrapper mRefW,
+                              IVariable currentCatchVar)
         {
             ProgramDoms.domP.Add(instW);
             IVariable throwVar = throwInst.Operand;
-            if (throwVar != null)
-            {
-                VariableWrapper varW = WrapperProvider.getVarW(throwVar);
-                ProgramRels.relThrowPV.Add(mRefW, instW, varW);
-            }
-            else
-            {
-                // TODO: Handle the case when the throwInst is rethrow
-            }
-            
+            if (throwVar == null) throwVar = currentCatchVar;
+            VariableWrapper varW = WrapperProvider.getVarW(throwVar);
+            ProgramRels.relThrowPV.Add(mRefW, instW, varW);     
         }
 
-        ExHandlerWrapper ProcessCatchInst(CatchInstruction catchInst, ExHandlerWrapper prevEhW, MethodRefWrapper mRefW)
+        ExHandlerWrapper ProcessCatchInst(CatchInstruction catchInst, ExHandlerWrapper prevEhW, MethodRefWrapper mRefW,
+                                          ref IVariable currentCatchVar, IMethodDefinition methDef)
         {
-            ExHandlerWrapper currEhW = WrapperProvider.getExHandlerW(catchInst);
+            ExHandlerWrapper currEhW = WrapperProvider.getExHandlerW(catchInst, methDef);
             ProgramDoms.domEH.Add(currEhW);
             ProgramRels.relMEH.Add(mRefW, currEhW);
             IVariable catchVar = catchInst.Result;
+            currentCatchVar = catchVar;
             VariableWrapper varW = WrapperProvider.getVarW(catchVar);
             ITypeDefinition catchType = catchVar.Type.ResolvedType;
             TypeRefWrapper typeRefW = WrapperProvider.getTypeRefW(catchType);
@@ -839,7 +824,7 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
             return currEhW;
         }
 
-        void ComputeExceptionRanges(IList<CFGNode> cfgList)
+        void ComputeExceptionRanges(IList<CFGNode> cfgList, IMethodDefinition methDef)
         {
             IDictionary<int, ExHandlerWrapper> nodeidToWrapperMap = new Dictionary<int, ExHandlerWrapper>();
             foreach (CFGNode node in cfgList)
@@ -847,7 +832,7 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
                 CatchInstruction catchInst = FindCatchInstruction(node);
                 if (catchInst != null)
                 {
-                    ExHandlerWrapper catchW = WrapperProvider.getExHandlerW(catchInst);
+                    ExHandlerWrapper catchW = WrapperProvider.getExHandlerW(catchInst, methDef);
                     nodeidToWrapperMap[node.Id] = catchW;
                 }
             }
@@ -858,7 +843,7 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
                 {
                     if (instruction is MethodCallInstruction || instruction is ThrowInstruction)
                     {
-                        InstructionWrapper instW = WrapperProvider.getInstW(instruction);
+                        InstructionWrapper instW = WrapperProvider.getInstW(instruction, methDef);
                         foreach (CFGNode succ in node.Successors)
                         {
                             if (nodeidToWrapperMap.ContainsKey(succ.Id))
