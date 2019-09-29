@@ -18,7 +18,7 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetBackend.Model
 
             if (xdef == null) xdef = x.ResolvedField;
             if (ydef == null) ydef = y.ResolvedField;
-            result = xdef.InternedKey == ydef.InternedKey;
+            result = (xdef.InternedKey == ydef.InternedKey);
             return result;
         }
 
