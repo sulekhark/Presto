@@ -129,7 +129,7 @@
     <Compile Include="AnalysisNetBackend\Wrappers\AddressWrapper.cs" />
     <Compile Include="AnalysisNetBackend\Wrappers\ExHandlerWrapper.cs" />
     <Compile Include="AnalysisNetBackend\Wrappers\FieldRefWrapper.cs" />
-    <Compile Include="AnalysisNetBackend\Wrappers\HeapAccWrapper.cs" />
+    <Compile Include="AnalysisNetBackend\Wrappers\HeapElemWrapper.cs" />
     <Compile Include="AnalysisNetBackend\Wrappers\InstructionWrapper.cs" />
     <Compile Include="AnalysisNetBackend\Wrappers\IntWrapper.cs" />
     <Compile Include="AnalysisNetBackend\Wrappers\MethodRefWrapper.cs" />

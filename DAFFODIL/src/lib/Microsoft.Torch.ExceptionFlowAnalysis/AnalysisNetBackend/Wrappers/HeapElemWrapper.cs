@@ -7,20 +7,20 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetBackend.Wrappers
         HeapObj,
         StructObj
     }
-    public class HeapAccWrapper : IWrapper
+    public class HeapElemWrapper : IWrapper
     {
         InstructionWrapper instW;
         VariableWrapper varW;
         readonly HeapAccKind kind;
 
 
-        public HeapAccWrapper(InstructionWrapper instW)
+        public HeapElemWrapper(InstructionWrapper instW)
         {
             this.instW = instW;
             kind = HeapAccKind.HeapObj;
         }
 
-        public HeapAccWrapper(VariableWrapper varW)
+        public HeapElemWrapper(VariableWrapper varW)
         {
             this.varW = varW;
             kind = HeapAccKind.StructObj;

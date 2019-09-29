@@ -358,7 +358,7 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
                     bool success = ProgramRels.relVT.Add(paramW, varTypeRefW);
                     if (param.Type.ResolvedType.IsStruct && param.Type.IsValueType)
                     {
-                        HeapAccWrapper hpW = WrapperProvider.getHeapAccW(param);
+                        HeapElemWrapper hpW = WrapperProvider.getHeapElemW(param);
                         ProgramDoms.domH.Add(hpW);
                         ProgramRels.relMAlloc.Add(mRefW, paramW, hpW);
                         ProgramRels.relHT.Add(hpW, varTypeRefW);
@@ -394,7 +394,7 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
                         ProgramRels.relVT.Add(lclW, varTypeRefW);
                         if (lclVar.Type.ResolvedType.IsStruct && lclVar.Type.IsValueType)
                         {
-                            HeapAccWrapper hpW = WrapperProvider.getHeapAccW(lclVar);
+                            HeapElemWrapper hpW = WrapperProvider.getHeapElemW(lclVar);
                             ProgramDoms.domH.Add(hpW);
                             ProgramRels.relMAlloc.Add(mRefW, lclW, hpW);
                             ProgramRels.relHT.Add(hpW, varTypeRefW);
@@ -586,7 +586,7 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
             VariableWrapper lhsW = WrapperProvider.getVarW(lhsVar);
             ITypeDefinition objTypeDef = newObjInst.AllocationType.ResolvedType;
             TypeRefWrapper objTypeW = WrapperProvider.getTypeRefW(objTypeDef);
-            HeapAccWrapper hpW = WrapperProvider.getHeapAccW(newObjInst, methDef);
+            HeapElemWrapper hpW = WrapperProvider.getHeapElemW(newObjInst, methDef);
             ProgramDoms.domH.Add(hpW);
             ProgramRels.relMAlloc.Add(mRefW, lhsW, hpW);
             ProgramRels.relHT.Add(hpW, objTypeW);
@@ -615,7 +615,7 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
             VariableWrapper lhsW = WrapperProvider.getVarW(lhsVar);
             ITypeDefinition elemTypeDef = newArrInst.ElementType.ResolvedType;
             TypeRefWrapper elemTypeW = WrapperProvider.getTypeRefW(elemTypeDef);
-            HeapAccWrapper hpW = WrapperProvider.getHeapAccW(newArrInst, methDef);
+            HeapElemWrapper hpW = WrapperProvider.getHeapElemW(newArrInst, methDef);
             ProgramDoms.domH.Add(hpW);
             ProgramRels.relMAlloc.Add(mRefW, lhsW, hpW);
             ProgramRels.relHT.Add(hpW, elemTypeW);

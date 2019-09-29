@@ -24,8 +24,8 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetBackend.Wrappers
         private readonly static IDictionary<Instruction, AddressWrapper> ArrayToAddrWrapperMap;
 
         //HeapAccWrapper dictionaries
-        private readonly static IDictionary<Instruction, HeapAccWrapper> InstToHeapAccWrapperMap;
-        private readonly static IDictionary<IVariable, HeapAccWrapper> VarToHeapAccWrapperMap;
+        private readonly static IDictionary<Instruction, HeapElemWrapper> InstToHeapAccWrapperMap;
+        private readonly static IDictionary<IVariable, HeapElemWrapper> VarToHeapAccWrapperMap;
 
         //ExHandlerWrapper dictionary
         private readonly static IDictionary<Instruction, ExHandlerWrapper> InstToExHandlerWrapperMap;
@@ -50,8 +50,8 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetBackend.Wrappers
             VarToAddrWrapperMap = new Dictionary<IVariable, AddressWrapper>(vc);
             ArrayToAddrWrapperMap = new Dictionary<Instruction, AddressWrapper>(idc);
 
-            InstToHeapAccWrapperMap = new Dictionary<Instruction, HeapAccWrapper>(idc);
-            VarToHeapAccWrapperMap = new Dictionary<IVariable, HeapAccWrapper>(vc);
+            InstToHeapAccWrapperMap = new Dictionary<Instruction, HeapElemWrapper>(idc);
+            VarToHeapAccWrapperMap = new Dictionary<IVariable, HeapElemWrapper>(vc);
 
             InstToExHandlerWrapperMap = new Dictionary<Instruction, ExHandlerWrapper>(idc);
         }
@@ -231,7 +231,7 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetBackend.Wrappers
             }
         }
 
-        public static HeapAccWrapper getHeapAccW(IVariable var)
+        public static HeapElemWrapper getHeapElemW(IVariable var)
         {
             if (VarToHeapAccWrapperMap.ContainsKey(var))
             {
@@ -240,13 +240,13 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetBackend.Wrappers
             else
             {
                 VariableWrapper varW = getVarW(var);
-                HeapAccWrapper hpW = new HeapAccWrapper(varW);
+                HeapElemWrapper hpW = new HeapElemWrapper(varW);
                 VarToHeapAccWrapperMap[var] = hpW;
                 return hpW;
             }
         }
 
-        public static HeapAccWrapper getHeapAccW(Instruction inst, IMethodDefinition meth)
+        public static HeapElemWrapper getHeapElemW(Instruction inst, IMethodDefinition meth)
         {
             if (InstToHeapAccWrapperMap.ContainsKey(inst))
             {
@@ -255,7 +255,7 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetBackend.Wrappers
             else
             {
                 InstructionWrapper instW = getInstW(inst, meth);
-                HeapAccWrapper hpW = new HeapAccWrapper(instW);
+                HeapElemWrapper hpW = new HeapElemWrapper(instW);
                 InstToHeapAccWrapperMap[inst] = hpW;
                 return hpW;
             }
