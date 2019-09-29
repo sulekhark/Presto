@@ -207,6 +207,7 @@
     <Compile Include="ProgramFacts\Relations\RelMove.cs" />
     <Compile Include="ProgramFacts\Relations\RelMStatFldRead.cs" />
     <Compile Include="ProgramFacts\Relations\RelMStatFldWrite.cs" />
+    <Compile Include="ProgramFacts\Relations\RelMStructArrHFH.cs" />
     <Compile Include="ProgramFacts\Relations\RelPI.cs" />
     <Compile Include="ProgramFacts\Relations\RelPrevEH.cs" />
     <Compile Include="ProgramFacts\Relations\RelReachableI.cs" />
@@ -217,6 +218,7 @@
     <Compile Include="ProgramFacts\Relations\RelStaticTM.cs" />
     <Compile Include="ProgramFacts\Relations\RelStrMove.cs" />
     <Compile Include="ProgramFacts\Relations\RelStructH.cs" />
+    <Compile Include="ProgramFacts\Relations\RelStructRefV.cs" />
     <Compile Include="ProgramFacts\Relations\RelStructV.cs" />
     <Compile Include="ProgramFacts\Relations\RelSub.cs" />
     <Compile Include="ProgramFacts\Relations\RelThrowMH.cs" />

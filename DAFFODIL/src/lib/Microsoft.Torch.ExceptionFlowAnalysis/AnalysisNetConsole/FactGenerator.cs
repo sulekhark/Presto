@@ -401,6 +401,13 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
                             ProgramRels.relStructH.Add(hpW);
                             ProgramRels.relStructV.Add(lclW);
                         }
+                        else if (lclVar.Type.TypeCode == PrimitiveTypeCode.Reference)
+                        {
+                            if ((lclVar.Type as IManagedPointerTypeReference).TargetType.ResolvedType.IsStruct)
+                            {
+                                ProgramRels.relStructRefV.Add(lclW);
+                            }
+                        }
                         if (addrTakenLocals.Contains(lclVar))
                         {
                             AddressWrapper varAddrW = WrapperProvider.getAddrW(lclVar);
@@ -586,7 +593,7 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
             VariableWrapper lhsW = WrapperProvider.getVarW(lhsVar);
             ITypeDefinition objTypeDef = newObjInst.AllocationType.ResolvedType;
             TypeRefWrapper objTypeW = WrapperProvider.getTypeRefW(objTypeDef);
-            HeapElemWrapper hpW = WrapperProvider.getHeapElemW(newObjInst, methDef);
+            HeapElemWrapper hpW = WrapperProvider.getHeapElemW(newObjInst, methDef, false);
             ProgramDoms.domH.Add(hpW);
             ProgramRels.relMAlloc.Add(mRefW, lhsW, hpW);
             ProgramRels.relHT.Add(hpW, objTypeW);
@@ -613,15 +620,26 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
         {
             IVariable lhsVar = newArrInst.Result;
             VariableWrapper lhsW = WrapperProvider.getVarW(lhsVar);
-            ITypeDefinition elemTypeDef = newArrInst.ElementType.ResolvedType;
-            TypeRefWrapper elemTypeW = WrapperProvider.getTypeRefW(elemTypeDef);
-            HeapElemWrapper hpW = WrapperProvider.getHeapElemW(newArrInst, methDef);
+            ITypeDefinition arrTypeDef = lhsVar.Type.ResolvedType;
+            TypeRefWrapper arrTypeW = WrapperProvider.getTypeRefW(arrTypeDef);
+            HeapElemWrapper hpW = WrapperProvider.getHeapElemW(newArrInst, methDef, false);
             ProgramDoms.domH.Add(hpW);
             ProgramRels.relMAlloc.Add(mRefW, lhsW, hpW);
-            ProgramRels.relHT.Add(hpW, elemTypeW);
+            ProgramRels.relHT.Add(hpW, arrTypeW);
 
-            // By default, create an entry in domX for the array as potential address-taken.
+            ITypeDefinition elemTypeDef = newArrInst.ElementType.ResolvedType;
             FieldRefWrapper fldW = ProgramDoms.domF.GetVal(0);
+            if (elemTypeDef.IsStruct)
+            {
+                // Even though structs are value types, in our memory model, we allocate them on the heap.
+                HeapElemWrapper hpArrElemW = WrapperProvider.getHeapElemW(newArrInst, methDef, true);
+                ProgramDoms.domH.Add(hpArrElemW);
+                ProgramRels.relMStructArrHFH.Add(mRefW, hpW, fldW, hpArrElemW);
+                TypeRefWrapper elemTypeW = WrapperProvider.getTypeRefW(elemTypeDef);
+                ProgramRels.relHT.Add(hpArrElemW, elemTypeW);
+            }
+
+            // By default, create an entry in domX for the array element as potential address-taken.
             AddressWrapper arrayAddrW = WrapperProvider.getAddrW(newArrInst, methDef);
             ProgramDoms.domX.Add(arrayAddrW);
             ProgramRels.relAddrOfHFX.Add(hpW, fldW, arrayAddrW);

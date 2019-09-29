@@ -2,38 +2,43 @@
 
 namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetBackend.Wrappers
 {
-    public enum HeapAccKind
+    public enum HeapElemKind
     {
-        HeapObj,
-        StructObj
+        RefObj,
+        StructObj,
+        ArrElemStructObj
     }
     public class HeapElemWrapper : IWrapper
     {
         InstructionWrapper instW;
         VariableWrapper varW;
-        readonly HeapAccKind kind;
+        readonly HeapElemKind kind;
 
 
-        public HeapElemWrapper(InstructionWrapper instW)
+        public HeapElemWrapper(InstructionWrapper instW, bool createArrayElem)
         {
             this.instW = instW;
-            kind = HeapAccKind.HeapObj;
+            kind = createArrayElem ? HeapElemKind.ArrElemStructObj : HeapElemKind.RefObj;
         }
 
         public HeapElemWrapper(VariableWrapper varW)
         {
             this.varW = varW;
-            kind = HeapAccKind.StructObj;
+            kind = HeapElemKind.StructObj;
         }
         public override string ToString()
         {
-            if (kind == HeapAccKind.HeapObj)
+            if (kind == HeapElemKind.RefObj)
             {
                 return (instW.ToString());
             }
-            else if (kind == HeapAccKind.StructObj)
+            else if (kind == HeapElemKind.StructObj)
             {
                 return (varW.ToString());
+            }
+            else if (kind == HeapElemKind.ArrElemStructObj)
+            {
+                return (instW.ToString() + " ARRAY_ELEMENT");
             }
             else
             {
@@ -43,13 +48,17 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetBackend.Wrappers
 
         public string GetDesc()
         {
-            if (kind == HeapAccKind.HeapObj)
+            if (kind == HeapElemKind.RefObj)
             {
                 return (instW.GetDesc());
             }
-            else if (kind == HeapAccKind.StructObj)
+            else if (kind == HeapElemKind.StructObj)
             {
                 return (varW.GetDesc());
+            }
+            else if (kind == HeapElemKind.ArrElemStructObj)
+            {
+                return (instW.GetDesc());
             }
             else
             {

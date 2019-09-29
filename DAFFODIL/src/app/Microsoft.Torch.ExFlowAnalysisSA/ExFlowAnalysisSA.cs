@@ -20,10 +20,10 @@ namespace Microsoft.Torch.ExFlowAnalysisSA
             // ConfigParams.LogDir = @"C:\Users\torch\work\FromGithub\bmk1\storage\good\storage\src\Azure\Storage.Net.Microsoft.Azure.Storage\logs";
             // ByteCodeAnalyzer.GenerateEDBFacts(@"C:\Users\torch\work\FromGithub\bmk1\storage\good\storage\src\Azure\Storage.Net.Microsoft.Azure.Storage\bin\Debug\net452\Storage.Net.Microsoft.Azure.Storage.dll");
 
-            ConfigParams.DatalogDir = @"C:\Users\torch\work\DAFFODIL\DAFFODIL\src\test\T11\temp";
-            ConfigParams.SaveScopePath = @"C:\Users\torch\work\DAFFODIL\DAFFODIL\src\test\T11\temp";
-            ConfigParams.LogDir = @"C:\Users\torch\work\DAFFODIL\DAFFODIL\src\test\T11\logs";
-            ByteCodeAnalyzer.GenerateEDBFacts(@"C:\Users\torch\work\DAFFODIL\DAFFODIL\src\test\T11\bin\Debug\T11.exe");
+            ConfigParams.DatalogDir = @"C:\Users\torch\work\DAFFODIL\DAFFODIL\src\test\T4\temp";
+            ConfigParams.SaveScopePath = @"C:\Users\torch\work\DAFFODIL\DAFFODIL\src\test\T4\temp";
+            ConfigParams.LogDir = @"C:\Users\torch\work\DAFFODIL\DAFFODIL\src\test\T4\logs";
+            ByteCodeAnalyzer.GenerateEDBFacts(@"C:\Users\torch\work\DAFFODIL\DAFFODIL\src\test\T4\bin\Debug\T4.exe");
 
             // ConfigParams.DatalogDir = @"C:\Users\torch\work\Test\storage-blob-dotnet-getting-started\BlobStorage\temp";
             // ConfigParams.SaveScopePath = @"C:\Users\torch\work\Test\storage-blob-dotnet-getting-started\BlobStorage\temp";

@@ -74,6 +74,8 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.ProgramFacts
         public static RelFinalMTP relFinalMTP;
         public static RelEscaping relEscaping;
         public static RelCaught relCaught;
+        public static RelMStructArrHFH relMStructArrHFH;
+        public static RelStructRefV relStructRefV;
 
 
         public static Dictionary<string, Rel> nameToRelMap;
@@ -284,6 +286,12 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.ProgramFacts
 
             relCaught = new RelCaught();
             nameToRelMap.Add(relCaught.GetName(), relCaught);
+
+            relMStructArrHFH = new RelMStructArrHFH();
+            nameToRelMap.Add(relMStructArrHFH.GetName(), relMStructArrHFH);
+
+            relStructRefV = new RelStructRefV();
+            nameToRelMap.Add(relStructRefV.GetName(), relStructRefV);
         }
 
         public static void Save()
@@ -335,6 +343,8 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.ProgramFacts
             relPI.Save();
             relMEH.Save();
             relExceptionType.Save();
+            relMStructArrHFH.Save();
+            relStructRefV.Save();
         }
     }
 }

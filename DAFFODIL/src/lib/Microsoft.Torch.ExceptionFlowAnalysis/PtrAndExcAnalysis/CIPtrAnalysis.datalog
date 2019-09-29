@@ -37,6 +37,7 @@ MInstFldRead(m:M,l:V,r:V,f:F) input      # Method m contains: l = r.f
 MInstFldWrite(m:M,l:V,f:F,r:V) input     # Method m contains: l.f = r
 MStatFldRead(m:M,l:V,f:F) input          # Method m contains: l = f
 MStatFldWrite(m:M,f:F,r:V) input         # Method m contains: f = r
+MStructArrHFH(m:M,h1:H,f:F,h2:H) input   # Method m contains an allocation of an array of struct
 
 MAddrTakenLocal(m:M,l:V,r:V) input       # Method m contains l = &r
 MAddrTakenInstFld(m:M,l:V,r:V,f:F) input # Method m contains l = &r.f
@@ -47,6 +48,7 @@ MDerefLeft(m:M,l:V,r:V) input            # Method m contains *l = r
 MDerefRight(m:M,l:V,r:V) input           # Method m contains l = *r
 
 structV(v:V) input                       # Local variable v is of type struct
+structRefV(v:V) input                    # Local variable v is of type reference to struct
 structH(h:H) input                       # Heap element h is of type struct
 classT(t:T) input                        # Type t is a class
 staticTM(t:T,m:M) input                  # Type t contains static method m
@@ -137,6 +139,8 @@ AddrTakenFunc(l,m2) :- reachableM(m1), MAddrTakenFunc(m1,l,m2).
 DerefLeft(l,r) :- reachableM(m), MDerefLeft(m,l,r).
 DerefRight(l,r) :- reachableM(m), MDerefRight(m,l,r).
 
+HFH(h1,f,h2) :- reachableM(m), MStructArrHFH(m,h1,f,h2).
+
 VH(l,h) :- Alloc(l,h).
 
 VH(l,h) :- Move(l,r), VH(r,h), !structV(l).
@@ -169,8 +173,10 @@ HFH(lh,f,rhfh) :- StrMove(lh,rh), !structH(rhfh), HFH(rh,f,rhfh).
 # v1 = &v2, v1 = &v2.f, v1 = &f, v1 = &m
 VX(v1,x) :- AddrTakenLocal(v1,v2), AddrOfVX(v2,x), !structV(v2).
 VH(v1,h) :- AddrTakenLocal(v1,v2), VH(v2,h), structV(v2).
-VX(v1,x) :- AddrTakenInstFld(v1,v2,f), VH(v2,h2), AddrOfHFX(h2,f,x).
-VX(v1,x) :- AddrTakenStatFld(v1,f), AddrOfFX(f,x).
+VX(v1,x) :- AddrTakenInstFld(v1,v2,f), VH(v2,h2), AddrOfHFX(h2,f,x), !structRefV(v1).
+VH(v1,h) :- AddrTakenInstFld(v1,v2,f), VH(v2,h2), HFH(h2,f,h), structRefV(v1).
+VX(v1,x) :- AddrTakenStatFld(v1,f), AddrOfFX(f,x), !structRefV(v1).
+VH(v1,h) :- AddrTakenStatFld(v1,f), FH(f,h), structRefV(v1).
 VX(v1,x) :- AddrTakenFunc(v1,m), AddrOfMX(m,x).
 
 
@@ -241,3 +247,5 @@ MM(m,n) :- IM(i,n), MI(m,i).
 .include "MDerefRight.datalog"
 .include "structH.datalog"
 .include "structV.datalog"
+.include "MStructArrHFH.datalog"
+.include "structRefV.datalog"

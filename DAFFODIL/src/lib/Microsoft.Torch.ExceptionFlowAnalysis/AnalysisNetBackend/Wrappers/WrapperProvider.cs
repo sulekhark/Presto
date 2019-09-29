@@ -23,9 +23,10 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetBackend.Wrappers
         private readonly static IDictionary<IVariable, AddressWrapper> VarToAddrWrapperMap;
         private readonly static IDictionary<Instruction, AddressWrapper> ArrayToAddrWrapperMap;
 
-        //HeapAccWrapper dictionaries
-        private readonly static IDictionary<Instruction, HeapElemWrapper> InstToHeapAccWrapperMap;
-        private readonly static IDictionary<IVariable, HeapElemWrapper> VarToHeapAccWrapperMap;
+        //HeapElemWrapper dictionaries
+        private readonly static IDictionary<Instruction, HeapElemWrapper> InstToHeapElemWrapperMap;
+        private readonly static IDictionary<Instruction, HeapElemWrapper> InstToHeapArrayElemWrapperMap;
+        private readonly static IDictionary<IVariable, HeapElemWrapper> VarToHeapElemWrapperMap;
 
         //ExHandlerWrapper dictionary
         private readonly static IDictionary<Instruction, ExHandlerWrapper> InstToExHandlerWrapperMap;
@@ -50,8 +51,9 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetBackend.Wrappers
             VarToAddrWrapperMap = new Dictionary<IVariable, AddressWrapper>(vc);
             ArrayToAddrWrapperMap = new Dictionary<Instruction, AddressWrapper>(idc);
 
-            InstToHeapAccWrapperMap = new Dictionary<Instruction, HeapElemWrapper>(idc);
-            VarToHeapAccWrapperMap = new Dictionary<IVariable, HeapElemWrapper>(vc);
+            InstToHeapElemWrapperMap = new Dictionary<Instruction, HeapElemWrapper>(idc);
+            InstToHeapArrayElemWrapperMap = new Dictionary<Instruction, HeapElemWrapper>(idc);
+            VarToHeapElemWrapperMap = new Dictionary<IVariable, HeapElemWrapper>(vc);
 
             InstToExHandlerWrapperMap = new Dictionary<Instruction, ExHandlerWrapper>(idc);
         }
@@ -233,31 +235,48 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetBackend.Wrappers
 
         public static HeapElemWrapper getHeapElemW(IVariable var)
         {
-            if (VarToHeapAccWrapperMap.ContainsKey(var))
+            if (VarToHeapElemWrapperMap.ContainsKey(var))
             {
-                return VarToHeapAccWrapperMap[var];
+                return VarToHeapElemWrapperMap[var];
             }
             else
             {
                 VariableWrapper varW = getVarW(var);
                 HeapElemWrapper hpW = new HeapElemWrapper(varW);
-                VarToHeapAccWrapperMap[var] = hpW;
+                VarToHeapElemWrapperMap[var] = hpW;
                 return hpW;
             }
         }
 
-        public static HeapElemWrapper getHeapElemW(Instruction inst, IMethodDefinition meth)
+        public static HeapElemWrapper getHeapElemW(Instruction inst, IMethodDefinition meth, bool createArrayElem)
         {
-            if (InstToHeapAccWrapperMap.ContainsKey(inst))
+            if (createArrayElem)
             {
-                return InstToHeapAccWrapperMap[inst];
+                if (InstToHeapArrayElemWrapperMap.ContainsKey(inst))
+                {
+                    return InstToHeapArrayElemWrapperMap[inst];
+                }
+                else
+                {
+                    InstructionWrapper instW = getInstW(inst, meth);
+                    HeapElemWrapper hpW = new HeapElemWrapper(instW, true);
+                    InstToHeapArrayElemWrapperMap[inst] = hpW;
+                    return hpW;
+                }
             }
             else
             {
-                InstructionWrapper instW = getInstW(inst, meth);
-                HeapElemWrapper hpW = new HeapElemWrapper(instW);
-                InstToHeapAccWrapperMap[inst] = hpW;
-                return hpW;
+                if (InstToHeapElemWrapperMap.ContainsKey(inst))
+                {
+                    return InstToHeapElemWrapperMap[inst];
+                }
+                else
+                {
+                    InstructionWrapper instW = getInstW(inst, meth);
+                    HeapElemWrapper hpW = new HeapElemWrapper(instW, false);
+                    InstToHeapElemWrapperMap[inst] = hpW;
+                    return hpW;
+                }
             }
         }
 
