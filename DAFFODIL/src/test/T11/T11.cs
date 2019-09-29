@@ -6,7 +6,8 @@
         {
             MyDict<string, MyObj> dict;
             dict = new MyDict<string, MyObj>();
-            dict.Add("aaa", new MyObj());
+            MyObj sampleObj = new MyObj();
+            dict.Add("aaa", sampleObj);
             MyObj xxx = dict["aaa"];
         }
     }

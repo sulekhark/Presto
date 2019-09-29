@@ -150,6 +150,9 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
             return null;
         }
 
+        // If P is some property of a class, FullName (which uses CCI's GetMethodSignature) returns P.get whereas internally
+        // the name of the method is get_P (ILSpy also shows the name as get_P). 
+        // Should be aware of this while using string compare for method names.
         public static IMethodDefinition GetMethodByFullName(ITypeDefinition ty, string methName)
         {
             foreach (IMethodDefinition tyMeth in ty.Methods)

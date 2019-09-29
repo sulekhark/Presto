@@ -115,6 +115,7 @@ DelReceiver(i,rh) :- DelegateIH(i,h), HFH(h,0,rh).
 DelFunc(i,m) :- DelegateIH(i,h), HFX(h,0,x), AddrOfMX(m,x).
 IM(i,m1) :- DelFunc(i,m), DelReceiver(i,h), HT(h,t), cha(m,t,m1).
 IM(i,m) :- DelFunc(i,m), staticTM(t,m).
+VH(v,rh) :- DelReceiver(i,rh), IM(i,m), MmethArg(m,0,v).
 
 # arguments and return variables
 Move(v,u) :- IinvkArg(i,z,u), IM(i,m), MmethArg(m,z,v).
@@ -140,7 +141,7 @@ VH(l,h) :- Alloc(l,h).
 
 VH(l,h) :- Move(l,r), VH(r,h), !structV(l).
 StrMove(lh,rh) :- Move(l,r), VH(l,lh), VH(r,rh), structV(l).
-VX(l,x) :- Move(l,r), VX(r,x), !structV(l).
+VX(l,x) :- Move(l,r), VX(r,x).
 
 VH(l,hfh) :- InstFldRead(l,h,f), HFH(h,f,hfh), !structV(l).
 StrMove(lh,hfh) :- InstFldRead(l,h,f), VH(l,lh), HFH(h,f,hfh), structV(l).

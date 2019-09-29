@@ -8,13 +8,16 @@ namespace FactTest
 {
     static class AnonymousFunction
     {
-        static int fooAnon(Func<int,int> f, int a)
+        static WrapperObj fooAnon(Func<MyObj,WrapperObj> anonFuncParam, MyObj aaa)
         {
-            return f(a);
+            WrapperObj fooWObj = anonFuncParam(aaa);
+            return fooWObj;
         }
         public static void barAnon()
         {
-            Console.WriteLine(fooAnon(x => x + 1, 3));
+            MyObj anonObj = new MyObj();
+            WrapperObj barWObj = fooAnon(paramObj => new WrapperObj(paramObj), anonObj);
+            MyObj finalObj = barWObj.mo;
         }
     }
     static class Iterator
@@ -28,19 +31,18 @@ namespace FactTest
 
         public static void barIt()
         {
-            foreach (MyObj x in fooIt())
+            foreach (MyObj loopObj in fooIt())
             {
-                WrapperObj wx = new WrapperObj();
-                wx.mo = x;
+                WrapperObj wx = new WrapperObj(loopObj);
                 wx.Process();
             }
         }
 
         public static MyObj bazIt()
         {
-            MyObj x = new MyObj();
+            MyObj bazObj = new MyObj();
             counter++;
-            return x;
+            return bazObj;
         }
     }
     class T4
@@ -74,17 +76,18 @@ namespace FactTest
         }
         public async Task<WrapperObj> CallAsync()
         {
-            MyObj myObj = null;
+            MyObj firstObj = new MyObj();
+            WrapperObj wObj = new WrapperObj(firstObj);
+            MyObj secondObj = null;
             try
             {
-                myObj = await ShowAsync(true);
+                secondObj = await ShowAsync(true);
             }
             catch (Exception ex)
             {
                 Console.WriteLine(ex.Message);
             }
-            WrapperObj wObj = new WrapperObj();
-            wObj.mo = myObj;
+            wObj.mo = secondObj;
             return wObj;
         }
     }
@@ -99,6 +102,10 @@ namespace FactTest
     {
         public MyObj mo;
 
+        public WrapperObj(MyObj arg)
+        {
+            mo = arg;
+        }
         public void Process()
         {
             Console.WriteLine("Processing...");
@@ -112,14 +119,13 @@ namespace FactTest
             T4 demo = new T4();
             WrapperObj zzz = demo.CallAsync().Result;
             zzz.Process();
-            Console.ReadLine();
             Iterator.barIt();
             AnonymousFunction.barAnon();
 
             IDictionary<string, MyObj> dict;
             dict = new Dictionary<string, MyObj>();
             dict.Add("aaa", new MyObj());
-            MyObj xxx = dict["aaa"];
+            MyObj yyy = dict["aaa"];
         }
     }
 }

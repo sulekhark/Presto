@@ -745,7 +745,7 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
                 IList<IVariable> invkArgs = invkInst.Arguments;
                 VariableWrapper delegateVarW = WrapperProvider.getVarW(invkArgs[0]);
                 ProgramRels.relDelegateIV.Add(instW, delegateVarW);   
-                int argNdx = 0;
+                int argNdx = 1;
                 for (int i = 1; i < invkArgs.Count; i++)
                 {
                     IVariable arg = invkArgs[i];

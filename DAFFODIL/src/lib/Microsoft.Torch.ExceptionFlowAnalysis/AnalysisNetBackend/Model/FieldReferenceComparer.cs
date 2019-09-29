@@ -16,6 +16,19 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetBackend.Model
             var xdef = x as IFieldDefinition;
             var ydef = y as IFieldDefinition;
 
+            if (xdef == null) xdef = x.ResolvedField;
+            if (ydef == null) ydef = y.ResolvedField;
+            result = xdef.InternedKey == ydef.InternedKey;
+            return result;
+        }
+
+        /******
+        public bool Equals(IFieldReference x, IFieldReference y)
+        {
+            bool result;
+            var xdef = x as IFieldDefinition;
+            var ydef = y as IFieldDefinition;
+
             if (xdef != null && ydef == null)
             {
                 result = y.ResolvedField.Equals(xdef);
@@ -30,5 +43,6 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetBackend.Model
             }
             return result;
         }
+        ******/
     }
 }

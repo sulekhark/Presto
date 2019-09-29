@@ -68,6 +68,8 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
 
         public void VisitMethod(MethodBody mBody, ControlFlowGraph cfg)
         {
+            VisitLocals(mBody);
+
             // Going through the instructions via cfg nodes instead of directly iterating over the instructions
             // of the methodBody becuase Phi instructions may not have been inserted in the insts of the methodBody.
             foreach (var node in cfg.Nodes)
@@ -256,6 +258,16 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
                     }
                 }
             }
+        }
+
+        public void VisitLocals (MethodBody mBody)
+        {
+            ISet<IVariable> localVarSet = mBody.Variables;
+            foreach (IVariable lclVar in localVarSet)
+            {
+                if (!lclVar.IsParameter && lclVar.Type.ResolvedType.IsStruct) Stubber.CheckAndAdd(lclVar.Type.ResolvedType);
+            }
+            return;
         }
 
         private bool CheckIfValid(string modulesPath, string classesPath, string entClassesPath, string methodsPath)

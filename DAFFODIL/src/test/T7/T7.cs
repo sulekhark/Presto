@@ -9,14 +9,15 @@ namespace T7NS
     {
         static FileStream fs;
         static StreamWriter sw;
+        string instStr;
 
         // delegate declaration
         public delegate bool printString(string s1, string s2, int i);
 
         // this method prints to the console
-        public bool WriteToScreen(string str1, string str2, int i)
+        public bool WriteToScreen(string str1Param, string str2Param, int i)
         {
-            Console.WriteLine("The String is: {0}", str1);
+            Console.WriteLine("The String is: {0} {1}", str1Param, instStr);
             return true;
         }
 

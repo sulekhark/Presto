@@ -15,7 +15,8 @@ namespace T16
             Str bar;
             bar.fld = foo;
             Str baz = bar;
-            bar.dummy();
+            Foo taz = bar.fld;
+            // bar.dummy();
         }
 
         public static void GetFoo(out Foo fooP)
@@ -29,7 +30,7 @@ namespace T16
     struct Str
     {
         public Foo fld;
-        public void dummy() { }
+        // public void dummy() { }
     }
    
 }

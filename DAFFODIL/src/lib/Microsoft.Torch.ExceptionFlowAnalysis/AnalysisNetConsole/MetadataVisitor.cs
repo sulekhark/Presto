@@ -197,6 +197,9 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
             {
                 if (factGen.classes.Contains(typeDefinition))
                 {
+                    factGen.tacLogSW.WriteLine();
+                    factGen.tacLogSW.WriteLine();
+                    factGen.tacLogSW.WriteLine("++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++");
                     factGen.tacLogSW.WriteLine("FactGeneration: Traversing class: {0}", typeDefinition.FullName());
                     TraverseMethods(typeDefinition);
                 }
