@@ -72,34 +72,50 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
             return matches;
         }
 
+        /****
+           Four cases:
+           1. Ordinary method (not stubbed and not generic)
+           2. Stubbed but not generic
+           3. Not stubbed but generic
+           4. Stubbed and generic
+           Note that there are two sub-cases for "is stubbed": "stub present" or "stub absent".
+           So that makes it a total of 6 cases.
+        ****/
         public static IMethodDefinition CheckAndAdd(IMethodDefinition m)
         {
-            IMethodDefinition methToAdd = m;
             IMethodDefinition lookFor = m;
-            if (methToAdd is IGenericMethodInstance)
+            if (m is IGenericMethodInstance)
             {
                 lookFor = Generics.GetTemplate(m);
             }
             
-            ITypeDefinition containingType = m.ContainingTypeDefinition; // Test methToAdd's containingTypeDefinition
+            ITypeDefinition containingType = m.ContainingTypeDefinition;
             if (containingType.InternedKey == 0) return m; // Ignore methods from Cci's Dummy typeref.
             bool matches = MatchesSuppress(m);
             if (matches)
             {
                 containingType = Stubs.GetStubType(containingType);
                 if (containingType == null) return null; // This entire containingType is to be ignored.
-                methToAdd = Utils.GetStubMatchMethod(containingType, lookFor);
-                if (methToAdd == null) return null; // containingType itself is stubbed, but the stub does not define a method equivalent to m.
+                lookFor = Utils.GetMethodSignMatch(containingType, lookFor);
+                if (lookFor == null) return null; // containingType itself is stubbed, but the stub does not define a method equivalent to m.
             }
 
-            IMethodDefinition instMeth = methToAdd;
-            if (methToAdd.IsGeneric) instMeth = Generics.RecordInfo(methToAdd, m, matches);
-            if (!rtaAnalyzer.visitedMethods.Contains(instMeth) && !rtaAnalyzer.methods.Contains(instMeth))
+            IMethodDefinition methToAdd;
+            if (m is IGenericMethodInstance)
             {
-                rtaAnalyzer.rtaLogSW.WriteLine("SRK_DBG: Adding method: {0}", instMeth.GetName());
-                rtaAnalyzer.methods.Add(instMeth);
+                // Here, lookFor is a template method
+                methToAdd = Generics.RecordInfo(lookFor, m, matches);
             }
-            return instMeth;
+            else
+            {
+                methToAdd = lookFor;
+            }
+            if (!rtaAnalyzer.visitedMethods.Contains(methToAdd) && !rtaAnalyzer.methods.Contains(methToAdd))
+            {
+                rtaAnalyzer.rtaLogSW.WriteLine("SRK_DBG: Adding method: {0}", methToAdd.GetName());
+                rtaAnalyzer.methods.Add(methToAdd);
+            }
+            return methToAdd;
         }
 
         public static ITypeDefinition CheckAndAdd(ITypeDefinition t)
@@ -140,7 +156,7 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
                 containingType = Stubs.GetStubType(containingType);
                 if (containingType == null) return null; // This entire containingType is to be ignored.
                 if (methToAnalyze is IGenericMethodInstance) methToAnalyze = Generics.GetTemplate(m);
-                methToAnalyze = Utils.GetStubMatchMethod(containingType, methToAnalyze);
+                methToAnalyze = Utils.GetMethodSignMatch(containingType, methToAnalyze);
                 if (methToAnalyze == null) return null; // containingType itself is stubbed, but the stub does not define a method equivalent to m.
                 if (methToAnalyze.IsGeneric) methToAnalyze = Generics.GetInstantiatedMeth(methToAnalyze, m);
             }

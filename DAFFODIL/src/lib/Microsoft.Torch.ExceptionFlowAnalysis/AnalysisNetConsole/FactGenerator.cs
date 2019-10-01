@@ -315,18 +315,18 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
                                     IMethodDefinition candidateMeth;
                                     if (meth is IGenericMethodInstance)
                                     {
-                                        candidateMeth = Utils.GetSignMatchMethod(candidateTy, tyMeth);
+                                        candidateMeth = Utils.GetMethodSignMatch(candidateTy, tyMeth);
                                         if (candidateMeth != null && MetadataVisitor.genericMethodMap.ContainsKey(candidateMeth))
                                         {
                                             ISet<IMethodDefinition> candidateInsts = MetadataVisitor.genericMethodMap[candidateMeth];
-                                            candidateMeth = Utils.GetMatchingGenericInstance(candidateInsts,
+                                            candidateMeth = Utils.GetGenericInstMethodSignMatch(candidateInsts,
                                                                                              (meth as IGenericMethodInstance));
                                         }
                                         else candidateMeth = null;
                                     }
                                     else
                                     {
-                                        candidateMeth = Utils.GetSignMatchMethod(candidateTy, meth);
+                                        candidateMeth = Utils.GetMethodSignMatch(candidateTy, meth);
                                     }
                                     if (candidateMeth != null && methods.Contains(candidateMeth))
                                     {

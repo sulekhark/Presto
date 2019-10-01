@@ -61,82 +61,81 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
             if (tref is INamedTypeReference)
                 return (tref as INamedTypeReference).Name.Value;
 
-            return TypeHelper.GetTypeName(tref, NameFormattingOptions.OmitContainingType | NameFormattingOptions.OmitContainingNamespace | NameFormattingOptions.SmartTypeName);
+            return TypeHelper.GetTypeName(tref, NameFormattingOptions.OmitContainingType | 
+                NameFormattingOptions.OmitContainingNamespace | NameFormattingOptions.SmartTypeName);
         }
 
         public static string FullName(this IMethodReference mref)
         {
-            return MemberHelper.GetMethodSignature(mref, NameFormattingOptions.Signature | NameFormattingOptions.ParameterName | NameFormattingOptions.TypeParameters);
+            return MemberHelper.GetMethodSignature(mref, NameFormattingOptions.Signature | NameFormattingOptions.ParameterName |
+                NameFormattingOptions.TypeParameters | NameFormattingOptions.PreserveSpecialNames);
         }
 
         public static string GetName(this IMethodReference mref)
         {
-            return MemberHelper.GetMethodSignature(mref, NameFormattingOptions.Signature | NameFormattingOptions.TypeParameters);
+            return MemberHelper.GetMethodSignature(mref, NameFormattingOptions.Signature | NameFormattingOptions.TypeParameters |
+                NameFormattingOptions.PreserveSpecialNames);
         }
 
-        // Full Name but without containing name space should match: <method_name><<generic_param_if_present>>(<param_list>)
-        // This is for finding the same method definition but in a stub namespace.
-        public static bool StubMatch(IMethodReference m1, IMethodReference m2)
+        public static bool NameMatch(IMethodReference m1, IMethodReference m2)
         {
-            if (m1 == null || m2 == null) return false;
-            string m1Sign = MemberHelper.GetMethodSignature(m1, NameFormattingOptions.OmitContainingType | NameFormattingOptions.Signature | NameFormattingOptions.ParameterName | NameFormattingOptions.TypeParameters);
-            string m2Sign = MemberHelper.GetMethodSignature(m2, NameFormattingOptions.OmitContainingType | NameFormattingOptions.Signature | NameFormattingOptions.ParameterName | NameFormattingOptions.TypeParameters);
-            return (m1Sign == m2Sign);
+            string name1 = m1.Name.Value;
+            string name2 = m2.Name.Value;
+            string extName1 = "." + name1;
+            string extName2 = "." + name2;
+            return (name1 == name2 || name1.EndsWith(extName2) || name2.EndsWith(extName1));
         }
 
-        // method name, formal parameters and number of generic parameters must match
-        public static bool GenericStubMatch(IMethodReference m1, IMethodReference m2)
+        public static bool MethodSignMatch(IMethodReference m1, IMethodReference m2)
         {
-            IGenericMethodInstance gm1 = m1 as IGenericMethodInstance;
-            IGenericMethodInstance gm2 = m2 as IGenericMethodInstance;
-            if (gm1 == null || gm2 == null) return false;
-            
-            string m1Sign = MemberHelper.GetMethodSignature(gm1, NameFormattingOptions.OmitContainingType | NameFormattingOptions.Signature | NameFormattingOptions.ParameterName);
-            string m2Sign = MemberHelper.GetMethodSignature(gm2, NameFormattingOptions.OmitContainingType | NameFormattingOptions.Signature | NameFormattingOptions.ParameterName);
-           
-            int num1 = gm1.GenericParameterCount;
-            int num2 = gm2.GenericParameterCount;
-            return (m1Sign == m2Sign) && (num1 == num2);
+            bool signEq = false;
+            if (!m1.IsGeneric && !m2.IsGeneric) signEq = MemberHelper.SignaturesAreEqual(m1, m2);
+            else if (m1.IsGeneric && m2.IsGeneric) signEq = MemberHelper.GenericMethodSignaturesAreEqual(m1, m2);
+            if (signEq && !NameMatch(m1, m2)) signEq = false;
+            return signEq;
         }
 
-        // Full Name should match: <containing_name_space>.<method_name><<generic_param_if_present>>(<param_list>)
-        public static IMethodDefinition GetSignMatchMethod(ITypeDefinition ty, IMethodDefinition meth)
-        {
-            if (meth is IGenericMethodInstance)
-            {
-                foreach (IMethodDefinition tyMeth in ty.Methods)
-                {
-                    if (MemberHelper.GenericMethodSignaturesAreEqual(meth, tyMeth)) return tyMeth;
-                }
-            }
-            else
-            {
-                foreach (IMethodDefinition tyMeth in ty.Methods)
-                {
-                    if (MemberHelper.SignaturesAreEqual(meth, tyMeth) && meth.Name.ToString().Equals(tyMeth.Name.ToString())) return tyMeth;
-                }
-            }
-            return null;
-        }
-
-        public static IMethodDefinition GetMatchingGenericInstance(ISet<IMethodDefinition> candidateInsts,
-                                                                   IGenericMethodInstance meth)
-        {
-            foreach (IMethodDefinition cmeth in candidateInsts)
-            {
-                if (MemberHelper.GenericMethodSignaturesAreEqual(meth, cmeth)) return cmeth;
-            }
-            return null;
-        }
-
-
-        // Full Name but without containing name space should match: <method_name><<generic_param_if_present>>(<param_list>)
-        // This is for finding the same method definition but in a stub namespace.
-        public static IMethodDefinition GetStubMatchMethod(ITypeDefinition ty, IMethodDefinition meth)
+        public static IMethodDefinition GetMethodSignMatch(ITypeDefinition ty, IMethodDefinition meth)
         {
             foreach (IMethodDefinition tyMeth in ty.Methods)
             {
-                if (StubMatch(meth, tyMeth)) return tyMeth;
+                if (MethodSignMatch(meth, tyMeth)) return tyMeth;
+            }
+            return null;
+        }
+
+        public static bool GenericInstMethodSignMatch(IMethodReference m1, IMethodReference m2)
+        {
+            bool signEq = MemberHelper.GenericMethodSignaturesAreEqual(m1, m2);
+            if (signEq && !NameMatch(m1, m2)) signEq = false;
+            if (signEq)
+            {
+                IGenericMethodInstance gm1 = m1 as IGenericMethodInstance;
+                IGenericMethodInstance gm2 = m2 as IGenericMethodInstance;
+                IList<ITypeReference> genArgs1 = gm1.GenericArguments.ToList();
+                IList<ITypeReference> genArgs2 = gm2.GenericArguments.ToList();
+                if (genArgs1.Count() == genArgs2.Count())
+                {
+                    for (int i = 0; i < genArgs1.Count(); i++)
+                    {
+                        if (genArgs1[i].InternedKey != genArgs2[i].InternedKey)
+                        {
+                            signEq = false;
+                            break;
+                        }
+                    }
+                }
+                else signEq = false;
+            }
+            return signEq;
+        }
+
+        public static IMethodDefinition GetGenericInstMethodSignMatch(ISet<IMethodDefinition>candidateInsts,
+                                                                      IMethodDefinition meth)
+        {
+            foreach (IMethodDefinition cMeth in candidateInsts)
+            {
+                if (GenericInstMethodSignMatch(meth, cMeth)) return cMeth;
             }
             return null;
         }

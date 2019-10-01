@@ -238,7 +238,7 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
                     {
                         if (meth is IGenericMethodInstance)
                         {
-                            if (Utils.GenericStubMatch(mCallee, meth))
+                            if (Utils.GenericInstMethodSignMatch(mCallee, meth))
                             {
                                 IMethodDefinition instMeth = Generics.GetInstantiatedMeth(meth, mCallee);
                                 IMethodDefinition addedMeth = Stubber.CheckAndAdd(instMeth);
@@ -248,7 +248,7 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
                         }
                         else
                         {
-                            if (Utils.StubMatch(mCallee, meth))
+                            if (Utils.MethodSignMatch(mCallee, meth))
                             {
                                 IMethodDefinition addedMeth = Stubber.CheckAndAdd(meth);
                                 if (addedMeth != null && isAddrTaken) addrTakenMethods.Add(addedMeth);
