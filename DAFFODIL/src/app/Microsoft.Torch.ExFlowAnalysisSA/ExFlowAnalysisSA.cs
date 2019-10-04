@@ -32,7 +32,7 @@ namespace Microsoft.Torch.ExFlowAnalysisSA
 
             ProgramDoms.Save();
             ProgramRels.Save();
-           
+
             Z3CommandLineInvoke.CopyFiles(ConfigParams.DatalogDir);
 
             Z3CommandLineInvoke.LaunchZ3("CIPtrAnalysis.datalog", ConfigParams.DatalogDir);

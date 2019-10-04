@@ -18,14 +18,14 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
 		private readonly IMetadataHost host;
         private FactGenerator factGen;
         private RTAAnalyzer rtaAnalyzer;
-        public static readonly IDictionary<IMethodDefinition, ISet<IMethodDefinition>> genericMethodMap;
+        public static readonly IDictionary<IMethodDefinition, IDictionary<string, IMethodDefinition>> genericMethodMap;
         public static IDictionary<IModule, ISourceLocationProvider> moduleToPdbMap;
 
         static MetadataVisitor()
         {
             MethodReferenceDefinitionComparer mdc = MethodReferenceDefinitionComparer.Default;
             TypeDefinitionComparer tdc = new TypeDefinitionComparer();
-            genericMethodMap = new Dictionary<IMethodDefinition, ISet<IMethodDefinition>>(mdc);
+            genericMethodMap = new Dictionary<IMethodDefinition, IDictionary<string, IMethodDefinition>>(mdc);
             moduleToPdbMap = new Dictionary<IModule, ISourceLocationProvider>();
         }
 
@@ -214,8 +214,7 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
                 {
                     if (genericMethodMap.ContainsKey(meth))
                     {
-                        ISet<IMethodDefinition> instantiatedMeths = genericMethodMap[meth];
-                        foreach (IMethodDefinition instMeth in instantiatedMeths) Traverse(instMeth);
+                        foreach (IMethodDefinition instMeth in genericMethodMap[meth].Values) Traverse(instMeth);
                     }
                 }
                 else

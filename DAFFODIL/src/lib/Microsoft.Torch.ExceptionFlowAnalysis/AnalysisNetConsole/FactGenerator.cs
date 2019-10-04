@@ -19,6 +19,7 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
         public ISet<ITypeDefinition> classes;
         public ISet<ITypeDefinition> types;
         public ISet<IMethodDefinition> methods;
+        public ISet<ITypeDefinition> allocClasses;
         public ISet<IMethodDefinition> entryPtMethods;
         public ISet<IFieldDefinition> addrTakenInstFlds;
         public ISet<IFieldDefinition> addrTakenStatFlds;
@@ -283,23 +284,23 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
                         if (tyMeth.Visibility == TypeMemberVisibility.Private) continue;
                         if (tyMeth.IsConstructor) continue;
                         if (!tyMeth.IsGeneric && !methods.Contains(tyMeth)) continue;
-                        ISet<IMethodDefinition> instantiatedMeths;
+                        IList<IMethodDefinition> instantiatedMeths;
                         if (tyMeth.IsGeneric && MetadataVisitor.genericMethodMap.ContainsKey(tyMeth))
                         {
-                            instantiatedMeths = MetadataVisitor.genericMethodMap[tyMeth];
+                            instantiatedMeths = MetadataVisitor.genericMethodMap[tyMeth].Values.ToList();
                         }
-                        else
+                        else if (!tyMeth.IsGeneric)
                         {
-                            instantiatedMeths = new HashSet<IMethodDefinition>();
+                            instantiatedMeths = new List<IMethodDefinition>();
                             instantiatedMeths.Add(tyMeth);
                         }
+                        else continue;
                         foreach (IMethodDefinition meth in instantiatedMeths)
                         {
                             MethodRefWrapper methW = WrapperProvider.getMethodRefW(meth);
-                            foreach (ITypeDefinition candidateTy in classes)
+                            foreach (ITypeDefinition candidateTy in allocClasses)
                             {
                                 if (candidateTy is IArrayTypeReference) continue;
-                                if (candidateTy.IsAbstract || candidateTy.IsInterface) continue;
                                 TypeRefWrapper candidateTyW = WrapperProvider.getTypeRefW(candidateTy);
                                 bool implementationExists = false;
                                 if (tyIsInterface)
@@ -312,17 +313,20 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
                                 }
                                 if (implementationExists)
                                 {
-                                    IMethodDefinition candidateMeth;
-                                    if (meth is IGenericMethodInstance)
+                                    IMethodDefinition candidateMeth = null;
+                                    if (meth is IGenericMethodInstance && tyMeth.IsGeneric)
                                     {
-                                        candidateMeth = Utils.GetMethodSignMatch(candidateTy, tyMeth);
-                                        if (candidateMeth != null && MetadataVisitor.genericMethodMap.ContainsKey(candidateMeth))
+                                        IMethodDefinition candidateTemplateMeth = Utils.GetMethodSignMatch(candidateTy, tyMeth);
+                                        if (candidateTemplateMeth != null && 
+                                            MetadataVisitor.genericMethodMap.ContainsKey(candidateTemplateMeth))
                                         {
-                                            ISet<IMethodDefinition> candidateInsts = MetadataVisitor.genericMethodMap[candidateMeth];
-                                            candidateMeth = Utils.GetGenericInstMethodSignMatch(candidateInsts,
-                                                                                             (meth as IGenericMethodInstance));
+                                            IDictionary<string, IMethodDefinition> candidateInsts = 
+                                                MetadataVisitor.genericMethodMap[candidateTemplateMeth];
+                                            string genericArgsStr = 
+                                                Generics.GetGenericArgStr((meth as IGenericMethodInstance).GenericArguments);
+                                            if (candidateInsts.ContainsKey(genericArgsStr))
+                                                candidateMeth = candidateInsts[genericArgsStr];
                                         }
-                                        else candidateMeth = null;
                                     }
                                     else
                                     {

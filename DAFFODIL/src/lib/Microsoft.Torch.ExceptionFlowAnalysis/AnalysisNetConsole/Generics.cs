@@ -7,17 +7,6 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
     public static class Generics
     {
         private static IInternFactory internFactory;
-        private static readonly IDictionary<uint, IDictionary<string, IMethodDefinition>> stubTemplateInstMap;
-
-        static Generics()
-        {
-            stubTemplateInstMap = new Dictionary<uint, IDictionary<string, IMethodDefinition>>();
-        }
-
-        public static void Clear()
-        {
-            stubTemplateInstMap.Clear();
-        }
 
         public static void SetupInternFactory(IInternFactory ifactory)
         {
@@ -29,53 +18,63 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
             return (m as IGenericMethodInstance).GenericMethod.ResolvedMethod;
         }
 
-        public static IMethodDefinition RecordInfo(IMethodDefinition templateMeth, IMethodDefinition instMeth, bool isStubbed)
+        public static IMethodDefinition RecordInfo(IMethodDefinition templateMeth, IMethodDefinition instMeth, bool createIfReqd)
         {
-            ISet<IMethodDefinition> instMeths;
+            IDictionary<string, IMethodDefinition> instMeths;
             if (MetadataVisitor.genericMethodMap.ContainsKey(templateMeth))
             {
                 instMeths = MetadataVisitor.genericMethodMap[templateMeth];
             }
             else
             {
-                instMeths = new HashSet<IMethodDefinition>();
+                instMeths = new Dictionary<string, IMethodDefinition>();
                 MetadataVisitor.genericMethodMap.Add(templateMeth, instMeths);
             }
             IMethodDefinition retMeth;
-            if (!isStubbed)
+            if (!createIfReqd)
             {
-                instMeths.Add(instMeth);
-                retMeth = instMeth;
+                string argStr = GetGenericArgStr((instMeth as IGenericMethodInstance).GenericArguments);
+                if (!instMeths.ContainsKey(argStr)) instMeths[argStr] = instMeth;
+                retMeth = instMeths[argStr];
             }
             else
             {
                 retMeth = GetInstantiatedMeth(templateMeth, instMeth);
-                instMeths.Add(retMeth);
             }
             return retMeth;
+        }
+
+        public static string GetGenericArgStr(IEnumerable<ITypeReference> argList)
+        {
+            string argStr = "";
+            foreach (ITypeReference garg in argList)
+            {
+                argStr = argStr + garg.FullName() + ',';
+            }
+            argStr.TrimEnd(',');
+            return argStr;
         }
 
         public static IMethodDefinition GetInstantiatedMeth(IMethodDefinition templateMeth, IMethodDefinition instMeth)
         {
             IGenericMethodInstance genericM = instMeth as IGenericMethodInstance;
             IEnumerable<ITypeReference> genericArgs = genericM.GenericArguments;
-            string argStr = "";
+            IList<ITypeReference> stubbedArgList = new List<ITypeReference>();
             foreach (ITypeReference garg in genericArgs)
             {
-                Stubber.CheckAndAdd(garg.ResolvedType);
-                argStr = argStr + garg.FullName() + ',';
+                ITypeDefinition addedType = Stubber.CheckAndAdd(garg.ResolvedType);
+                stubbedArgList.Add(addedType);
             }
-            argStr.TrimEnd(',');
-            uint templateKey = templateMeth.InternedKey;
+            string argStr = GetGenericArgStr(stubbedArgList);
             IDictionary<string, IMethodDefinition> instMap;
-            if (stubTemplateInstMap.ContainsKey(templateKey))
+            if (MetadataVisitor.genericMethodMap.ContainsKey(templateMeth))
             {
-                instMap = stubTemplateInstMap[templateKey];
+                instMap = MetadataVisitor.genericMethodMap[templateMeth];
             }
             else
             {
                 instMap = new Dictionary<string, IMethodDefinition>();
-                stubTemplateInstMap.Add(templateKey, instMap);
+                MetadataVisitor.genericMethodMap[templateMeth] = instMap;
             }
             if (instMap.ContainsKey(argStr))
             {
@@ -83,7 +82,9 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
             }
             else
             {
-                GenericMethodInstance newInstMeth = new GenericMethodInstance(templateMeth, genericArgs, internFactory);
+                GenericMethodInstanceReference newInstMethRef = new GenericMethodInstanceReference(templateMeth,
+                                                                    genericArgs, internFactory);
+                IMethodDefinition newInstMeth = newInstMethRef.ResolvedMethod;
                 instMap[argStr] = newInstMeth;
                 return newInstMeth;
             }

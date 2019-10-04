@@ -223,9 +223,14 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
             // mCallee is an ordinary method - never a template method.
             // calleeClass and mCallee are either both stubbed or, both unstubbed - i.e. they are consistent.
             bool isInterface = calleeClass.IsInterface;
-            
+
+            IMethodDefinition calleeTemplate = null;
+            if (mCallee is IGenericMethodInstance)
+                calleeTemplate = (mCallee as IGenericMethodInstance).GenericMethod.ResolvedMethod;
+
             foreach (ITypeDefinition cl in allocClasses)
             {
+                if (cl is IArrayTypeReference) continue;
                 if (!Stubber.Suppress(cl))
                 {
                     bool process = false;
@@ -236,17 +241,19 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
                     if (!process) continue;
                     foreach (IMethodDefinition meth in cl.Methods)
                     {
-                        if (meth is IGenericMethodInstance)
+                        if (meth.IsGeneric && calleeTemplate != null)
                         {
-                            if (Utils.GenericInstMethodSignMatch(mCallee, meth))
+                            if (Utils.MethodSignMatch(calleeTemplate, meth))
                             {
-                                IMethodDefinition instMeth = Generics.GetInstantiatedMeth(meth, mCallee);
+                                IMethodDefinition instMeth = Generics.RecordInfo(meth, mCallee, /* createIfReqd = */true);
                                 IMethodDefinition addedMeth = Stubber.CheckAndAdd(instMeth);
                                 if (addedMeth != null && isAddrTaken) addrTakenMethods.Add(addedMeth);
                                 break;
                             }
                         }
-                        else
+                        else if (meth.IsGeneric && calleeTemplate == null) continue;
+                        else if (!meth.IsGeneric && calleeTemplate != null) continue;
+                        else // meth is not generic and calleeTemplate is null
                         {
                             if (Utils.MethodSignMatch(mCallee, meth))
                             {

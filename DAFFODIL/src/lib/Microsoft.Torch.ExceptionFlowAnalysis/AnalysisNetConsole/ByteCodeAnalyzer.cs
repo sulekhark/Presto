@@ -133,6 +133,7 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
             factGen.classes = rtaAnalyzer.classes;
             factGen.methods = rtaAnalyzer.methods;
             factGen.types = rtaAnalyzer.types;
+            factGen.allocClasses = rtaAnalyzer.allocClasses;
             factGen.entryPtMethods = rtaAnalyzer.entryPtMethods;
             factGen.addrTakenInstFlds = rtaAnalyzer.addrTakenInstFlds;
             factGen.addrTakenStatFlds = rtaAnalyzer.addrTakenStatFlds;

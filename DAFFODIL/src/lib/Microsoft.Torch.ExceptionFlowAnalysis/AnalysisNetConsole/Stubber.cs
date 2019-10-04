@@ -42,7 +42,7 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
             rtaAnalyzer = rta;
         }
 
-        static bool MatchesSuppress(IMethodDefinition m)
+        public static bool MatchesSuppress(IMethodDefinition m)
         {
             string mSign = m.FullName();
             bool matches = false;
@@ -57,7 +57,7 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
             return matches;
         }
 
-        static bool MatchesSuppress(ITypeDefinition t)
+        public static bool MatchesSuppress(ITypeDefinition t)
         {
             bool matches = false;
             string tName = t.FullName();
@@ -191,6 +191,18 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
             {
                 ITypeDefinition stubType = Stubs.GetStubType(ty);
                 retval = stubType == null ? true : false;
+            }
+            return retval;
+        }
+
+        public static bool IsStubbed(ITypeDefinition ty)
+        {
+            bool retval = false;
+            bool matches = MatchesSuppress(ty);
+            if (matches)
+            {
+                ITypeDefinition stubType = Stubs.GetStubType(ty);
+                retval = stubType == null ? false : true;
             }
             return retval;
         }

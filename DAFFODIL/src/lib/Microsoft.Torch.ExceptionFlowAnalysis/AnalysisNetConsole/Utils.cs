@@ -86,12 +86,73 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
             return (name1 == name2 || name1.EndsWith(extName2) || name2.EndsWith(extName1));
         }
 
+        public static bool TypeMatch(ITypeReference t1, ITypeReference t2)
+        {
+            ITypeDefinition tdef1 = t1.ResolvedType;
+            ITypeDefinition tdef2 = t2.ResolvedType;
+            if (tdc.Equals(tdef1, tdef2)) return true;
+           
+            if (Stubber.MatchesSuppress(tdef1)) tdef1 = Stubs.GetStubType(tdef1);
+            if (Stubber.MatchesSuppress(tdef2)) tdef2 = Stubs.GetStubType(tdef2);
+            // return (tdef1 != null && tdef2 != null && tdc.Equals(tdef1, tdef2));
+            if (tdef1 != null && tdef2 != null)
+            {
+                if (tdef1 is IGenericTypeInstance)
+                    tdef1 = (tdef1 as IGenericTypeInstance).GenericType.ResolvedType;
+                if (tdef2 is IGenericTypeInstance)
+                    tdef2 = (tdef2 as IGenericTypeInstance).GenericType.ResolvedType;
+                return tdc.Equals(tdef1, tdef2);
+            }
+            else return false;
+        }
+
+        public static bool StubbedSignaturesAreEqual(IMethodReference m1, IMethodReference m2)
+        {
+            bool signEq = false;
+            if (m1.ParameterCount == m2.ParameterCount)
+            {
+                // first check return value type.
+                bool retTypeMatch = TypeMatch(m1.Type, m2.Type);
+                //If ret value type matches, then check parameter types
+                if (retTypeMatch)
+                {
+                    IList<IParameterTypeInformation> argsList1 = m1.Parameters.ToList();
+                    IList<IParameterTypeInformation> argsList2 = m2.Parameters.ToList();
+                    bool argTypeMatch = true;
+                    for (int i = 0; i < m1.ParameterCount; i++)
+                    {
+                        if (!TypeMatch(argsList1[i].Type, argsList2[i].Type)) argTypeMatch = false;
+                    }
+                    if (argTypeMatch) signEq = true;
+                }
+            }
+            return signEq;
+        }
+
+        public static bool StubbedGenericMethodSignaturesAreEqual(IMethodReference m1, IMethodReference m2)
+        {
+            bool signEq;
+            signEq = (m1.GenericParameterCount == m2.GenericParameterCount);
+            if (signEq) signEq = StubbedSignaturesAreEqual(m1, m2);
+            return signEq;
+        }
+
         public static bool MethodSignMatch(IMethodReference m1, IMethodReference m2)
         {
             bool signEq = false;
-            if (!m1.IsGeneric && !m2.IsGeneric) signEq = MemberHelper.SignaturesAreEqual(m1, m2);
-            else if (m1.IsGeneric && m2.IsGeneric) signEq = MemberHelper.GenericMethodSignaturesAreEqual(m1, m2);
-            if (signEq && !NameMatch(m1, m2)) signEq = false;
+            if (NameMatch(m1, m2))
+            {
+                if (!m1.IsGeneric && !m2.IsGeneric)
+                {
+                    signEq = MemberHelper.SignaturesAreEqual(m1, m2);
+                    if (!signEq) signEq = StubbedSignaturesAreEqual(m1, m2);
+                }
+                else if (m1.IsGeneric && m2.IsGeneric)
+                {
+                    signEq = MemberHelper.GenericMethodSignaturesAreEqual(m1, m2);
+                    if (!signEq) signEq = StubbedGenericMethodSignaturesAreEqual(m1, m2);
+                }
+            }
             return signEq;
         }
 
@@ -100,42 +161,6 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
             foreach (IMethodDefinition tyMeth in ty.Methods)
             {
                 if (MethodSignMatch(meth, tyMeth)) return tyMeth;
-            }
-            return null;
-        }
-
-        public static bool GenericInstMethodSignMatch(IMethodReference m1, IMethodReference m2)
-        {
-            bool signEq = MemberHelper.GenericMethodSignaturesAreEqual(m1, m2);
-            if (signEq && !NameMatch(m1, m2)) signEq = false;
-            if (signEq)
-            {
-                IGenericMethodInstance gm1 = m1 as IGenericMethodInstance;
-                IGenericMethodInstance gm2 = m2 as IGenericMethodInstance;
-                IList<ITypeReference> genArgs1 = gm1.GenericArguments.ToList();
-                IList<ITypeReference> genArgs2 = gm2.GenericArguments.ToList();
-                if (genArgs1.Count() == genArgs2.Count())
-                {
-                    for (int i = 0; i < genArgs1.Count(); i++)
-                    {
-                        if (genArgs1[i].InternedKey != genArgs2[i].InternedKey)
-                        {
-                            signEq = false;
-                            break;
-                        }
-                    }
-                }
-                else signEq = false;
-            }
-            return signEq;
-        }
-
-        public static IMethodDefinition GetGenericInstMethodSignMatch(ISet<IMethodDefinition>candidateInsts,
-                                                                      IMethodDefinition meth)
-        {
-            foreach (IMethodDefinition cMeth in candidateInsts)
-            {
-                if (GenericInstMethodSignMatch(meth, cMeth)) return cMeth;
             }
             return null;
         }
