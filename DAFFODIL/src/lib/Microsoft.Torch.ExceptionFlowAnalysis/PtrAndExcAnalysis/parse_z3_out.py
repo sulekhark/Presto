@@ -97,7 +97,7 @@ def parseRelEntry(line):
         idxStr = idxStr.split("(",1)[0]
         dlogEntry = dlogEntry + idxStr + ","
         idx = int(idxStr)
-        txtEntry = txtEntry + currRelDomElems[domCnt][idx] + ","
+        txtEntry = txtEntry + idxStr + ":" + currRelDomElems[domCnt][idx] + ","
         domCnt = domCnt + 1
     dlogEntry = dlogEntry[:-1] + ")."
     currRelDlogEntries.append(dlogEntry)

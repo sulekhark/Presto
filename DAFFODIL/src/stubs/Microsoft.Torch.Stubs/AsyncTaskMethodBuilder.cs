@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Runtime.CompilerServices;
 
 namespace Microsoft.Torch.Stubs
 {
@@ -17,7 +16,9 @@ namespace Microsoft.Torch.Stubs
 
         public static AsyncTaskMethodBuilder Create()
         {
-            return default(AsyncTaskMethodBuilder);
+            AsyncTaskMethodBuilder atmb;
+            atmb.m_builder.m_task = new Task<VoidTaskResult>();
+            return atmb;
         }
 
         public void SetException(Exception exception)
@@ -39,7 +40,7 @@ namespace Microsoft.Torch.Stubs
     
     public struct AsyncTaskMethodBuilder<TResult>
     {
-        Task<TResult> m_task;
+        public Task<TResult> m_task;
         static Task<TResult> s_defaultResultTask;
 
         public Task<TResult> Task
@@ -47,22 +48,20 @@ namespace Microsoft.Torch.Stubs
             get
             {
                 Task<TResult> task = m_task;
-                if (task == null)
-                {
-                    task = (m_task = new Task<TResult>());
-                }
                 return task;
             }
         }
 
         public AsyncTaskMethodBuilder<TResult> Create()
         {
-            return default(AsyncTaskMethodBuilder<TResult>);
+            AsyncTaskMethodBuilder<TResult> atmb;
+            atmb.m_task = new Task<TResult>();
+            return atmb;
         }
 
         static AsyncTaskMethodBuilder()
         {
-            s_defaultResultTask = new Task<TResult>(default(TResult));
+            s_defaultResultTask = new Task<TResult>();
         }
 
         public void Start<TStateMachine>(ref TStateMachine stateMachine) where TStateMachine : IAsyncStateMachine
@@ -72,13 +71,12 @@ namespace Microsoft.Torch.Stubs
 
         public void SetException(Exception exception)
         {
-            Task.mdl_exception = exception;
+            m_task.mdl_exception = exception;
         }
 
         public void SetResult(TResult result)
         {
-            // TODO: if (result == null)
-            Task.m_result = result;
+            m_task.m_result = result;
         }
     }
 }

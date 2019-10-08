@@ -27,6 +27,8 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetBackend.Wrappers
         private readonly static IDictionary<Instruction, HeapElemWrapper> InstToHeapElemWrapperMap;
         private readonly static IDictionary<Instruction, HeapElemWrapper> InstToHeapArrayElemWrapperMap;
         private readonly static IDictionary<IVariable, HeapElemWrapper> VarToHeapElemWrapperMap;
+        private readonly static IDictionary<IFieldReference, HeapElemWrapper> FieldRefToHeapElemWrapperMap;
+        private readonly static IDictionary<Instruction, IDictionary<IFieldReference, HeapElemWrapper>> InstFldRefToHeapElemWrapperMap;
 
         //ExHandlerWrapper dictionary
         private readonly static IDictionary<Instruction, ExHandlerWrapper> InstToExHandlerWrapperMap;
@@ -54,6 +56,8 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetBackend.Wrappers
             InstToHeapElemWrapperMap = new Dictionary<Instruction, HeapElemWrapper>(idc);
             InstToHeapArrayElemWrapperMap = new Dictionary<Instruction, HeapElemWrapper>(idc);
             VarToHeapElemWrapperMap = new Dictionary<IVariable, HeapElemWrapper>(vc);
+            FieldRefToHeapElemWrapperMap = new Dictionary<IFieldReference, HeapElemWrapper>(frc);
+            InstFldRefToHeapElemWrapperMap = new Dictionary<Instruction, IDictionary<IFieldReference, HeapElemWrapper>>(idc);
 
             InstToExHandlerWrapperMap = new Dictionary<Instruction, ExHandlerWrapper>(idc);
         }
@@ -277,6 +281,48 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetBackend.Wrappers
                     InstToHeapElemWrapperMap[inst] = hpW;
                     return hpW;
                 }
+            }
+        }
+
+        public static HeapElemWrapper getHeapElemW(Instruction inst, IFieldReference fldRef, IMethodDefinition meth)
+        {
+            if (InstFldRefToHeapElemWrapperMap.ContainsKey(inst))
+            {
+                IDictionary<IFieldReference, HeapElemWrapper> innerDict = InstFldRefToHeapElemWrapperMap[inst];
+
+                if (innerDict != null && innerDict.ContainsKey(fldRef))
+                {
+                    return innerDict[fldRef];
+                }
+                if (innerDict == null)
+                {
+                    InstFldRefToHeapElemWrapperMap[inst] = new Dictionary<IFieldReference, HeapElemWrapper>(frc);
+                }
+            }
+            else
+            {
+                IDictionary<IFieldReference, HeapElemWrapper> innerDict = new Dictionary<IFieldReference, HeapElemWrapper>(frc);
+                InstFldRefToHeapElemWrapperMap.Add(inst, innerDict);
+            }
+            InstructionWrapper instW = getInstW(inst, meth);
+            FieldRefWrapper fldW = getFieldRefW(fldRef);
+            HeapElemWrapper hpW = new HeapElemWrapper(instW, fldW);
+            InstFldRefToHeapElemWrapperMap[inst][fldRef] = hpW;
+            return hpW;
+        }
+
+        public static HeapElemWrapper getHeapElemW(IFieldReference fldRef)
+        {
+            if (FieldRefToHeapElemWrapperMap.ContainsKey(fldRef))
+            {
+                return FieldRefToHeapElemWrapperMap[fldRef];
+            }
+            else
+            {
+                FieldRefWrapper fldW = getFieldRefW(fldRef);
+                HeapElemWrapper hpW = new HeapElemWrapper(fldW);
+                FieldRefToHeapElemWrapperMap[fldRef] = hpW;
+                return hpW;
             }
         }
 

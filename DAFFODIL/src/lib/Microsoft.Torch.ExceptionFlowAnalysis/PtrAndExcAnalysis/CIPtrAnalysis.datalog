@@ -37,7 +37,11 @@ MInstFldRead(m:M,l:V,r:V,f:F) input      # Method m contains: l = r.f
 MInstFldWrite(m:M,l:V,f:F,r:V) input     # Method m contains: l.f = r
 MStatFldRead(m:M,l:V,f:F) input          # Method m contains: l = f
 MStatFldWrite(m:M,f:F,r:V) input         # Method m contains: f = r
-MStructArrHFH(m:M,h1:H,f:F,h2:H) input   # Method m contains an allocation of an array of struct
+
+MStructHFH(m:M,h1:H,f:F,h2:H) input      # Method m contains an allocation of an array of struct (h1). f is the null field. The struct element is modeled by h2.
+TStructFH(t:T,f:F,h:H) input             # Type t has a static struct field f. The struct is modeled as a heap elem h. f points to h.
+StructHFH(h1:H,f:F,h2:H) input           # Instance field f is a struct in heap elem h1. The struct is modeled as heap elem h2.
+                                         # And, h1.f points to h2.
 
 MAddrTakenLocal(m:M,l:V,r:V) input       # Method m contains l = &r
 MAddrTakenInstFld(m:M,l:V,r:V,f:F) input # Method m contains l = &r.f
@@ -49,6 +53,7 @@ MDerefRight(m:M,l:V,r:V) input           # Method m contains l = *r
 
 structV(v:V) input                       # Local variable v is of type struct
 structRefV(v:V) input                    # Local variable v is of type reference to struct
+thisRefV(v:V) input                      # "this" argument is passed by reference. Ex: foo(ref v)
 structH(h:H) input                       # Heap element h is of type struct
 classT(t:T) input                        # Type t is a class
 staticTM(t:T,m:M) input                  # Type t contains static method m
@@ -60,6 +65,7 @@ IHM(i:I,h:H,m:M)
 DelegateIH(i:I,h:H)
 DelReceiver(i:I,h:H)
 DelFunc(i:I,m:M)
+thisIVH(i:I,v:V,h:H) printtuples         # Invoke statement i has reference variable v as the "this" variable && v points-to h
 
 Alloc(l:V,h:H)
 Move(l:V,r:V) printtuples
@@ -106,9 +112,12 @@ reachableI(i) :- MI(m,i), reachableM(m).
 
 # possibly-multiple-target call sites
 IM(i,m) :- reachableI(i), IinvkArg0(i,v), VH(v,h), IHM(i,h,m).
-IM(i,m) :- reachableI(i), IinvkArg0(i,v), VX(v,x), AddrOfVX(v1,x), VH(v1,h), IHM(i,h,m).
-IM(i,m) :- reachableI(i), IinvkArg0(i,v), VX(v,x), AddrOfHFX(h1,f,x), HFH(h1,f,h), IHM(i,h,m).
-IM(i,m) :- reachableI(i), IinvkArg0(i,v), VX(v,x), AddrOfFX(f1,x), FH(f1,h), IHM(i,h,m).
+IM(i,m) :- reachableI(i), thisIVH(i,v,h), IHM(i,h,m).
+
+thisIVH(i,v,h) :- IinvkArg0(i,v), VX(v,x), AddrOfVX(v1,x), VH(v1,h).
+thisIVH(i,v,h) :- IinvkArg0(i,v), VX(v,x), AddrOfHFX(h1,f,x), HFH(h1,f,h).
+thisIVH(i,v,h) :- IinvkArg0(i,v), VX(v,x), AddrOfFX(f1,x), FH(f1,h).
+
 # calls to static methods
 IM(i,m) :- reachableI(i), StatIM(i,m).
 # method call via delegates
@@ -120,7 +129,9 @@ IM(i,m) :- DelFunc(i,m), staticTM(t,m).
 VH(v,rh) :- DelReceiver(i,rh), IM(i,m), MmethArg(m,0,v).
 
 # arguments and return variables
-Move(v,u) :- IinvkArg(i,z,u), IM(i,m), MmethArg(m,z,v).
+VH(v,h) :- IM(i,m), thisIVH(i,u,h), MmethArg(m,0,v), thisRefV(u), !structRefV(u).
+Move(v,u) :- IinvkArg(i,z,u), IM(i,m), MmethArg(m,z,v), !thisRefV(u).
+Move(v,u) :- IinvkArg(i,z,u), IM(i,m), MmethArg(m,z,v), thisRefV(u), structRefV(u).
 Move(u,v) :- IinvkRet(i,z,u), IM(i,m), MmethRet(m,z,v).
 
 Alloc(l,h)   :- reachableM(m), MAlloc(m,l,h).
@@ -139,7 +150,15 @@ AddrTakenFunc(l,m2) :- reachableM(m1), MAddrTakenFunc(m1,l,m2).
 DerefLeft(l,r) :- reachableM(m), MDerefLeft(m,l,r).
 DerefRight(l,r) :- reachableM(m), MDerefRight(m,l,r).
 
-HFH(h1,f,h2) :- reachableM(m), MStructArrHFH(m,h1,f,h2).
+HFH(h1,f,h2) :- reachableM(m), MStructHFH(m,h1,f,h2).
+FH(f,h) :- reachableT(t), TStructFH(t,f,h).
+HFH(h1,f,h2) :- StructHFH(h1,f,h2).
+
+# The rules below may reduce the edges in the heap points-to graph but may be more
+# computationally expensive (as compared to the above rule).
+# HFH(h1,f,h2) :- VH(v,h1), StructHFH(h1,f,h2).
+# HFH(h1,f,h2) :- FH(f,h1), StructHFH(h1,f,h2).
+# HFH(h1,f,h2) :- HFH(h0,f0,h1), StructHFH(h1,f,h2).
 
 VH(l,h) :- Alloc(l,h).
 
@@ -247,5 +266,8 @@ MM(m,n) :- IM(i,n), MI(m,i).
 .include "MDerefRight.datalog"
 .include "structH.datalog"
 .include "structV.datalog"
-.include "MStructArrHFH.datalog"
+.include "MStructHFH.datalog"
+.include "TStructFH.datalog"
+.include "StructHFH.datalog"
 .include "structRefV.datalog"
+.include "thisRefV.datalog"

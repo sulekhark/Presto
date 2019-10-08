@@ -1,0 +1,61 @@
+﻿
+using System;
+using System.Collections.Generic;
+
+
+namespace FactTest
+{
+    static class Iterator
+    {
+        static int counter = 0;
+        static IEnumerable<MyObj> fooIt()
+        {
+            yield return bazIt();
+           
+        }
+
+        public static void barIt()
+        {
+            foreach (MyObj loopObj in fooIt())
+            {
+                WrapperObj wx = new WrapperObj(loopObj);
+                wx.Process();
+            }
+        }
+
+        public static MyObj bazIt()
+        {
+            MyObj bazObj = new MyObj();
+            counter++;
+            return bazObj;
+        }
+    }
+   
+    class MyObj
+    {
+        public int i;
+       
+    }
+
+    class WrapperObj
+    {
+        public MyObj mo;
+
+        public WrapperObj(MyObj arg)
+        {
+            mo = arg;
+        }
+        public void Process()
+        {
+            Console.WriteLine("Processing...");
+        }
+    }
+
+    class Program
+    {
+        public static void Main(String[] args)
+        {
+            Iterator.barIt();
+        }
+    }
+}

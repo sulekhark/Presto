@@ -2,9 +2,9 @@
 
 namespace Microsoft.Torch.ExceptionFlowAnalysis.ProgramFacts.Relations
 {
-    public class RelMStructArrHFH : Rel
+    public class RelMStructHFH : Rel
     {
-        public RelMStructArrHFH() : base(4, "MStructArrHFH")
+        public RelMStructHFH() : base(4, "MStructHFH")
         {
             domNames = new string[4];
             domNames[0] = ProgramDoms.domM.GetName();

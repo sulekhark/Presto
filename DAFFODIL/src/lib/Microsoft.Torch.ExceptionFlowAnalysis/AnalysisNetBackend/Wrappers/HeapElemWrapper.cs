@@ -6,12 +6,15 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetBackend.Wrappers
     {
         RefObj,
         StructObj,
-        ArrElemStructObj
+        ArrElemStructObj,
+        StatFldStructObj,
+        InstFldStructObj
     }
     public class HeapElemWrapper : IWrapper
     {
         InstructionWrapper instW;
         VariableWrapper varW;
+        FieldRefWrapper fldW;
         readonly HeapElemKind kind;
 
 
@@ -26,6 +29,20 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetBackend.Wrappers
             this.varW = varW;
             kind = HeapElemKind.StructObj;
         }
+
+        public HeapElemWrapper(FieldRefWrapper fldW)
+        {
+            this.fldW = fldW;
+            kind = HeapElemKind.StatFldStructObj;
+        }
+
+        public HeapElemWrapper(InstructionWrapper instW, FieldRefWrapper fldW)
+        {
+            this.instW = instW;
+            this.fldW = fldW;
+            kind = HeapElemKind.InstFldStructObj;
+        }
+
         public override string ToString()
         {
             if (kind == HeapElemKind.RefObj)
@@ -39,6 +56,14 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetBackend.Wrappers
             else if (kind == HeapElemKind.ArrElemStructObj)
             {
                 return (instW.ToString() + " ARRAY_ELEMENT");
+            }
+            else if (kind == HeapElemKind.StatFldStructObj)
+            {
+                return (fldW.ToString() + " STATIC_STRUCT_FLD");
+            }
+            else if (kind == HeapElemKind.InstFldStructObj)
+            {
+                return (instW.ToString() + "::" + fldW.ToString() + " INSTANCE_STRUCT_FLD");
             }
             else
             {
@@ -59,6 +84,14 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetBackend.Wrappers
             else if (kind == HeapElemKind.ArrElemStructObj)
             {
                 return (instW.GetDesc());
+            }
+            else if (kind == HeapElemKind.StatFldStructObj)
+            {
+                return (fldW.GetDesc());
+            }
+            else if (kind == HeapElemKind.InstFldStructObj)
+            {
+                return (instW.GetDesc() + " FLDDESC: " + fldW.GetDesc());
             }
             else
             {

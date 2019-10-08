@@ -6,33 +6,39 @@ namespace T12
         static void Main(string[] args)
         {
             Bar svar = new Bar(null, null);
-            Foo f = new Foo();
+            Foo fooFirst = new Foo();
             Foo zzz;
-            FreshFoo(out zzz);
-            FreshFoo1(ref f);
-            svar.objSec = f;
-            Foo z = svar.objSec;
+            FreshOutFoo(out zzz);
+            FreshRefFoo(ref fooFirst);
+            IBaz bazArg = new Baz();
+            Taz tazArg = new Taz();
+            fooFirst.FooFunc<IBaz>(ref bazArg, ref tazArg);
+            fooFirst.FooFuncTrial(ref bazArg, ref tazArg);
+            Baz bazArgOrd = bazArg as Baz;
+            fooFirst.FooFuncOrdinary(bazArgOrd);
+            svar.objSec = fooFirst;
+            Foo yyy = svar.objSec;
             Bar rvar = svar;
             rvar = Modify(rvar);
             LocMod(rvar);
-            Bar fresh = new Bar(null,null);
-            Fresh(out fresh);
-            FreshFoo(out fresh.objFir);
-            FreshFoo(out fresh.objSec);
+            Bar freshBar = new Bar(null,null);
+            FreshBar(out freshBar);
+            FreshOutFoo(out freshBar.objFir);
+            FreshOutFoo(out freshBar.objSec);
         }
 
         
-        static void Fresh(out Bar freshparam)
+        static void FreshBar(out Bar freshparam)
         {
             freshparam = new Bar(new Foo(), new Foo());
         }
 
-        static void FreshFoo1(ref Foo ff)
+        static void FreshRefFoo(ref Foo ff)
         {
             ff = new Foo();
         }
 
-        static void FreshFoo(out Foo ff)
+        static void FreshOutFoo(out Foo ff)
         {
             ff = new Foo();
         }
@@ -80,5 +86,34 @@ namespace T12
         }
     }
 
-    class Foo { }
+    class Foo
+    {
+        public void FooFunc<T>(ref T bazObj, ref Taz tazObj) where T : IBaz
+        {
+            bazObj.BazFunc();
+        }
+
+        public void FooFuncTrial(ref IBaz bazObj, ref Taz tazObj)
+        {
+            bazObj.BazFunc();
+        }
+
+        public void FooFuncOrdinary(Baz ordBaz)
+        {
+            ordBaz.BazFunc();
+        }
+    }
+
+    interface IBaz
+    {
+        void BazFunc();
+    }
+
+    class Baz : IBaz
+    {
+        //public Taz tazMember;
+        public void BazFunc() { }
+    }
+
+    class Taz { }
 }

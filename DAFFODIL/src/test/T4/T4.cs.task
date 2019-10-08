@@ -1,0 +1,66 @@
+﻿
+using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
+
+
+namespace FactTest
+{
+    class T4
+    {
+        public Task<MyObj> ExecuteWork(bool flag)
+        {
+            MyObj xxx;
+            Task<MyObj> tmo;
+            tmo = Task.Run(() =>
+            {
+                xxx = new MyObj();
+                Console.WriteLine("Hello");
+                xxx.i = 5;
+                return xxx;
+            });
+            return tmo;
+        }
+        public async Task<WrapperObj> CallAsync()
+        {
+            MyObj firstObj = new MyObj();
+            WrapperObj wObj = new WrapperObj(firstObj);
+            MyObj secondObj = null;
+            try
+            {
+                secondObj = await ExecuteWork(true);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+            }
+            wObj.mo = secondObj;
+            return wObj;
+        }
+    }
+
+    class MyObj
+    {
+        public int i;
+       
+    }
+
+    class WrapperObj
+    {
+        public MyObj mo;
+
+        public WrapperObj(MyObj arg)
+        {
+            mo = arg;
+        }
+    }
+
+    class Program
+    {
+        public static void Main(String[] args)
+        {
+            T4 demo = new T4();
+            WrapperObj zzz = demo.CallAsync().Result;
+        }
+    }
+}

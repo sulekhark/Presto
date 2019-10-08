@@ -74,8 +74,12 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.ProgramFacts
         public static RelFinalMTP relFinalMTP;
         public static RelEscaping relEscaping;
         public static RelCaught relCaught;
-        public static RelMStructArrHFH relMStructArrHFH;
+        public static RelMStructHFH relMStructHFH;
         public static RelStructRefV relStructRefV;
+        public static RelThisIVH relThisIVH;
+        public static RelThisRefV relThisRefV;
+        public static RelTStructFH relTStructFH;
+        public static RelStructHFH relStructHFH;
 
 
         public static Dictionary<string, Rel> nameToRelMap;
@@ -287,11 +291,23 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.ProgramFacts
             relCaught = new RelCaught();
             nameToRelMap.Add(relCaught.GetName(), relCaught);
 
-            relMStructArrHFH = new RelMStructArrHFH();
-            nameToRelMap.Add(relMStructArrHFH.GetName(), relMStructArrHFH);
+            relMStructHFH = new RelMStructHFH();
+            nameToRelMap.Add(relMStructHFH.GetName(), relMStructHFH);
 
             relStructRefV = new RelStructRefV();
             nameToRelMap.Add(relStructRefV.GetName(), relStructRefV);
+
+            relThisIVH = new RelThisIVH();
+            nameToRelMap.Add(relThisIVH.GetName(), relThisIVH);
+
+            relThisRefV = new RelThisRefV();
+            nameToRelMap.Add(relThisRefV.GetName(), relThisRefV);
+
+            relTStructFH = new RelTStructFH();
+            nameToRelMap.Add(relTStructFH.GetName(), relTStructFH);
+
+            relStructHFH = new RelStructHFH();
+            nameToRelMap.Add(relStructHFH.GetName(), relStructHFH);
         }
 
         public static void Save()
@@ -343,8 +359,11 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.ProgramFacts
             relPI.Save();
             relMEH.Save();
             relExceptionType.Save();
-            relMStructArrHFH.Save();
+            relMStructHFH.Save();
             relStructRefV.Save();
+            relThisRefV.Save();
+            relTStructFH.Save();
+            relStructHFH.Save();
         }
     }
 }

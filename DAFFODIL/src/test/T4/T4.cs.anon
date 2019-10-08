@@ -1,0 +1,44 @@
+﻿using System;
+using System.Collections.Generic;
+
+
+namespace FactTest
+{
+    static class AnonymousFunction
+    {
+        static WrapperObj fooAnon(Func<MyObj,WrapperObj> anonFuncParam, MyObj aaa)
+        {
+            WrapperObj fooWObj = anonFuncParam(aaa);
+            return fooWObj;
+        }
+        public static void barAnon()
+        {
+            MyObj anonObj = new MyObj();
+            WrapperObj barWObj = fooAnon(paramObj => new WrapperObj(paramObj), anonObj);
+            MyObj finalObj = barWObj.mo;
+        }
+    }
+    
+    class MyObj
+    {
+        public int i;  
+    }
+
+    class WrapperObj
+    {
+        public MyObj mo;
+
+        public WrapperObj(MyObj arg)
+        {
+            mo = arg;
+        }
+    }
+
+    class Program
+    {
+        public static void Main(String[] args)
+        {
+            AnonymousFunction.barAnon();
+        }
+    }
+}

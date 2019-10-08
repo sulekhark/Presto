@@ -10,11 +10,12 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.Utils
     {
         protected HashSet<int[]> arrSet;
         protected readonly int arrSize;
-        
-
+        protected readonly IntArrayComparer iac;
+       
         public ArraySet(int sz)
         {
-            arrSet = new HashSet<int[]>();
+            iac = new IntArrayComparer();
+            arrSet = new HashSet<int[]>(iac);
             arrSize = sz;
         }
 

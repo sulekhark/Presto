@@ -149,7 +149,8 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetBackend.Analyses
                 if (instruction.Operand is Dereference)
                 {
                     var deref = instruction.Operand as Dereference;
-                    instruction.Result.Type = deref.Reference.Type;
+                    // SRK (4th Oct 2019) instruction.Result.Type = deref.Reference.Type;
+                    instruction.Result.Type = deref.Type;
                 }
 
                 if (instruction.Operand.Type != null && // we can be in the middle of the type inference analysis

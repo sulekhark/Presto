@@ -92,7 +92,7 @@ namespace T13
             tmo = Task.Run(() =>
             {
                 xxx = new B();
-                if (xxx == null) throw new NullReferenceException();
+                if (xxx == null) throw new DivideByZeroException();
                 return xxx;
             });
             return tmo;

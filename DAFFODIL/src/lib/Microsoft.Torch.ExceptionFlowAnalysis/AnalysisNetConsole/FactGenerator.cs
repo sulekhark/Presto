@@ -203,6 +203,7 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
                 {
                     FieldRefWrapper fldW = WrapperProvider.getFieldRefW(fld);
                     ITypeDefinition fldType = fld.Type.ResolvedType;
+                    if (fldType.IsValueType && !fldType.IsStruct) continue;
                     TypeRefWrapper fldTypeRefW = WrapperProvider.getTypeRefW(fldType);
                     ProgramDoms.domT.Add(fldTypeRefW);
                     ProgramDoms.domF.Add(fldW);
@@ -214,6 +215,14 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
                             AddressWrapper fldAddrW = WrapperProvider.getAddrW(fld);
                             ProgramDoms.domX.Add(fldAddrW);
                             ProgramRels.relAddrOfFX.Add(fldW, fldAddrW);
+                        }
+                        if (fldType.IsValueType && fldType.IsStruct)
+                        {
+                            // Even though structs are value types, in our memory model, we allocate them on the heap.
+                            HeapElemWrapper hpElemW = WrapperProvider.getHeapElemW(fld);
+                            ProgramDoms.domH.Add(hpElemW);
+                            ProgramRels.relTStructFH.Add(tyW, fldW, hpElemW);
+                            ProgramRels.relHT.Add(hpElemW, fldTypeRefW);
                         }
                     }
                 }
@@ -615,6 +624,17 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
                         ProgramDoms.domX.Add(allocfldAddrW);
                         ProgramRels.relAddrOfHFX.Add(hpW, fldW, allocfldAddrW);
                     }
+                    ITypeDefinition fldType = fld.Type.ResolvedType;
+                    if (fldType.IsValueType && fldType.IsStruct)
+                    {
+                        FieldRefWrapper fldW = WrapperProvider.getFieldRefW(fld);
+                        // Even though structs are value types, in our memory model, we allocate them on the heap.
+                        HeapElemWrapper hpElemW = WrapperProvider.getHeapElemW(newObjInst, fld, methDef);
+                        ProgramDoms.domH.Add(hpElemW);
+                        ProgramRels.relStructHFH.Add(hpW, fldW, hpElemW);
+                        TypeRefWrapper fldTypeRefW = WrapperProvider.getTypeRefW(fldType);
+                        ProgramRels.relHT.Add(hpElemW, fldTypeRefW);
+                    }
                 }
             }
             return;
@@ -638,7 +658,7 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
                 // Even though structs are value types, in our memory model, we allocate them on the heap.
                 HeapElemWrapper hpArrElemW = WrapperProvider.getHeapElemW(newArrInst, methDef, true);
                 ProgramDoms.domH.Add(hpArrElemW);
-                ProgramRels.relMStructArrHFH.Add(mRefW, hpW, fldW, hpArrElemW);
+                ProgramRels.relMStructHFH.Add(mRefW, hpW, fldW, hpArrElemW);
                 TypeRefWrapper elemTypeW = WrapperProvider.getTypeRefW(elemTypeDef);
                 ProgramRels.relHT.Add(hpArrElemW, elemTypeW);
             }
@@ -697,10 +717,12 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
             if (invkArgs.Count > 0)
             {
                 IVariable arg0 = invkArgs[0];
-                if (!arg0.Type.IsValueType || arg0.Type.ResolvedType.IsStruct)
+                ITypeDefinition arg0Type = arg0.Type.ResolvedType;
+                if (!arg0Type.IsValueType || arg0Type.IsStruct)
                 {
                     VariableWrapper arg0W = WrapperProvider.getVarW(arg0);
                     ProgramRels.relIinvkArg0.Add(instW, arg0W);
+                    if (arg0Type.TypeCode == PrimitiveTypeCode.Reference) ProgramRels.relThisRefV.Add(arg0W);
                 }
             }
             int argNdx = 0;
