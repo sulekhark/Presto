@@ -294,9 +294,9 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
                         if (tyMeth.IsConstructor) continue;
                         if (!tyMeth.IsGeneric && !methods.Contains(tyMeth)) continue;
                         IList<IMethodDefinition> instantiatedMeths;
-                        if (tyMeth.IsGeneric && MetadataVisitor.genericMethodMap.ContainsKey(tyMeth))
+                        if (tyMeth.IsGeneric && ClassAndMethodVisitor.genericMethodMap.ContainsKey(tyMeth))
                         {
-                            instantiatedMeths = MetadataVisitor.genericMethodMap[tyMeth].Values.ToList();
+                            instantiatedMeths = ClassAndMethodVisitor.genericMethodMap[tyMeth].Values.ToList();
                         }
                         else if (!tyMeth.IsGeneric)
                         {
@@ -327,12 +327,12 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
                                     {
                                         IMethodDefinition candidateTemplateMeth = Utils.GetMethodSignMatch(candidateTy, tyMeth);
                                         if (candidateTemplateMeth != null && 
-                                            MetadataVisitor.genericMethodMap.ContainsKey(candidateTemplateMeth))
+                                            ClassAndMethodVisitor.genericMethodMap.ContainsKey(candidateTemplateMeth))
                                         {
                                             IDictionary<string, IMethodDefinition> candidateInsts = 
-                                                MetadataVisitor.genericMethodMap[candidateTemplateMeth];
+                                                ClassAndMethodVisitor.genericMethodMap[candidateTemplateMeth];
                                             string genericArgsStr = 
-                                                Generics.GetGenericArgStr((meth as IGenericMethodInstance).GenericArguments);
+                                                GenericMethods.GetGenericArgStr((meth as IGenericMethodInstance).GenericArguments);
                                             if (candidateInsts.ContainsKey(genericArgsStr))
                                                 candidateMeth = candidateInsts[genericArgsStr];
                                         }

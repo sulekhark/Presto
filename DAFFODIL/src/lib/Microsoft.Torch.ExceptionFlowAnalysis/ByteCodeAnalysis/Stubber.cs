@@ -86,7 +86,7 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
             IMethodDefinition lookFor = m;
             if (m is IGenericMethodInstance)
             {
-                lookFor = Generics.GetTemplate(m);
+                lookFor = GenericMethods.GetTemplate(m);
             }
             
             ITypeDefinition containingType = m.ContainingTypeDefinition;
@@ -104,7 +104,7 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
             if (m is IGenericMethodInstance)
             {
                 // Here, lookFor is a template method
-                methToAdd = Generics.RecordInfo(lookFor, m, matches);
+                methToAdd = GenericMethods.RecordInfo(lookFor, m, matches);
             }
             else
             {
@@ -155,10 +155,10 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
                 ITypeDefinition containingType = m.ContainingTypeDefinition;
                 containingType = Stubs.GetStubType(containingType);
                 if (containingType == null) return null; // This entire containingType is to be ignored.
-                if (methToAnalyze is IGenericMethodInstance) methToAnalyze = Generics.GetTemplate(m);
+                if (methToAnalyze is IGenericMethodInstance) methToAnalyze = GenericMethods.GetTemplate(m);
                 methToAnalyze = Utils.GetMethodSignMatch(containingType, methToAnalyze);
                 if (methToAnalyze == null) return null; // containingType itself is stubbed, but the stub does not define a method equivalent to m.
-                if (methToAnalyze.IsGeneric) methToAnalyze = Generics.GetInstantiatedMeth(methToAnalyze, m);
+                if (methToAnalyze.IsGeneric) methToAnalyze = GenericMethods.GetInstantiatedMeth(methToAnalyze, m);
             }
             return methToAnalyze;
         }

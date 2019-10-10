@@ -245,7 +245,7 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
                         {
                             if (Utils.MethodSignMatch(calleeTemplate, meth))
                             {
-                                IMethodDefinition instMeth = Generics.RecordInfo(meth, mCallee, /* createIfReqd = */true);
+                                IMethodDefinition instMeth = GenericMethods.RecordInfo(meth, mCallee, /* createIfReqd = */true);
                                 IMethodDefinition addedMeth = Stubber.CheckAndAdd(instMeth);
                                 if (addedMeth != null && isAddrTaken) addrTakenMethods.Add(addedMeth);
                                 break;

@@ -13,7 +13,7 @@ using Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetBackend.Model;
 
 namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
 {
-	public class MetadataVisitor
+	public class ClassAndMethodVisitor
 	{
 		private readonly IMetadataHost host;
         private FactGenerator factGen;
@@ -21,7 +21,7 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
         public static readonly IDictionary<IMethodDefinition, IDictionary<string, IMethodDefinition>> genericMethodMap;
         public static IDictionary<IModule, ISourceLocationProvider> moduleToPdbMap;
 
-        static MetadataVisitor()
+        static ClassAndMethodVisitor()
         {
             MethodReferenceDefinitionComparer mdc = MethodReferenceDefinitionComparer.Default;
             TypeDefinitionComparer tdc = new TypeDefinitionComparer();
@@ -29,7 +29,7 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
             moduleToPdbMap = new Dictionary<IModule, ISourceLocationProvider>();
         }
 
-        public MetadataVisitor(IMetadataHost host)
+        public ClassAndMethodVisitor(IMetadataHost host)
 		{
 			this.host = host;
         }

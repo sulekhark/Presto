@@ -4,7 +4,7 @@ using Microsoft.Cci.Immutable;
 
 namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
 {
-    public static class Generics
+    public static class GenericMethods
     {
         private static IInternFactory internFactory;
 
@@ -21,14 +21,14 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
         public static IMethodDefinition RecordInfo(IMethodDefinition templateMeth, IMethodDefinition instMeth, bool createIfReqd)
         {
             IDictionary<string, IMethodDefinition> instMeths;
-            if (MetadataVisitor.genericMethodMap.ContainsKey(templateMeth))
+            if (ClassAndMethodVisitor.genericMethodMap.ContainsKey(templateMeth))
             {
-                instMeths = MetadataVisitor.genericMethodMap[templateMeth];
+                instMeths = ClassAndMethodVisitor.genericMethodMap[templateMeth];
             }
             else
             {
                 instMeths = new Dictionary<string, IMethodDefinition>();
-                MetadataVisitor.genericMethodMap.Add(templateMeth, instMeths);
+                ClassAndMethodVisitor.genericMethodMap.Add(templateMeth, instMeths);
             }
             IMethodDefinition retMeth;
             if (!createIfReqd)
@@ -67,14 +67,14 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
             }
             string argStr = GetGenericArgStr(stubbedArgList);
             IDictionary<string, IMethodDefinition> instMap;
-            if (MetadataVisitor.genericMethodMap.ContainsKey(templateMeth))
+            if (ClassAndMethodVisitor.genericMethodMap.ContainsKey(templateMeth))
             {
-                instMap = MetadataVisitor.genericMethodMap[templateMeth];
+                instMap = ClassAndMethodVisitor.genericMethodMap[templateMeth];
             }
             else
             {
                 instMap = new Dictionary<string, IMethodDefinition>();
-                MetadataVisitor.genericMethodMap[templateMeth] = instMap;
+                ClassAndMethodVisitor.genericMethodMap[templateMeth] = instMap;
             }
             if (instMap.ContainsKey(argStr))
             {

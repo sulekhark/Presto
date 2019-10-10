@@ -16,20 +16,22 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
             using (var host = new PeReader.DefaultHost())
             {
                 Types.Initialize(host);
-                var visitor = new MetadataVisitor(host);
-                Assembly rootAssembly = GetAssembly(host, input);
-                Assembly stubsAssembly = GetAssembly(host, ConfigParams.StubsPath);
-                DoRTA(host, visitor, rootAssembly, stubsAssembly);
+                var visitor = new ClassAndMethodVisitor(host);
+                IModule rootModule = GetModule(host, input);
+                IModule stubsModule = GetModule(host, ConfigParams.StubsPath);
+                DoRTA(host, visitor, rootModule, stubsModule);
                 GenerateFacts(visitor);
             }
         }
 
        
-        static Assembly GetAssembly(IMetadataHost host, string assemblyPath)
+        static IModule GetModule(IMetadataHost host, string assemblyPath)
         {
-            var assembly = new Assembly(host);
-            assembly.Load(assemblyPath);
-            return assembly;
+            IModule module = host.LoadUnitFrom(assemblyPath) as IModule;
+
+            if (module == null || module == Dummy.Module || module == Dummy.Assembly)
+                throw new System.Exception("Invalid module (perhaps, file does not exist / file path incorrect).");
+            return module;
         }
 
         static void Initialize(ISet<ITypeDefinition> classesSet, ISet<ITypeDefinition> entryPtList, IModule rootModule, bool rootIsExe)
@@ -55,10 +57,8 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
             }
         }
 
-        static void DoRTA(IMetadataHost host, MetadataVisitor visitor, Assembly rootAssembly, Assembly stubsAssembly)
+        static void DoRTA(IMetadataHost host, ClassAndMethodVisitor visitor, IModule rootModule, IModule stubsModule)
         {
-            IModule rootModule = rootAssembly.Module;
-            IModule stubsModule = stubsAssembly.Module;
             bool rootIsExe = false;
             if (rootModule.Kind == ModuleKind.ConsoleApplication) rootIsExe = true;
             StreamWriter rtaLogSW = new StreamWriter(Path.Combine(ConfigParams.LogDir, "rta_log.txt"));
@@ -66,7 +66,7 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
             visitor.SetupRTAAnalyzer(rtaAnalyzer);
             Stubber.SetupRTAAnalyzer(rtaAnalyzer);
             Stubs.SetupInternFactory(host.InternFactory);
-            Generics.SetupInternFactory(host.InternFactory);
+            GenericMethods.SetupInternFactory(host.InternFactory);
             Stubs.SetupStubs(stubsModule);
 
             bool diskLoadSuccessful = false;
@@ -124,7 +124,7 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
             rtaLogSW.Close();
         }
 
-        static void GenerateFacts(MetadataVisitor visitor)
+        static void GenerateFacts(ClassAndMethodVisitor visitor)
         {
             StreamWriter tacLogSW = new StreamWriter(Path.Combine(ConfigParams.LogDir, "tac_log.txt"));
             StreamWriter factGenLogSW = new StreamWriter(Path.Combine(ConfigParams.LogDir, "factgen_log.txt"));
