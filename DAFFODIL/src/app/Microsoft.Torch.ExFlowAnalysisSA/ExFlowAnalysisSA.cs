@@ -7,12 +7,24 @@ namespace Microsoft.Torch.ExFlowAnalysisSA
 {
     class ExFlowAnalysisSA
     {
-        static void Main()
+        static void Main(string[] args)
         {
-            ConfigParams.LoadConfig(@"C:\Users\torch\work\DAFFODIL\DAFFODIL\src\test\T4\daffodil.cfg");
+            if (args.Length == 0)
+            {
+                ConfigParams.LoadConfig(@"C:\Users\torch\work\DAFFODIL\DAFFODIL\src\test\T4\daffodil.cfg");
+            }
+            else if (args.Length == 1)
+            {
+                ConfigParams.LoadConfig(args[0]);
+            }
+            else
+            {
+                System.Console.WriteLine("Wrong number of input args. Exiting.");
+                System.Environment.Exit(1);
+            }
             ProgramDoms.Initialize();
             ProgramRels.Initialize();
-            ByteCodeAnalyzer.GenerateEDBFacts(@"C:\Users\torch\work\DAFFODIL\DAFFODIL\src\test\T4\bin\Debug\T4.exe");
+            ByteCodeAnalyzer.GenerateEDBFacts(ConfigParams.AssemblyPath);
             ProgramDoms.Save();
             ProgramRels.Save();
             Z3CommandLineInvoke.CopyFiles(ConfigParams.DatalogDir);

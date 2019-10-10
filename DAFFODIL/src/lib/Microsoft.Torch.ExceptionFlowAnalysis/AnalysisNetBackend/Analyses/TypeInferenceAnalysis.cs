@@ -150,7 +150,14 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetBackend.Analyses
                 {
                     var deref = instruction.Operand as Dereference;
                     // SRK (4th Oct 2019) instruction.Result.Type = deref.Reference.Type;
-                    instruction.Result.Type = deref.Type;
+                    if (deref.Reference.Type.TypeCode == PrimitiveTypeCode.Reference && deref.Type != null)
+                    {
+                        instruction.Result.Type = deref.Type;
+                    }
+                    else
+                    {
+                        instruction.Result.Type = deref.Reference.Type;
+                    }
                 }
 
                 if (instruction.Operand.Type != null && // we can be in the middle of the type inference analysis
@@ -343,11 +350,13 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetBackend.Analyses
 
 		private ControlFlowGraph cfg;
         private ITypeReference returnType;
+        public int fixptCount;
 
         public TypeInferenceAnalysis(ControlFlowGraph cfg, ITypeReference returnType)
 		{
 			this.cfg = cfg;
             this.returnType = returnType;
+            fixptCount = 0;
 		}
 
 		public void Analyze()
@@ -370,6 +379,7 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetBackend.Analyses
 				}
 
 				changed = !SameTypes(result);
+                fixptCount++;
 			}
 			while (changed);
 		}

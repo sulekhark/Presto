@@ -6,6 +6,7 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.Common
 {
     public static class ConfigParams
     {
+        public static string AssemblyPath { get; set; }
         public static string DatalogDir { get; set; }
         public static string LogDir { get; set; }
         public static string Z3ExePath { get; set; }
@@ -23,7 +24,11 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.Common
                 {
                     try
                     {
-                        if (line.StartsWith("DatalogDir= "))
+                        if (line.StartsWith("AssemblyPath= "))
+                        {
+                            AssemblyPath = line.Split()[1];
+                        }
+                        else if (line.StartsWith("DatalogDir= "))
                         {
                             DatalogDir = line.Split()[1];
                         }
@@ -67,6 +72,7 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.Common
         {
             using (StreamWriter sw = new StreamWriter(filePath))
             {
+                sw.WriteLine("AssemblyPath= {0}", AssemblyPath);
                 sw.WriteLine("DatalogDir= {0}", DatalogDir);
                 sw.WriteLine("LogDir= {0}", LogDir);
                 sw.WriteLine("Z3ExePath= {0}", Z3ExePath);
