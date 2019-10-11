@@ -48,6 +48,8 @@ MDerefLeft(m:M,l:V,r:V) input            # Method m contains *l = r
 MDerefRight(m:M,l:V,r:V) input           # Method m contains l = *r
 
 structV(v:V) input                       # Local variable v is of type struct
+structRefV(v:V) input                    # Local variable v is of type reference to struct
+thisRefV(v:V) input                      # "this" argument is passed by reference. Ex: foo(ref v)
 structH(h:H) input                       # Heap element h is of type struct
 
 IM(i:I,m:M) input                        # InvokeStmt i may call Method m
@@ -63,6 +65,7 @@ FX(f:F,x:X)  printtuples                 # Static field f may point to Address x
 HFH(h1:H,f:F,h2:H)  printtuples          # Field f of object allocated at AllocSite h1 may point to AllocSite h2
 HFX(h:H,f:F,x:X)  printtuples            # Field f of object allocated at AllocSite h may point to Address x
 
+thisIVH(i:I,v:V,h:H) printtuples         # Invoke statement i has reference variable v as the "this" variable && v points-to h
 
 Alloc(l:V,h:H)
 Move(l:V,r:V) printtuples
@@ -90,8 +93,14 @@ CatchVH(v:V,h:H) printtuples             # Variable v which is the formal parame
 # Constraints
 ###
 
+thisIVH(i,v,h) :- IinvkArg0(i,v), VX(v,x), AddrOfVX(v1,x), VH(v1,h).
+thisIVH(i,v,h) :- IinvkArg0(i,v), VX(v,x), AddrOfHFX(h1,f,x), HFH(h1,f,h).
+thisIVH(i,v,h) :- IinvkArg0(i,v), VX(v,x), AddrOfFX(f1,x), FH(f1,h).
+
 # arguments and return variables
-Move(v,u) :- IinvkArg(i,z,u), IM(i,m), MmethArg(m,z,v).
+VH(v,h) :- IM(i,m), thisIVH(i,u,h), MmethArg(m,0,v), thisRefV(u), !structRefV(u).
+Move(v,u) :- IinvkArg(i,z,u), IM(i,m), MmethArg(m,z,v), thisRefV(u), structRefV(u).
+Move(v,u) :- IinvkArg(i,z,u), IM(i,m), MmethArg(m,z,v), !thisRefV(u).
 Move(u,v) :- IinvkRet(i,z,u), IM(i,m), MmethRet(m,z,v).
 
 Alloc(l,h)   :- reachableM(m), MAlloc(m,l,h).
@@ -140,11 +149,13 @@ HFH(lh,f,rhfh) :- StrMove(lh,rh), !structH(rhfh), HFH(rh,f,rhfh).
 
 # Handling & operator
 # v1 = &v2, v1 = &v2.f, v1 = &f, v1 = &m
-VX(v1,x) :- AddrTakenLocal(v1,v2), AddrOfVX(v2,x).
-VX(v1,x) :- AddrTakenInstFld(v1,v2,f), VH(v2,h2), AddrOfHFX(h2,f,x).
-VX(v1,x) :- AddrTakenStatFld(v1,f), AddrOfFX(f,x).
+VX(v1,x) :- AddrTakenLocal(v1,v2), AddrOfVX(v2,x), !structV(v2).
+VH(v1,h) :- AddrTakenLocal(v1,v2), VH(v2,h), structV(v2).
+VX(v1,x) :- AddrTakenInstFld(v1,v2,f), VH(v2,h2), AddrOfHFX(h2,f,x), !structRefV(v1).
+VH(v1,h) :- AddrTakenInstFld(v1,v2,f), VH(v2,h2), HFH(h2,f,h), structRefV(v1).
+VX(v1,x) :- AddrTakenStatFld(v1,f), AddrOfFX(f,x), !structRefV(v1).
+VH(v1,h) :- AddrTakenStatFld(v1,f), FH(f,h), structRefV(v1).
 VX(v1,x) :- AddrTakenFunc(v1,m), AddrOfMX(m,x).
-
 
 # Handling dereference
 # *l = r

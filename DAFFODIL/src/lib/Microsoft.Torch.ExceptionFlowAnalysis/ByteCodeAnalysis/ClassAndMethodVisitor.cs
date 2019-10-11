@@ -73,7 +73,7 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
         public MethodCfgAndTac AnalyzeIntraProcedural(IMethodDefinition methodDefinition)
         {
             // System.Console.WriteLine("Traversing: {0}", methodDefinition.GetName());
-            if (Stubber.Suppress(methodDefinition)) return null;
+            if (Stubber.SuppressM(methodDefinition)) return null;
             if (methodDefinition.IsExternal) return null;
             if (methodDefinition.IsAbstract) return null;
 
@@ -264,7 +264,7 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
 
         private void ProcessStaticConstructors(ITypeDefinition ty)
         {
-            if (!rtaAnalyzer.clinitProcessedClasses.Contains(ty) && !Stubber.Suppress(ty))
+            if (!rtaAnalyzer.clinitProcessedClasses.Contains(ty) && !Stubber.SuppressM(ty))
             {
                 rtaAnalyzer.clinitProcessedClasses.Add(ty);
                 IMethodDefinition clinitMeth = Utils.GetStaticConstructor(ty);

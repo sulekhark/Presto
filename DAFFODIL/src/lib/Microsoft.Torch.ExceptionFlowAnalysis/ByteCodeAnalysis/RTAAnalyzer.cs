@@ -169,12 +169,6 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
                         {
                             allocClasses.Add(addedTy);
                         }
-                        else if (addedTy == null)
-                        // addedTy will be null for non-stubbed System.* types.
-                        // We don't want to analyze methods of such types, but we still want to track such objects.
-                        {
-                            allocClasses.Add(objTypeDef);
-                        }
                     }
                     else if (instruction is CreateArrayInstruction)
                     {
@@ -185,12 +179,6 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
                         if (addedTy != null && !allocClasses.Contains(addedTy))
                         {
                             allocClasses.Add(addedTy);
-                        }
-                        else if (addedTy == null)
-                        // addedTy will be null for non-stubbed System.* types.
-                        // We don't want to analyze methods of such types, but we still want to track such objects.
-                        {
-                            allocClasses.Add(elemTypeDef);
                         }
                     }
                     else if (instruction is MethodCallInstruction)
@@ -231,7 +219,7 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
             foreach (ITypeDefinition cl in allocClasses)
             {
                 if (cl is IArrayTypeReference) continue;
-                if (!Stubber.Suppress(cl))
+                if (!Stubber.SuppressM(cl))
                 {
                     bool process = false;
                     if (isInterface && Utils.ImplementsInterface(cl, calleeClass))

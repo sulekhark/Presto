@@ -130,8 +130,8 @@ VH(v,rh) :- DelReceiver(i,rh), IM(i,m), MmethArg(m,0,v).
 
 # arguments and return variables
 VH(v,h) :- IM(i,m), thisIVH(i,u,h), MmethArg(m,0,v), thisRefV(u), !structRefV(u).
-Move(v,u) :- IinvkArg(i,z,u), IM(i,m), MmethArg(m,z,v), !thisRefV(u).
 Move(v,u) :- IinvkArg(i,z,u), IM(i,m), MmethArg(m,z,v), thisRefV(u), structRefV(u).
+Move(v,u) :- IinvkArg(i,z,u), IM(i,m), MmethArg(m,z,v), !thisRefV(u).
 Move(u,v) :- IinvkRet(i,z,u), IM(i,m), MmethRet(m,z,v).
 
 Alloc(l,h)   :- reachableM(m), MAlloc(m,l,h).

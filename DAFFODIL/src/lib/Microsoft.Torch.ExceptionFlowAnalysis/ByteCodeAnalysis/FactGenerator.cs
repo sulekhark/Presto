@@ -203,7 +203,7 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
                 {
                     FieldRefWrapper fldW = WrapperProvider.getFieldRefW(fld);
                     ITypeDefinition fldType = fld.Type.ResolvedType;
-                    if (fldType.IsValueType && !fldType.IsStruct) continue;
+                    if ((fldType.IsValueType && !fldType.IsStruct) || Stubber.SuppressF(fldType)) continue;
                     TypeRefWrapper fldTypeRefW = WrapperProvider.getTypeRefW(fldType);
                     ProgramDoms.domT.Add(fldTypeRefW);
                     ProgramDoms.domF.Add(fldW);
@@ -221,6 +221,7 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
                             // Even though structs are value types, in our memory model, we allocate them on the heap.
                             HeapElemWrapper hpElemW = WrapperProvider.getHeapElemW(fld);
                             ProgramDoms.domH.Add(hpElemW);
+                            ProgramRels.relStructH.Add(hpElemW);
                             ProgramRels.relTStructFH.Add(tyW, fldW, hpElemW);
                             ProgramRels.relHT.Add(hpElemW, fldTypeRefW);
                         }
@@ -360,6 +361,7 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
             int paramNdx = 0;
             foreach (IVariable param in paramList)
             {
+                if (Stubber.SuppressF(param.Type.ResolvedType)) continue;
                 if (!param.Type.IsValueType || param.Type.ResolvedType.IsStruct)
                 {
                     VariableWrapper paramW = WrapperProvider.getVarW(param);
@@ -397,6 +399,7 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
             {
                 if (!lclVar.IsParameter) // Parameters are processed in ProcessParams
                 {
+                    if (Stubber.SuppressF(lclVar.Type.ResolvedType)) continue;
                     if (!lclVar.Type.IsValueType || lclVar.Type.ResolvedType.IsStruct)
                     {
                         VariableWrapper lclW = WrapperProvider.getVarW(lclVar);
@@ -435,7 +438,9 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
 
         void ProcessLoadInst(LoadInstruction lInst, MethodRefWrapper mRefW)
         {
-            if (!lInst.Result.Type.IsValueType || lInst.Result.Type.ResolvedType.IsStruct)
+            if (Stubber.SuppressF(lInst.Result.Type.ResolvedType))
+                return;
+            else if (!lInst.Result.Type.IsValueType || lInst.Result.Type.ResolvedType.IsStruct)
             {
                 ProcessLoad(lInst, mRefW);
             }
@@ -551,7 +556,9 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
 
         void ProcessStoreInst(StoreInstruction sInst, MethodRefWrapper mRefW)
         {
-            if (!sInst.Operand.Type.IsValueType || sInst.Operand.Type.ResolvedType.IsStruct)
+            if (Stubber.SuppressF(sInst.Operand.Type.ResolvedType))
+                return;
+            else if (!sInst.Operand.Type.IsValueType || sInst.Operand.Type.ResolvedType.IsStruct)
             {
                 ProcessStore(sInst, mRefW);
             }
@@ -603,8 +610,10 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
         void ProcessCreateObjectInst(CreateObjectInstruction newObjInst, MethodRefWrapper mRefW, IMethodDefinition methDef)
         {
             IVariable lhsVar = newObjInst.Result;
-            VariableWrapper lhsW = WrapperProvider.getVarW(lhsVar);
             ITypeDefinition objTypeDef = newObjInst.AllocationType.ResolvedType;
+            if (Stubber.SuppressF(objTypeDef)) return;
+
+            VariableWrapper lhsW = WrapperProvider.getVarW(lhsVar);
             TypeRefWrapper objTypeW = WrapperProvider.getTypeRefW(objTypeDef);
             HeapElemWrapper hpW = WrapperProvider.getHeapElemW(newObjInst, methDef, false);
             ProgramDoms.domH.Add(hpW);
@@ -625,12 +634,13 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
                         ProgramRels.relAddrOfHFX.Add(hpW, fldW, allocfldAddrW);
                     }
                     ITypeDefinition fldType = fld.Type.ResolvedType;
-                    if (fldType.IsValueType && fldType.IsStruct)
+                    if (!Stubber.SuppressF(fldType) && fldType.IsValueType && fldType.IsStruct)
                     {
                         FieldRefWrapper fldW = WrapperProvider.getFieldRefW(fld);
                         // Even though structs are value types, in our memory model, we allocate them on the heap.
                         HeapElemWrapper hpElemW = WrapperProvider.getHeapElemW(newObjInst, fld, methDef);
                         ProgramDoms.domH.Add(hpElemW);
+                        ProgramRels.relStructH.Add(hpElemW);
                         ProgramRels.relStructHFH.Add(hpW, fldW, hpElemW);
                         TypeRefWrapper fldTypeRefW = WrapperProvider.getTypeRefW(fldType);
                         ProgramRels.relHT.Add(hpElemW, fldTypeRefW);
@@ -643,8 +653,10 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
         void ProcessCreateArrayInst(CreateArrayInstruction newArrInst, MethodRefWrapper mRefW, IMethodDefinition methDef)
         {
             IVariable lhsVar = newArrInst.Result;
-            VariableWrapper lhsW = WrapperProvider.getVarW(lhsVar);
             ITypeDefinition arrTypeDef = lhsVar.Type.ResolvedType;
+            if (Stubber.SuppressF(arrTypeDef)) return;
+
+            VariableWrapper lhsW = WrapperProvider.getVarW(lhsVar);
             TypeRefWrapper arrTypeW = WrapperProvider.getTypeRefW(arrTypeDef);
             HeapElemWrapper hpW = WrapperProvider.getHeapElemW(newArrInst, methDef, false);
             ProgramDoms.domH.Add(hpW);
@@ -658,6 +670,7 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
                 // Even though structs are value types, in our memory model, we allocate them on the heap.
                 HeapElemWrapper hpArrElemW = WrapperProvider.getHeapElemW(newArrInst, methDef, true);
                 ProgramDoms.domH.Add(hpArrElemW);
+                ProgramRels.relStructH.Add(hpArrElemW);
                 ProgramRels.relMStructHFH.Add(mRefW, hpW, fldW, hpArrElemW);
                 TypeRefWrapper elemTypeW = WrapperProvider.getTypeRefW(elemTypeDef);
                 ProgramRels.relHT.Add(hpArrElemW, elemTypeW);
@@ -673,12 +686,13 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
         void ProcessPhiInst(PhiInstruction phiInst, MethodRefWrapper mRefW)
         {
             IVariable lhsVar = phiInst.Result;
+            if (Stubber.SuppressF(lhsVar.Type.ResolvedType)) return;
+
             if (!lhsVar.Type.IsValueType || lhsVar.Type.ResolvedType.IsStruct)
             {
                 VariableWrapper lhsW = WrapperProvider.getVarW(lhsVar);
                 ProgramDoms.domV.Add(lhsW);
                 IList<IVariable> phiArgList = phiInst.Arguments;
-                bool isStruct = lhsVar.Type.ResolvedType.IsStruct;
                 foreach (IVariable arg in phiArgList)
                 {
                     VariableWrapper argW = WrapperProvider.getVarW(arg);
@@ -702,7 +716,8 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
             if (invkInst.HasResult)
             {
                 IVariable lhsVar = invkInst.Result;
-                if (!lhsVar.Type.IsValueType || lhsVar.Type.ResolvedType.IsStruct)
+                ITypeDefinition lhsType = lhsVar.Type.ResolvedType;
+                if (!Stubber.SuppressF(lhsType) && (!lhsType.IsValueType || lhsType.IsStruct))
                 {
                     VariableWrapper lhsW = WrapperProvider.getVarW(lhsVar);
                     ProgramRels.relIinvkRet.Add(instW, 0, lhsW);
@@ -718,7 +733,7 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
             {
                 IVariable arg0 = invkArgs[0];
                 ITypeDefinition arg0Type = arg0.Type.ResolvedType;
-                if (!arg0Type.IsValueType || arg0Type.IsStruct)
+                if (!Stubber.SuppressF(arg0Type) && (!arg0Type.IsValueType || arg0Type.IsStruct))
                 {
                     VariableWrapper arg0W = WrapperProvider.getVarW(arg0);
                     ProgramRels.relIinvkArg0.Add(instW, arg0W);
@@ -728,7 +743,8 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
             int argNdx = 0;
             foreach (IVariable arg in invkArgs)
             {
-                if (!arg.Type.IsValueType || arg.Type.ResolvedType.IsStruct)
+                ITypeDefinition argType = arg.Type.ResolvedType;
+                if (!Stubber.SuppressF(argType) && (!argType.IsValueType || argType.IsStruct))
                 {
                     VariableWrapper argW = WrapperProvider.getVarW(arg);
                     ProgramRels.relIinvkArg.Add(instW, argNdx, argW);
@@ -780,7 +796,8 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
                 if (invkInst.HasResult)
                 {
                     IVariable lhsVar = invkInst.Result;
-                    if (!lhsVar.Type.IsValueType || lhsVar.Type.ResolvedType.IsStruct)
+                    ITypeDefinition lhsType = lhsVar.Type.ResolvedType;
+                    if (!Stubber.SuppressF(lhsType) && (!lhsType.IsValueType || lhsType.IsStruct))
                     {
                         VariableWrapper lhsW = WrapperProvider.getVarW(lhsVar);
                         ProgramRels.relIinvkRet.Add(instW, 0, lhsW);
@@ -793,7 +810,8 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
                 for (int i = 1; i < invkArgs.Count; i++)
                 {
                     IVariable arg = invkArgs[i];
-                    if (!arg.Type.IsValueType || arg.Type.ResolvedType.IsStruct)
+                    ITypeDefinition argType = arg.Type.ResolvedType;
+                    if (!Stubber.SuppressF(argType) && (!argType.IsValueType || argType.IsStruct))
                     {
                         VariableWrapper argW = WrapperProvider.getVarW(arg);
                         ProgramRels.relIinvkArg.Add(instW, argNdx, argW);
@@ -820,7 +838,8 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
         void ProcessConvertInst(ConvertInstruction castInst, MethodRefWrapper mRefW)
         {
             IVariable lhsVar = castInst.Result;
-            if (!lhsVar.Type.IsValueType || lhsVar.Type.ResolvedType.IsStruct)
+            ITypeDefinition lhsType = lhsVar.Type.ResolvedType;
+            if (!Stubber.SuppressF(lhsType) && (!lhsType.IsValueType || lhsType.IsStruct))
             {
                 VariableWrapper lhsW = WrapperProvider.getVarW(lhsVar);
                 IVariable rhsVar = castInst.Operand;
@@ -833,7 +852,8 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
         void ProcessRetInst(ReturnInstruction retInst, MethodRefWrapper mRefW)
         {
             IVariable retVar = retInst.Operand;
-            if (retVar != null && (!retVar.Type.IsValueType || retVar.Type.ResolvedType.IsStruct))
+            if (retVar == null || Stubber.SuppressF(retVar.Type.ResolvedType)) return;
+            else if (!retVar.Type.IsValueType || retVar.Type.ResolvedType.IsStruct)
             {
                 VariableWrapper retW = WrapperProvider.getVarW(retVar);
                 ProgramRels.relMmethRet.Add(mRefW, 0, retW);

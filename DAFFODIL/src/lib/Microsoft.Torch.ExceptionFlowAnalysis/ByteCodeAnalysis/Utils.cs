@@ -92,8 +92,8 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
             ITypeDefinition tdef2 = t2.ResolvedType;
             if (tdc.Equals(tdef1, tdef2)) return true;
            
-            if (Stubber.MatchesSuppress(tdef1)) tdef1 = Stubs.GetStubType(tdef1);
-            if (Stubber.MatchesSuppress(tdef2)) tdef2 = Stubs.GetStubType(tdef2);
+            if (Stubber.MatchesSuppressM(tdef1)) tdef1 = Stubs.GetStubType(tdef1);
+            if (Stubber.MatchesSuppressM(tdef2)) tdef2 = Stubs.GetStubType(tdef2);
             // return (tdef1 != null && tdef2 != null && tdc.Equals(tdef1, tdef2));
             if (tdef1 != null && tdef2 != null)
             {

@@ -12,10 +12,11 @@ namespace T12
             FreshRefFoo(ref fooFirst);
             IBaz bazArg = new Baz();
             Taz tazArg = new Taz();
-            fooFirst.FooFunc<IBaz>(ref bazArg, ref tazArg);
+            fooFirst.FooFuncGenRef1<IBaz, Taz>(ref bazArg, ref tazArg);
             fooFirst.FooFuncTrial(ref bazArg, ref tazArg);
             Baz bazArgOrd = bazArg as Baz;
-            fooFirst.FooFuncOrdinary(bazArgOrd);
+            fooFirst.FooFuncOrdinary(bazArgOrd, tazArg);
+            fooFirst.FooFuncGenRef2<Baz, Taz>(ref bazArgOrd, ref tazArg);
             svar.objSec = fooFirst;
             Foo yyy = svar.objSec;
             Bar rvar = svar;
@@ -88,18 +89,27 @@ namespace T12
 
     class Foo
     {
-        public void FooFunc<T>(ref T bazObj, ref Taz tazObj) where T : IBaz
+        public void FooFuncGenRef1<T1,T2>(ref T1 bazObj, ref T2 tazObj) where T1 : IBaz where T2 : Taz
         {
+            tazObj.tazField = this;
+            bazObj.BazFunc();
+        }
+
+        public void FooFuncGenRef2<T1, T2>(ref T1 bazObj, ref T2 tazObj) where T1 : Baz where T2 : Taz
+        {
+            bazObj.bazField = this;
             bazObj.BazFunc();
         }
 
         public void FooFuncTrial(ref IBaz bazObj, ref Taz tazObj)
         {
+            tazObj.tazField = this;
             bazObj.BazFunc();
         }
 
-        public void FooFuncOrdinary(Baz ordBaz)
+        public void FooFuncOrdinary(Baz ordBaz, Taz ordTaz)
         {
+            ordTaz.tazField = this;
             ordBaz.BazFunc();
         }
     }
@@ -111,9 +121,13 @@ namespace T12
 
     class Baz : IBaz
     {
+        public Foo bazField;
         //public Taz tazMember;
         public void BazFunc() { }
     }
 
-    class Taz { }
+    class Taz 
+    {
+        public Foo tazField;
+    }
 }

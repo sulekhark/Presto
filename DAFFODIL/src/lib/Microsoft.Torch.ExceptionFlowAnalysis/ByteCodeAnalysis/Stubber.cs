@@ -5,36 +5,59 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
 {
     class Stubber
     {
-        private static IList<string> prefixesToSuppress;
-        private static FactGenerator factGen;
+        // NOTE: The way the "suppress" feature is designed, if System.Int32 is suppressed,
+        //       so will System.Int32[] and System.Int32&.
+        
+        // For the classes whose names have prefixes in the list below:
+        //    1. We will only not analyze methods in these classes
+        //    2. We track objects of this type.
+        //    3. We track reads/writes to static fields of these classes and instance fields of instances of these classes.
+        //    4. We track flow of points-to information through local variables of these types.
+        private static IList<string> prefixesToSuppressMeth;
+        // For the classes whose names have prefixes in the list below:
+        //    1. They are completely suppressed - we don't analyze methods, don't track fields and objects.
+        //    2. We don't track flow of points-to information through variables of these types.
+        //    3. They are not recorded in the list of "classes" to be analyzed.
+        private static IList<string> prefixesToSuppressFull;
+
         private static RTAAnalyzer rtaAnalyzer;
 
         static Stubber()
         {
-            prefixesToSuppress = new List<string>();
-            prefixesToSuppress.Add("System.Console"); // Has bytecode arglist
-            prefixesToSuppress.Add("System.String");  // causes crash in TypeInference
-            prefixesToSuppress.Add("System.Environment");
-            prefixesToSuppress.Add("System.ComponentModel");
-            prefixesToSuppress.Add("System.Data");
-            prefixesToSuppress.Add("System.Diagnostics");
-            prefixesToSuppress.Add("System.Globalization");
-            prefixesToSuppress.Add("System.IO");
-            prefixesToSuppress.Add("System.Linq");
-            prefixesToSuppress.Add("System.Net");
-            prefixesToSuppress.Add("System.Reflection");
-            prefixesToSuppress.Add("System.Resources");
-            prefixesToSuppress.Add("System.Runtime");
-            prefixesToSuppress.Add("System.Security");
-            prefixesToSuppress.Add("System.Text");
-            prefixesToSuppress.Add("System.Threading");
-            prefixesToSuppress.Add("System.Xml");
-            prefixesToSuppress.Add("Microsoft.Cci");
-        }
+            prefixesToSuppressMeth = new List<string>();
+            prefixesToSuppressMeth.Add("System.Console"); // Has bytecode arglist
+            prefixesToSuppressMeth.Add("System.String");  // causes crash in TypeInference
+            prefixesToSuppressMeth.Add("System.Environment");
+            prefixesToSuppressMeth.Add("System.ComponentModel");
+            prefixesToSuppressMeth.Add("System.Data");
+            prefixesToSuppressMeth.Add("System.Diagnostics");
+            prefixesToSuppressMeth.Add("System.Globalization");
+            prefixesToSuppressMeth.Add("System.IO");
+            prefixesToSuppressMeth.Add("System.Linq");
+            prefixesToSuppressMeth.Add("System.Net");
+            prefixesToSuppressMeth.Add("System.Reflection");
+            prefixesToSuppressMeth.Add("System.Resources");
+            prefixesToSuppressMeth.Add("System.Runtime");
+            prefixesToSuppressMeth.Add("System.Security");
+            prefixesToSuppressMeth.Add("System.Text");
+            prefixesToSuppressMeth.Add("System.Threading");
+            prefixesToSuppressMeth.Add("System.Xml");
+            prefixesToSuppressMeth.Add("Microsoft.Cci");
 
-        public static void SetupFactGenerator(FactGenerator fg)
-        {
-            factGen = fg;
+            prefixesToSuppressFull = new List<string>();
+            prefixesToSuppressFull.Add("System.Double");
+            prefixesToSuppressFull.Add("System.IntPtr");
+            prefixesToSuppressFull.Add("System.Int64");
+            prefixesToSuppressFull.Add("System.Int32");
+            prefixesToSuppressFull.Add("System.Int16");
+            prefixesToSuppressFull.Add("System.Byte");
+            prefixesToSuppressFull.Add("System.Char");
+            prefixesToSuppressFull.Add("System.Boolean");
+            prefixesToSuppressFull.Add("System.UIntPtr");
+            prefixesToSuppressFull.Add("System.UInt64");
+            prefixesToSuppressFull.Add("System.UInt32");
+            prefixesToSuppressFull.Add("System.UInt16");
+            prefixesToSuppressFull.Add("System.UChar");
         }
 
         public static void SetupRTAAnalyzer(RTAAnalyzer rta)
@@ -42,11 +65,55 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
             rtaAnalyzer = rta;
         }
 
-        public static bool MatchesSuppress(IMethodDefinition m)
+        public static bool SuppressF(ITypeDefinition t)
+        {
+            bool matches = false;
+            string tName = t.FullName();
+            foreach (string s in prefixesToSuppressFull)
+            {
+                if (tName.StartsWith(s))
+                {
+                    matches = true;
+                    break;
+                }
+            }
+            return matches;
+        }
+
+        public static bool SuppressM(IMethodDefinition m)
+        {
+            return (GetMethodToAnalyze(m) == null);
+        }
+
+        public static bool SuppressM(ITypeDefinition ty)
+        {
+            bool retval = false;
+            bool matches = MatchesSuppressM(ty);
+            if (matches)
+            {
+                ITypeDefinition stubType = Stubs.GetStubType(ty);
+                retval = stubType == null ? true : false;
+            }
+            return retval;
+        }
+
+        public static bool IsStubbed(ITypeDefinition ty)
+        {
+            bool retval = false;
+            bool matches = MatchesSuppressM(ty);
+            if (matches)
+            {
+                ITypeDefinition stubType = Stubs.GetStubType(ty);
+                retval = stubType == null ? false : true;
+            }
+            return retval;
+        }
+
+        public static bool MatchesSuppressM(IMethodDefinition m)
         {
             string mSign = m.FullName();
             bool matches = false;
-            foreach (string s in prefixesToSuppress)
+            foreach (string s in prefixesToSuppressMeth)
             {
                 if (mSign.StartsWith(s))
                 {
@@ -57,11 +124,11 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
             return matches;
         }
 
-        public static bool MatchesSuppress(ITypeDefinition t)
+        public static bool MatchesSuppressM(ITypeDefinition t)
         {
             bool matches = false;
             string tName = t.FullName();
-            foreach (string s in prefixesToSuppress)
+            foreach (string s in prefixesToSuppressMeth)
             {
                 if (tName.StartsWith(s))
                 {
@@ -91,7 +158,7 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
             
             ITypeDefinition containingType = m.ContainingTypeDefinition;
             if (containingType.InternedKey == 0) return m; // Ignore methods from Cci's Dummy typeref.
-            bool matches = MatchesSuppress(m);
+            bool matches = MatchesSuppressM(m);
             if (matches)
             {
                 containingType = Stubs.GetStubType(containingType);
@@ -120,6 +187,7 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
 
         public static ITypeDefinition CheckAndAdd(ITypeDefinition t)
         {
+            if (SuppressF(t)) return null;
             if (t is IGenericTypeInstance)
             {
                 IGenericTypeInstance gty = t as IGenericTypeInstance;
@@ -128,7 +196,7 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
             }
 
             ITypeDefinition toAdd = t;
-            bool matches = MatchesSuppress(t);
+            bool matches = MatchesSuppressM(t);
             if (matches)
             {
                 ITypeDefinition stubType = Stubs.GetStubType(t);
@@ -149,7 +217,7 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
         {
             // Three cases: m should completely be ignored, should be analyzed as is, or the equivalent stub should be analyzed.
             IMethodDefinition methToAnalyze = m;
-            bool matches = MatchesSuppress(m);
+            bool matches = MatchesSuppressM(m);
             if (matches)
             {
                 ITypeDefinition containingType = m.ContainingTypeDefinition;
@@ -166,7 +234,7 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
         public static ITypeDefinition GetTypeToAnalyze(ITypeDefinition ty)
         {
             ITypeDefinition retTy = ty;
-            bool matches = MatchesSuppress(ty);
+            bool matches = MatchesSuppressM(ty);
             if (matches)
             {
                 ITypeDefinition stubType = Stubs.GetStubType(ty);
@@ -176,35 +244,6 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
                     retTy = null;
             }
             return retTy;
-        }
-
-        public static bool Suppress(IMethodDefinition m)
-        {
-            return (GetMethodToAnalyze(m) == null);
-        }
-
-        public static bool Suppress(ITypeDefinition ty)
-        {
-            bool retval = false;
-            bool matches = MatchesSuppress(ty);
-            if (matches)
-            {
-                ITypeDefinition stubType = Stubs.GetStubType(ty);
-                retval = stubType == null ? true : false;
-            }
-            return retval;
-        }
-
-        public static bool IsStubbed(ITypeDefinition ty)
-        {
-            bool retval = false;
-            bool matches = MatchesSuppress(ty);
-            if (matches)
-            {
-                ITypeDefinition stubType = Stubs.GetStubType(ty);
-                retval = stubType == null ? false : true;
-            }
-            return retval;
         }
     }
 }

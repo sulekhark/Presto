@@ -143,7 +143,6 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
             factGen.GenerateChaFacts();
             visitor.SetupRTAAnalyzer(null);
             visitor.SetupFactGenerator(factGen);
-            Stubber.SetupFactGenerator(factGen);
             foreach (ITypeDefinition ty in rtaAnalyzer.classes)
             {
                 visitor.Traverse(ty);

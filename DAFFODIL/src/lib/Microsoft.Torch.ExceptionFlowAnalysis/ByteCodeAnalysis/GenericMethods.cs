@@ -63,7 +63,14 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
             foreach (ITypeReference garg in genericArgs)
             {
                 ITypeDefinition addedType = Stubber.CheckAndAdd(garg.ResolvedType);
-                stubbedArgList.Add(addedType);
+                if (addedType != null)
+                {
+                    stubbedArgList.Add(addedType);
+                }
+                else
+                {
+                    stubbedArgList.Add(garg.ResolvedType);
+                }
             }
             string argStr = GetGenericArgStr(stubbedArgList);
             IDictionary<string, IMethodDefinition> instMap;
