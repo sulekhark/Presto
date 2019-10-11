@@ -458,6 +458,11 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
                     }
                     ITypeDefinition cl = classNameToTypeMap[className];
                     IMethodDefinition methDefn = Utils.GetMethodByFullName(cl, methName);
+                    if (methDefn == null)
+                    {
+                        System.Console.WriteLine("WARNING: LoadSavedMethods: Skipping method {0}", methName);
+                        continue;
+                    }
                     if (methDefn.IsGeneric && args.Length > 0)
                     {
                         IList<ITypeReference> genArgs = getArgsList(args, classNameToTypeMap);

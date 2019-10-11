@@ -120,7 +120,6 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
             rtaLogSW.WriteLine("+++++++++++++++ RTA DONE ++++++++++++++++++");
 
             if (!diskLoadSuccessful) rtaAnalyzer.SaveScope(host);
-            visitor.SetupSrcLocProviders(rtaAnalyzer.classes);
             rtaLogSW.Close();
         }
 

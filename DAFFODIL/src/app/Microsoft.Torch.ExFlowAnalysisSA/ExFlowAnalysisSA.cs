@@ -11,7 +11,8 @@ namespace Microsoft.Torch.ExFlowAnalysisSA
         {
             if (args.Length == 0)
             {
-                ConfigParams.LoadConfig(@"C:\Users\torch\work\DAFFODIL\DAFFODIL\src\test\T4\daffodil.cfg");
+                // ConfigParams.LoadConfig(@"C:\Users\torch\work\DAFFODIL\DAFFODIL\src\test\T4\daffodil.cfg");
+                ConfigParams.LoadConfig(@"C:\Users\torch\work\Test\storage-blob-dotnet-getting-started\BlobStorage\daffodil.cfg");
             }
             else if (args.Length == 1)
             {

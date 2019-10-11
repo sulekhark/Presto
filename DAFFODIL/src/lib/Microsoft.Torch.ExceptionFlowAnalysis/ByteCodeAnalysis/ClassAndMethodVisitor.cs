@@ -13,13 +13,26 @@ using Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetBackend.Model;
 
 namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
 {
+    public class MethodCfgAndTac
+    {
+        public ControlFlowGraph cfg;
+        public MethodBody methodBody;
+
+        public MethodCfgAndTac(ControlFlowGraph g, MethodBody m)
+        {
+            cfg = g;
+            methodBody = m;
+        }
+    }
+
 	public class ClassAndMethodVisitor
 	{
 		private readonly IMetadataHost host;
         private FactGenerator factGen;
         private RTAAnalyzer rtaAnalyzer;
         public static readonly IDictionary<IMethodDefinition, IDictionary<string, IMethodDefinition>> genericMethodMap;
-        public static IDictionary<IModule, ISourceLocationProvider> moduleToPdbMap;
+        public static readonly IDictionary<IModule, ISourceLocationProvider> moduleToPdbMap;
+        public static readonly IDictionary<IMethodDefinition, MethodCfgAndTac> methodToCfgAndTacMap;
 
         static ClassAndMethodVisitor()
         {
@@ -27,25 +40,13 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
             TypeDefinitionComparer tdc = new TypeDefinitionComparer();
             genericMethodMap = new Dictionary<IMethodDefinition, IDictionary<string, IMethodDefinition>>(mdc);
             moduleToPdbMap = new Dictionary<IModule, ISourceLocationProvider>();
+            methodToCfgAndTacMap = new Dictionary<IMethodDefinition, MethodCfgAndTac>();
         }
 
         public ClassAndMethodVisitor(IMetadataHost host)
 		{
 			this.host = host;
         }
-
-        public void SetupSrcLocProviders(ISet<ITypeDefinition> classes)
-        {
-            List<IModule> moduleList = host.LoadedUnits.OfType<IModule>().ToList();
-            foreach (IModule module in moduleList)
-            {
-                if (!(module == null || module == Dummy.Module || module == Dummy.Assembly))
-                {
-                    moduleToPdbMap[module] = GetPdbReader(module.Location);
-                }
-            }
-        }
-           
 
         public void SetupFactGenerator(FactGenerator factGen)
         {
@@ -68,63 +69,100 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
             return null;
         }
 
-        public void Traverse(IMethodDefinition methodDefinition)
-		{
+
+        public MethodCfgAndTac AnalyzeIntraProcedural(IMethodDefinition methodDefinition)
+        {
             // System.Console.WriteLine("Traversing: {0}", methodDefinition.GetName());
-            if (Stubber.Suppress(methodDefinition)) return;
-            if (methodDefinition.IsExternal) return;
-            if (methodDefinition.IsAbstract) return;
+            if (Stubber.Suppress(methodDefinition)) return null;
+            if (methodDefinition.IsExternal) return null;
+            if (methodDefinition.IsAbstract) return null;
 
             ITypeDefinition containingDefn = methodDefinition.ContainingTypeDefinition;
             ISourceLocationProvider sourceLocationProvider = null;
             if (containingDefn != null)
             {
                 IModule mod = TypeHelper.GetDefiningUnit(containingDefn) as IModule;
-                if (moduleToPdbMap.ContainsKey(mod)) sourceLocationProvider = moduleToPdbMap[mod];
+                if (moduleToPdbMap.ContainsKey(mod))
+                {
+                    sourceLocationProvider = moduleToPdbMap[mod];
+                }
+                else
+                {
+                    if (!(mod == null || mod == Dummy.Module || mod == Dummy.Assembly))
+                    {
+                        sourceLocationProvider = GetPdbReader(mod.Location);
+                        moduleToPdbMap[mod] = sourceLocationProvider;
+                    }
+                }
             }
             var disassembler = new Disassembler(host, methodDefinition, sourceLocationProvider);
-			var methodBody = disassembler.Execute();
+            var methodBody = disassembler.Execute();
 
-			var cfAnalysis = new ControlFlowAnalysis(methodBody);
-			// var cfg = cfAnalysis.GenerateNormalControlFlow();
-			var cfg = cfAnalysis.GenerateExceptionalControlFlow();
+            var cfAnalysis = new ControlFlowAnalysis(methodBody);
+            // var cfg = cfAnalysis.GenerateNormalControlFlow();
+            var cfg = cfAnalysis.GenerateExceptionalControlFlow();
 
             var domAnalysis = new DominanceAnalysis(cfg);
-			domAnalysis.Analyze();
-			domAnalysis.GenerateDominanceTree();
+            domAnalysis.Analyze();
+            domAnalysis.GenerateDominanceTree();
 
-			var loopAnalysis = new NaturalLoopAnalysis(cfg);
-			loopAnalysis.Analyze();
+            var loopAnalysis = new NaturalLoopAnalysis(cfg);
+            loopAnalysis.Analyze();
 
-			var domFrontierAnalysis = new DominanceFrontierAnalysis(cfg);
-			domFrontierAnalysis.Analyze();
+            var domFrontierAnalysis = new DominanceFrontierAnalysis(cfg);
+            domFrontierAnalysis.Analyze();
 
-			var splitter = new WebAnalysis(cfg, methodDefinition);
-			splitter.Analyze();
-			splitter.Transform();
+            var splitter = new WebAnalysis(cfg, methodDefinition);
+            splitter.Analyze();
+            splitter.Transform();
 
-			methodBody.UpdateVariables();
+            methodBody.UpdateVariables();
 
-			var typeAnalysis = new TypeInferenceAnalysis(cfg, methodDefinition.Type);
-			typeAnalysis.Analyze();
+            var typeAnalysis = new TypeInferenceAnalysis(cfg, methodDefinition.Type);
+            typeAnalysis.Analyze();
 
-			var forwardCopyAnalysis = new ForwardCopyPropagationAnalysis(cfg);
-			forwardCopyAnalysis.Analyze();
-			forwardCopyAnalysis.Transform(methodBody);
+            var forwardCopyAnalysis = new ForwardCopyPropagationAnalysis(cfg);
+            forwardCopyAnalysis.Analyze();
+            forwardCopyAnalysis.Transform(methodBody);
 
             // backwardCopyAnalysis is buggy - it says so in the source file - see notes in src/test
-			// var backwardCopyAnalysis = new BackwardCopyPropagationAnalysis(cfg);
-			// backwardCopyAnalysis.Analyze();
-			// backwardCopyAnalysis.Transform(methodBody);
+            // var backwardCopyAnalysis = new BackwardCopyPropagationAnalysis(cfg);
+            // backwardCopyAnalysis.Analyze();
+            // backwardCopyAnalysis.Transform(methodBody);
 
-			var liveVariables = new LiveVariablesAnalysis(cfg);
-			liveVariables.Analyze();
+            var liveVariables = new LiveVariablesAnalysis(cfg);
+            liveVariables.Analyze();
 
-			var ssa = new StaticSingleAssignment(methodBody, cfg);
-			ssa.Transform();
-			ssa.Prune(liveVariables);
+            var ssa = new StaticSingleAssignment(methodBody, cfg);
+            ssa.Transform();
+            ssa.Prune(liveVariables);
 
-			methodBody.UpdateVariables();
+            methodBody.UpdateVariables();
+
+            MethodCfgAndTac mct = new MethodCfgAndTac(cfg, methodBody);
+            return mct;
+        }
+
+
+        public void Traverse(IMethodDefinition methodDefinition)
+		{
+            ControlFlowGraph cfg;
+            MethodBody methodBody;
+            if (methodToCfgAndTacMap.ContainsKey(methodDefinition))
+            {
+                MethodCfgAndTac mct = methodToCfgAndTacMap[methodDefinition];
+                if (mct == null) return;
+                cfg = mct.cfg;
+                methodBody = mct.methodBody;
+            }
+            else
+            {
+                MethodCfgAndTac mct = AnalyzeIntraProcedural(methodDefinition);
+                methodToCfgAndTacMap[methodDefinition] = mct;
+                if (mct == null) return;
+                cfg = mct.cfg;
+                methodBody = mct.methodBody;
+            }
 
             if (rtaAnalyzer != null)
             {
