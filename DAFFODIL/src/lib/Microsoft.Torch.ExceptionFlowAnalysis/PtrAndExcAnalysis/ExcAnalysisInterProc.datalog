@@ -57,13 +57,21 @@ reachableM(m:M) input                    # Methods reachable from Main method or
 FinalEH(eh:EH,t:T,p:P) input             # ExceptionHandler eh catches an exception of Type t thrown at Program point p.
 EscapeMTP(m:M,t:T,p:P) input             # Exception of type t if thrown at Program Point p, escapes Method m.
 
-# Below six relations are "input" but will also grow.
-VH(v:V,h:H)  printtuples                 # Variable v may point to AllocSite h
-VX(v:V,x:X)  printtuples                 # Variable v may point to Address x
-FH(f:F,h:H)  printtuples                 # Static field f may point to AllocSite h
-FX(f:F,x:X)  printtuples                 # Static field f may point to Address x
-HFH(h1:H,f:F,h2:H)  printtuples          # Field f of object allocated at AllocSite h1 may point to AllocSite h2
-HFX(h:H,f:F,x:X)  printtuples            # Field f of object allocated at AllocSite h may point to Address x
+# Below six relations are "input" points-to relations 
+VH(v:V,h:H)  input                       # Variable v may point to AllocSite h
+VX(v:V,x:X)  input                       # Variable v may point to Address x
+FH(f:F,h:H)  input                       # Static field f may point to AllocSite h
+FX(f:F,x:X)  input                       # Static field f may point to Address x
+HFH(h1:H,f:F,h2:H)  input                # Field f of object allocated at AllocSite h1 may point to AllocSite h2
+HFX(h:H,f:F,x:X)  input                  # Field f of object allocated at AllocSite h may point to Address x
+
+# Below six relations are the "output" points-to relations which are supersets of the corresponding input relations 
+VHO(v:V,h:H)  printtuples                # Variable v may point to AllocSite h
+VXO(v:V,x:X)  printtuples                # Variable v may point to Address x
+FHO(f:F,h:H)  printtuples                # Static field f may point to AllocSite h
+FXO(f:F,x:X)  printtuples                # Static field f may point to Address x
+HFHO(h1:H,f:F,h2:H)  printtuples         # Field f of object allocated at AllocSite h1 may point to AllocSite h2
+HFXO(h:H,f:F,x:X)  printtuples           # Field f of object allocated at AllocSite h may point to Address x
 
 thisIVH(i:I,v:V,h:H) printtuples         # Invoke statement i has reference variable v as the "this" variable && v points-to h
 
@@ -93,22 +101,29 @@ CatchVH(v:V,h:H) printtuples             # Variable v which is the formal parame
 # Constraints
 ###
 
-thisIVH(i,v,h) :- IinvkArg0(i,v), VX(v,x), AddrOfVX(v1,x), VH(v1,h).
-thisIVH(i,v,h) :- IinvkArg0(i,v), VX(v,x), AddrOfHFX(h1,f,x), HFH(h1,f,h).
-thisIVH(i,v,h) :- IinvkArg0(i,v), VX(v,x), AddrOfFX(f1,x), FH(f1,h).
+VHO(v,h) :- VH(v,h).
+VXO(v,x) :- VX(v,x).
+FHO(f,h) :- FH(f,h).
+FXO(f,x) :- FX(f,x).
+HFHO(h1,f,h2) :- HFH(h1,f,h2).
+HFXO(h,f,x) :- HFX(h,f,x). 
+
+thisIVH(i,v,h) :- IinvkArg0(i,v), VXO(v,x), AddrOfVX(v1,x), VHO(v1,h).
+thisIVH(i,v,h) :- IinvkArg0(i,v), VXO(v,x), AddrOfHFX(h1,f,x), HFHO(h1,f,h).
+thisIVH(i,v,h) :- IinvkArg0(i,v), VXO(v,x), AddrOfFX(f1,x), FHO(f1,h).
 
 # arguments and return variables
-VH(v,h) :- IM(i,m), thisIVH(i,u,h), MmethArg(m,0,v), thisRefV(u), !structRefV(u).
+VHO(v,h) :- IM(i,m), thisIVH(i,u,h), MmethArg(m,0,v), thisRefV(u), !structRefV(u).
 Move(v,u) :- IinvkArg(i,z,u), IM(i,m), MmethArg(m,z,v), thisRefV(u), structRefV(u).
 Move(v,u) :- IinvkArg(i,z,u), IM(i,m), MmethArg(m,z,v), !thisRefV(u).
 Move(u,v) :- IinvkRet(i,z,u), IM(i,m), MmethRet(m,z,v).
 
 Alloc(l,h)   :- reachableM(m), MAlloc(m,l,h).
 Move(l,r)   :- reachableM(m), MMove(m,l,r).
-InstFldRead(l,h,f) :- reachableM(m), MInstFldRead(m,l,r,f), VH(r,h).
-InstFldRead(l,h,f) :- reachableM(m), MInstFldRead(m,l,r,f), VX(r,x), AddrOfHFX(h,f,x).
-InstFldWrite(h,f,r) :- reachableM(m), MInstFldWrite(m,l,f,r), VH(l,h).
-InstFldWrite(h,f,r) :- reachableM(m), MInstFldWrite(m,l,f,r), VX(l,x), AddrOfHFX(h,f,x).
+InstFldRead(l,h,f) :- reachableM(m), MInstFldRead(m,l,r,f), VHO(r,h).
+InstFldRead(l,h,f) :- reachableM(m), MInstFldRead(m,l,r,f), VXO(r,x), AddrOfHFX(h,f,x).
+InstFldWrite(h,f,r) :- reachableM(m), MInstFldWrite(m,l,f,r), VHO(l,h).
+InstFldWrite(h,f,r) :- reachableM(m), MInstFldWrite(m,l,f,r), VXO(l,x), AddrOfHFX(h,f,x).
 StatFldRead(l,f)   :- reachableM(m), MStatFldRead(m,l,f).
 StatFldWrite(f,r)   :- reachableM(m), MStatFldWrite(m,f,r).
 
@@ -119,62 +134,62 @@ AddrTakenFunc(l,m2) :- reachableM(m1), MAddrTakenFunc(m1,l,m2).
 DerefLeft(l,r) :- reachableM(m), MDerefLeft(m,l,r).
 DerefRight(l,r) :- reachableM(m), MDerefRight(m,l,r).
 
-VH(l,h) :- Alloc(l,h).
+VHO(l,h) :- Alloc(l,h).
 
-VH(l,h) :- Move(l,r), VH(r,h), !structV(l).
-StrMove(lh,rh) :- Move(l,r), VH(l,lh), VH(r,rh), structV(l).
-VX(l,x) :- Move(l,r), VX(r,x).
+VHO(l,h) :- Move(l,r), VHO(r,h), !structV(l).
+StrMove(lh,rh) :- Move(l,r), VHO(l,lh), VHO(r,rh), structV(l).
+VXO(l,x) :- Move(l,r), VXO(r,x).
 
-VH(l,hfh) :- InstFldRead(l,h,f), HFH(h,f,hfh), !structV(l).
-StrMove(lh,hfh) :- InstFldRead(l,h,f), VH(l,lh), HFH(h,f,hfh), structV(l).
-VX(l,x) :- InstFldRead(l,h,f), HFX(h,f,x).
+VHO(l,hfh) :- InstFldRead(l,h,f), HFHO(h,f,hfh), !structV(l).
+StrMove(lh,hfh) :- InstFldRead(l,h,f), VHO(l,lh), HFHO(h,f,hfh), structV(l).
+VXO(l,x) :- InstFldRead(l,h,f), HFXO(h,f,x).
 
-HFH(h,f,rh) :- InstFldWrite(h,f,r), VH(r,rh), !structV(r).
-StrMove(hfh,rh) :- InstFldWrite(h,f,r), HFH(h,f,hfh), VH(r,rh), structV(r).
-HFX(h,f,x) :- InstFldWrite(h,f,r), VX(r,x).
+HFHO(h,f,rh) :- InstFldWrite(h,f,r), VHO(r,rh), !structV(r).
+StrMove(hfh,rh) :- InstFldWrite(h,f,r), HFHO(h,f,hfh), VHO(r,rh), structV(r).
+HFXO(h,f,x) :- InstFldWrite(h,f,r), VXO(r,x).
 
-VH(l,h) :- StatFldRead(l,f), FH(f,h), !structV(l).
-StrMove(lh,fh) :- StatFldRead(l,f), VH(l,lh), FH(f,fh), structV(l).
-VX(l,x) :- StatFldRead(l,f), FX(f,x).
+VHO(l,h) :- StatFldRead(l,f), FHO(f,h), !structV(l).
+StrMove(lh,fh) :- StatFldRead(l,f), VHO(l,lh), FHO(f,fh), structV(l).
+VXO(l,x) :- StatFldRead(l,f), FXO(f,x).
 
-FH(f,h) :- StatFldWrite(f,r), VH(r,h), !structV(r).
-StrMove(fh,rh) :- StatFldWrite(f,r), FH(f,fh), VH(r,rh), structV(r).
-FX(f,x) :- StatFldWrite(f,r), VX(r,x).
+FHO(f,h) :- StatFldWrite(f,r), VHO(r,h), !structV(r).
+StrMove(fh,rh) :- StatFldWrite(f,r), FHO(f,fh), VHO(r,rh), structV(r).
+FXO(f,x) :- StatFldWrite(f,r), VXO(r,x).
 
 
 # handling structs
-StrMove(lhfh,rhfh) :- StrMove(lh,rh), HFH(lh,f, lhfh), HFH(rh,f,rhfh), structH(lhfh), structH(rhfh).
-HFH(lh,f,rhfh) :- StrMove(lh,rh), !structH(rhfh), HFH(rh,f,rhfh).
+StrMove(lhfh,rhfh) :- StrMove(lh,rh), HFHO(lh,f, lhfh), HFHO(rh,f,rhfh), structH(lhfh), structH(rhfh).
+HFHO(lh,f,rhfh) :- StrMove(lh,rh), !structH(rhfh), HFHO(rh,f,rhfh).
 
 
 # Handling & operator
 # v1 = &v2, v1 = &v2.f, v1 = &f, v1 = &m
-VX(v1,x) :- AddrTakenLocal(v1,v2), AddrOfVX(v2,x), !structV(v2).
-VH(v1,h) :- AddrTakenLocal(v1,v2), VH(v2,h), structV(v2).
-VX(v1,x) :- AddrTakenInstFld(v1,v2,f), VH(v2,h2), AddrOfHFX(h2,f,x), !structRefV(v1).
-VH(v1,h) :- AddrTakenInstFld(v1,v2,f), VH(v2,h2), HFH(h2,f,h), structRefV(v1).
-VX(v1,x) :- AddrTakenStatFld(v1,f), AddrOfFX(f,x), !structRefV(v1).
-VH(v1,h) :- AddrTakenStatFld(v1,f), FH(f,h), structRefV(v1).
-VX(v1,x) :- AddrTakenFunc(v1,m), AddrOfMX(m,x).
+VXO(v1,x) :- AddrTakenLocal(v1,v2), AddrOfVX(v2,x), !structV(v2).
+VHO(v1,h) :- AddrTakenLocal(v1,v2), VHO(v2,h), structV(v2).
+VXO(v1,x) :- AddrTakenInstFld(v1,v2,f), VHO(v2,h2), AddrOfHFX(h2,f,x), !structRefV(v1).
+VHO(v1,h) :- AddrTakenInstFld(v1,v2,f), VHO(v2,h2), HFHO(h2,f,h), structRefV(v1).
+VXO(v1,x) :- AddrTakenStatFld(v1,f), AddrOfFX(f,x), !structRefV(v1).
+VHO(v1,h) :- AddrTakenStatFld(v1,f), FHO(f,h), structRefV(v1).
+VXO(v1,x) :- AddrTakenFunc(v1,m), AddrOfMX(m,x).
 
 # Handling dereference
 # *l = r
-Move(v,r) :- DerefLeft(l,r), VX(l,x), AddrOfVX(v,x).
-InstFldWrite(h,f,r) :- DerefLeft(l,r), VX(l,x), AddrOfHFX(h,f,x).
-StatFldWrite(f,r) :- DerefLeft(l,r), VX(l,x), AddrOfFX(f,x).
+Move(v,r) :- DerefLeft(l,r), VXO(l,x), AddrOfVX(v,x).
+InstFldWrite(h,f,r) :- DerefLeft(l,r), VXO(l,x), AddrOfHFX(h,f,x).
+StatFldWrite(f,r) :- DerefLeft(l,r), VXO(l,x), AddrOfFX(f,x).
 
 # l = *r
-Move(l,v) :- DerefRight(l,r), VX(r,x), AddrOfVX(v,x).
-InstFldRead(l,h,f) :- DerefRight(l,r), VX(r,x), AddrOfHFX(h,f,x).
-StatFldRead(l,f) :- DerefRight(l,r), VX(r,x), AddrOfFX(f,x).
+Move(l,v) :- DerefRight(l,r), VXO(r,x), AddrOfVX(v,x).
+InstFldRead(l,h,f) :- DerefRight(l,r), VXO(r,x), AddrOfHFX(h,f,x).
+StatFldRead(l,f) :- DerefRight(l,r), VXO(r,x), AddrOfFX(f,x).
 
 # Propagating exception points-to
 CalleeAt(m,p,mcallee) :- MI(m,i), IM(i,mcallee), PI(p,i).
-ThrowMH(m,h) :- ThrowPV(m,p,v), VH(v,h), HT(h,t), EscapeMTP(m,t,p).
+ThrowMH(m,h) :- ThrowPV(m,p,v), VHO(v,h), HT(h,t), EscapeMTP(m,t,p).
 ThrowMH(m,h) :- CalleeAt(m,p,mcallee), ThrowMH(mcallee,h), HT(h,t), EscapeMTP(m,t,p).
-CatchVH(ehv,h) :- ThrowPV(m,p,v), VH(v,h), HT(h,t), FinalEH(eh,t,p), VarEH(eh,ehv).
+CatchVH(ehv,h) :- ThrowPV(m,p,v), VHO(v,h), HT(h,t), FinalEH(eh,t,p), VarEH(eh,ehv).
 CatchVH(v,h) :- CalleeAt(m,p,mcallee), ThrowMH(mcallee,h), HT(h,t), FinalEH(eh,t,p), VarEH(eh,v).
-VH(v,h) :- CatchVH(v,h).
+VHO(v,h) :- CatchVH(v,h).
 
 
 
