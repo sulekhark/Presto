@@ -11,8 +11,8 @@ namespace Microsoft.Torch.ExFlowAnalysisSA
         {
             if (args.Length == 0)
             {
-                ConfigParams.LoadConfig(@"C:\Users\torch\work\DAFFODIL\DAFFODIL\src\test\T12\daffodil.cfg");
-                // ConfigParams.LoadConfig(@"C:\Users\torch\work\Test\storage-blob-dotnet-getting-started\BlobStorage\daffodil.cfg");
+                // ConfigParams.LoadConfig(@"C:\Users\torch\work\DAFFODIL\DAFFODIL\src\test\T4\daffodil.cfg");
+                ConfigParams.LoadConfig(@"C:\Users\torch\work\Test\storage-blob-dotnet-getting-started\BlobStorage\daffodil.cfg");
             }
             else if (args.Length == 1)
             {
@@ -29,7 +29,7 @@ namespace Microsoft.Torch.ExFlowAnalysisSA
             ProgramDoms.Save();
             ProgramRels.Save();
             Z3CommandLineInvoke.CopyFiles(ConfigParams.DatalogDir);
-            Z3CommandLineInvoke.LaunchZ3("CIPtrAnalysis.datalog", ConfigParams.DatalogDir);
+            // Z3CommandLineInvoke.LaunchZ3("CIPtrAnalysis.datalog", ConfigParams.DatalogDir);
             // Z3CommandLineInvoke.LaunchZ3("ExcAnalysisIntraProc.datalog", ConfigParams.DatalogDir);     
             // Z3CommandLineInvoke.LaunchZ3("ExcAnalysisInterProc.datalog", ConfigParams.DatalogDir);         
             // Z3CommandLineInvoke.LaunchZ3("ExcFlows.datalog", ConfigParams.DatalogDir);

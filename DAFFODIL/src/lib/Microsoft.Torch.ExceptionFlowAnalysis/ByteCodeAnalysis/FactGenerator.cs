@@ -29,7 +29,8 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
         public StreamWriter tacLogSW;
         public StreamWriter factGenLogSW;
 
-        public FactGenerator(StreamWriter sw1, StreamWriter sw2) {
+        public FactGenerator(StreamWriter sw1, StreamWriter sw2)
+        {
             tacLogSW = sw1;
             factGenLogSW = sw2;
             //Create a hypothetical field that represents all array elements
@@ -123,11 +124,11 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
                     }
                     else if (instruction is InitializeObjectInstruction)
                     {
-                         // Ignore
+                        // Ignore
                     }
                     else if (instruction is LoadTokenInstruction)
                     {
-                         // Ignore
+                        // Ignore
                     }
                     else if (instruction is BranchInstruction)
                     {
@@ -137,7 +138,7 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
                     {
                         // Ignore
                     }
-                    
+
                     else if (instruction is BreakpointInstruction || instruction is TryInstruction ||
                              instruction is FaultInstruction || instruction is FinallyInstruction)
                     {
@@ -219,11 +220,7 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
                         if (fldType.IsValueType && fldType.IsStruct)
                         {
                             // Even though structs are value types, in our memory model, we allocate them on the heap.
-                            HeapElemWrapper hpElemW = WrapperProvider.getHeapElemW(fld);
-                            ProgramDoms.domH.Add(hpElemW);
-                            ProgramRels.relStructH.Add(hpElemW);
-                            ProgramRels.relTStructFH.Add(tyW, fldW, hpElemW);
-                            ProgramRels.relHT.Add(hpElemW, fldTypeRefW);
+                            CreateStruct(ty, fld);
                         }
                     }
                 }
@@ -244,10 +241,10 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
 
         public void GenerateChaFacts()
         {
-           ClassHierarchyAnalysis cha = new ClassHierarchyAnalysis();
-           cha.Analyze(classes);
-           foreach (ITypeReference ty in cha.Types)
-           {
+            ClassHierarchyAnalysis cha = new ClassHierarchyAnalysis();
+            cha.Analyze(classes);
+            foreach (ITypeReference ty in cha.Types)
+            {
                 TypeRefWrapper tyW = WrapperProvider.getTypeRefW(ty);
                 ProgramRels.relSub.Add(tyW, tyW);
                 foreach (ITypeDefinition subTy in cha.GetSubtypes(ty))
@@ -265,15 +262,15 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
                         ProgramRels.relExceptionType.Add(subTyW);
                     }
                 }
-           }
+            }
 
-           ISet<IMethodDefinition> allInstanceMethods = new HashSet<IMethodDefinition>();
-           foreach (IMethodDefinition meth in methods)
-           {
+            ISet<IMethodDefinition> allInstanceMethods = new HashSet<IMethodDefinition>();
+            foreach (IMethodDefinition meth in methods)
+            {
                 if (!meth.IsStatic) allInstanceMethods.Add(meth);
-           }
-           foreach (ITypeDefinition ty in classes)
-           {
+            }
+            foreach (ITypeDefinition ty in classes)
+            {
                 TypeRefWrapper tyW = WrapperProvider.getTypeRefW(ty);
                 if (ty is IArrayTypeReference)
                 {
@@ -288,7 +285,7 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
                 {
                     bool tyIsInterface = false;
                     if (ty.IsInterface) tyIsInterface = true;
-                 
+
                     foreach (IMethodDefinition tyMeth in ty.Methods)
                     {
                         if (tyMeth.Visibility == TypeMemberVisibility.Private) continue;
@@ -327,12 +324,12 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
                                     if (meth is IGenericMethodInstance && tyMeth.IsGeneric)
                                     {
                                         IMethodDefinition candidateTemplateMeth = Utils.GetMethodSignMatch(candidateTy, tyMeth);
-                                        if (candidateTemplateMeth != null && 
+                                        if (candidateTemplateMeth != null &&
                                             ClassAndMethodVisitor.genericMethodMap.ContainsKey(candidateTemplateMeth))
                                         {
-                                            IDictionary<string, IMethodDefinition> candidateInsts = 
+                                            IDictionary<string, IMethodDefinition> candidateInsts =
                                                 ClassAndMethodVisitor.genericMethodMap[candidateTemplateMeth];
-                                            string genericArgsStr = 
+                                            string genericArgsStr =
                                                 GenericMethods.GetGenericArgStr((meth as IGenericMethodInstance).GenericArguments);
                                             if (candidateInsts.ContainsKey(genericArgsStr))
                                                 candidateMeth = candidateInsts[genericArgsStr];
@@ -352,7 +349,7 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
                         }
                     }
                 }
-           }
+            }
         }
 
         void ProcessParams(MethodBody mBody, MethodRefWrapper mRefW)
@@ -371,15 +368,7 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
                     TypeRefWrapper varTypeRefW = WrapperProvider.getTypeRefW(varTypeRef.ResolvedType);
                     ProgramDoms.domT.Add(varTypeRefW);
                     bool success = ProgramRels.relVT.Add(paramW, varTypeRefW);
-                    if (param.Type.ResolvedType.IsStruct && param.Type.IsValueType)
-                    {
-                        HeapElemWrapper hpW = WrapperProvider.getHeapElemW(param);
-                        ProgramDoms.domH.Add(hpW);
-                        ProgramRels.relMAlloc.Add(mRefW, paramW, hpW);
-                        ProgramRels.relHT.Add(hpW, varTypeRefW);
-                        ProgramRels.relStructH.Add(hpW);
-                        ProgramRels.relStructV.Add(paramW);
-                    }
+                    if (param.Type.ResolvedType.IsStruct && param.Type.IsValueType) CreateStruct(mRefW, param);
                     if (addrTakenLocals.Contains(param))
                     {
                         AddressWrapper varAddrW = WrapperProvider.getAddrW(param);
@@ -410,12 +399,7 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
                         ProgramRels.relVT.Add(lclW, varTypeRefW);
                         if (lclVar.Type.ResolvedType.IsStruct && lclVar.Type.IsValueType)
                         {
-                            HeapElemWrapper hpW = WrapperProvider.getHeapElemW(lclVar);
-                            ProgramDoms.domH.Add(hpW);
-                            ProgramRels.relMAlloc.Add(mRefW, lclW, hpW);
-                            ProgramRels.relHT.Add(hpW, varTypeRefW);
-                            ProgramRels.relStructH.Add(hpW);
-                            ProgramRels.relStructV.Add(lclW);
+                            CreateStruct(mRefW, lclVar);
                         }
                         else if (lclVar.Type.TypeCode == PrimitiveTypeCode.Reference)
                         {
@@ -519,7 +503,7 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
                     StaticFieldAccess refAcc = refOf as StaticFieldAccess;
                     IFieldDefinition fld = refAcc.Field.ResolvedField;
                     FieldRefWrapper fldW = WrapperProvider.getFieldRefW(fld);
-                    ProgramRels.relMAddrTakenStatFld.Add(mRefW, lhsW, fldW); 
+                    ProgramRels.relMAddrTakenStatFld.Add(mRefW, lhsW, fldW);
                 }
                 else if (refOf is InstanceFieldAccess)
                 {
@@ -623,7 +607,7 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
             if (objTypeDef.IsStruct) ProgramRels.relStructH.Add(hpW);
 
             foreach (IFieldDefinition fld in objTypeDef.Fields)
-            { 
+            {
                 if (!fld.IsStatic)
                 {
                     if (addrTakenInstFlds.Contains(fld))
@@ -634,17 +618,7 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
                         ProgramRels.relAddrOfHFX.Add(hpW, fldW, allocfldAddrW);
                     }
                     ITypeDefinition fldType = fld.Type.ResolvedType;
-                    if (!Stubber.SuppressF(fldType) && fldType.IsValueType && fldType.IsStruct)
-                    {
-                        FieldRefWrapper fldW = WrapperProvider.getFieldRefW(fld);
-                        // Even though structs are value types, in our memory model, we allocate them on the heap.
-                        HeapElemWrapper hpElemW = WrapperProvider.getHeapElemW(newObjInst, fld, methDef);
-                        ProgramDoms.domH.Add(hpElemW);
-                        ProgramRels.relStructH.Add(hpElemW);
-                        ProgramRels.relStructHFH.Add(hpW, fldW, hpElemW);
-                        TypeRefWrapper fldTypeRefW = WrapperProvider.getTypeRefW(fldType);
-                        ProgramRels.relHT.Add(hpElemW, fldTypeRefW);
-                    }
+                    if (!Stubber.SuppressF(fldType) && fldType.IsValueType && fldType.IsStruct) CreateStruct(hpW, fld);
                 }
             }
             return;
@@ -664,21 +638,17 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
             ProgramRels.relHT.Add(hpW, arrTypeW);
 
             ITypeDefinition elemTypeDef = newArrInst.ElementType.ResolvedType;
-            FieldRefWrapper fldW = ProgramDoms.domF.GetVal(0);
+            // Even though structs are value types, in our memory model, we allocate them on the heap.
             if (elemTypeDef.IsStruct)
             {
-                // Even though structs are value types, in our memory model, we allocate them on the heap.
                 HeapElemWrapper hpArrElemW = WrapperProvider.getHeapElemW(newArrInst, methDef, true);
-                ProgramDoms.domH.Add(hpArrElemW);
-                ProgramRels.relStructH.Add(hpArrElemW);
-                ProgramRels.relMStructHFH.Add(mRefW, hpW, fldW, hpArrElemW);
-                TypeRefWrapper elemTypeW = WrapperProvider.getTypeRefW(elemTypeDef);
-                ProgramRels.relHT.Add(hpArrElemW, elemTypeW);
+                CreateStruct(mRefW, hpW, elemTypeDef, hpArrElemW);
             }
 
             // By default, create an entry in domX for the array element as potential address-taken.
             AddressWrapper arrayAddrW = WrapperProvider.getAddrW(newArrInst, methDef);
             ProgramDoms.domX.Add(arrayAddrW);
+            FieldRefWrapper fldW = ProgramDoms.domF.GetVal(0);
             ProgramRels.relAddrOfHFX.Add(hpW, fldW, arrayAddrW);
             return;
         }
@@ -711,8 +681,8 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
             ProgramDoms.domI.Add(instW);
             ProgramDoms.domP.Add(instW);  // At present, for throw/catch processing
             ProgramRels.relMI.Add(mRefW, instW);
-            ProgramRels.relPI.Add(instW, instW); 
-            
+            ProgramRels.relPI.Add(instW, instW);
+
             if (invkInst.HasResult)
             {
                 IVariable lhsVar = invkInst.Result;
@@ -805,7 +775,7 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
                 }
                 IList<IVariable> invkArgs = invkInst.Arguments;
                 VariableWrapper delegateVarW = WrapperProvider.getVarW(invkArgs[0]);
-                ProgramRels.relDelegateIV.Add(instW, delegateVarW);   
+                ProgramRels.relDelegateIV.Add(instW, delegateVarW);
                 int argNdx = 1;
                 for (int i = 1; i < invkArgs.Count; i++)
                 {
@@ -868,7 +838,7 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
             IVariable throwVar = throwInst.Operand;
             if (throwVar == null) throwVar = currentCatchVar;
             VariableWrapper varW = WrapperProvider.getVarW(throwVar);
-            ProgramRels.relThrowPV.Add(mRefW, instW, varW);     
+            ProgramRels.relThrowPV.Add(mRefW, instW, varW);
         }
 
         ExHandlerWrapper ProcessCatchInst(CatchInstruction catchInst, ExHandlerWrapper prevEhW, MethodRefWrapper mRefW,
@@ -928,6 +898,91 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
                 if (instruction is CatchInstruction) return (instruction as CatchInstruction);
             }
             return null;
+        }
+
+       
+        // Creating the heap graph for recursive struct types.
+        // Assumption: fld is static and fld type is struct
+        void CreateStruct(ITypeDefinition containingType, IFieldDefinition fld)
+        {
+            ITypeDefinition fldType = fld.Type.ResolvedType;
+            TypeRefWrapper ctyW = WrapperProvider.getTypeRefW(containingType);
+            FieldRefWrapper fldW = WrapperProvider.getFieldRefW(fld);
+            TypeRefWrapper fldTypeRefW = WrapperProvider.getTypeRefW(fldType);
+            HeapElemWrapper hpElemW = WrapperProvider.getHeapElemW(fld);
+            ProgramDoms.domH.Add(hpElemW);
+            ProgramRels.relStructH.Add(hpElemW);
+            ProgramRels.relHT.Add(hpElemW, fldTypeRefW);
+            ProgramRels.relTStructFH.Add(ctyW, fldW, hpElemW);
+            
+            foreach (IFieldDefinition subFld in fldType.Fields)
+            {
+                ITypeDefinition subFldType = subFld.Type.ResolvedType;
+                if (!Stubber.SuppressF(subFldType) && subFldType.IsStruct && !subFld.IsStatic) CreateStructInt(hpElemW, subFld, 1);
+            }
+        }
+
+        // Assumption: fld is instance field and is of type struct
+        void CreateStruct(HeapElemWrapper containingHpW, IFieldDefinition fld)
+        {
+            CreateStructInt(containingHpW, fld, 0);
+        }
+
+        // Assumption: fld is instance field and is of type struct
+        void CreateStructInt(HeapElemWrapper containingHpW, IFieldDefinition fld, int nestingDepth)
+        {
+            ITypeDefinition fldType = fld.Type.ResolvedType;
+            TypeRefWrapper fldTypeRefW = WrapperProvider.getTypeRefW(fldType);
+            HeapElemWrapper hpFldW = WrapperProvider.getHeapElemW(fld);
+            FieldRefWrapper fldW = WrapperProvider.getFieldRefW(fld);
+            ProgramDoms.domH.Add(hpFldW);
+            ProgramRels.relStructH.Add(hpFldW);
+            ProgramRels.relHT.Add(hpFldW, fldTypeRefW);
+            ProgramRels.relStructHFH.Add(containingHpW, fldW, hpFldW);
+            nestingDepth++;
+            foreach (IFieldDefinition subFld in fldType.Fields)
+            {
+                ITypeDefinition subFldType = subFld.Type.ResolvedType;
+                if (!Stubber.SuppressF(subFldType) && subFldType.IsStruct && !subFld.IsStatic
+                    && fldType != subFldType && nestingDepth < 4)
+                    CreateStructInt(hpFldW, subFld, nestingDepth);
+            }
+        }
+
+        // Assumption: lclVar is a local variable of struct type in method (wrapper) methW
+        void CreateStruct(MethodRefWrapper methW, IVariable lclVar)
+        {
+            ITypeDefinition varTypeDef = lclVar.Type.ResolvedType;
+            TypeRefWrapper varTypeRefW = WrapperProvider.getTypeRefW(varTypeDef);
+            VariableWrapper lclW = WrapperProvider.getVarW(lclVar);
+            HeapElemWrapper hpW = WrapperProvider.getHeapElemW(lclVar);
+            ProgramDoms.domH.Add(hpW);
+            ProgramRels.relMAlloc.Add(methW, lclW, hpW);
+            ProgramRels.relHT.Add(hpW, varTypeRefW);
+            ProgramRels.relStructH.Add(hpW);
+            ProgramRels.relStructV.Add(lclW);
+            foreach (IFieldDefinition subFld in varTypeDef.Fields)
+            {
+                ITypeDefinition subFldType = subFld.Type.ResolvedType;
+                if (!Stubber.SuppressF(subFldType) && subFldType.IsStruct && !subFld.IsStatic) CreateStructInt(hpW, subFld, 1);
+            }
+        }
+
+        // Assumption: An array (containingHpW) whose elements are of struct type (elemType)
+        // Note: Whether it is a static/instance field or a local variable, the allocation for an array happens in a method.
+        void CreateStruct(MethodRefWrapper methW, HeapElemWrapper containingHpW, ITypeDefinition elemType, HeapElemWrapper elemW)
+        {
+            FieldRefWrapper fldW = ProgramDoms.domF.GetVal(0);
+            ProgramDoms.domH.Add(elemW);
+            ProgramRels.relStructH.Add(elemW);
+            ProgramRels.relMStructHFH.Add(methW, containingHpW, fldW, elemW);
+            TypeRefWrapper elemTypeW = WrapperProvider.getTypeRefW(elemType);
+            ProgramRels.relHT.Add(elemW, elemTypeW);
+            foreach (IFieldDefinition subFld in elemType.Fields)
+            {
+                ITypeDefinition subFldType = subFld.Type.ResolvedType;
+                if (!Stubber.SuppressF(subFldType) && subFldType.IsStruct && !subFld.IsStatic) CreateStructInt(elemW, subFld, 1);
+            }
         }
     }
 }

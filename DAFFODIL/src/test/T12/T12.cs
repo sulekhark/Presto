@@ -89,6 +89,7 @@ namespace T12
 
     class Foo
     {
+        public static Bar[] barArray;
         public void FooFuncGenRef1<T1,T2>(ref T1 bazObj, ref T2 tazObj) where T1 : IBaz where T2 : Taz
         {
             tazObj.tazField = this;
@@ -109,6 +110,7 @@ namespace T12
 
         public void FooFuncOrdinary(Baz ordBaz, Taz ordTaz)
         {
+            barArray = new Bar[10];
             ordTaz.tazField = this;
             ordBaz.BazFunc();
         }

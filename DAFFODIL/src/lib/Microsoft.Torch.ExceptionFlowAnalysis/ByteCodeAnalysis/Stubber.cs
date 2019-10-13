@@ -51,6 +51,9 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
             prefixesToSuppressFull.Add("System.Int32");
             prefixesToSuppressFull.Add("System.Int16");
             prefixesToSuppressFull.Add("System.Byte");
+            prefixesToSuppressFull.Add("System.SByte");
+            prefixesToSuppressFull.Add("System.Single");
+            prefixesToSuppressFull.Add("System.TokenType");
             prefixesToSuppressFull.Add("System.Char");
             prefixesToSuppressFull.Add("System.Boolean");
             prefixesToSuppressFull.Add("System.UIntPtr");

@@ -28,10 +28,11 @@ VExc(h:H) printtuples
 RAExc(h:H) printtuples
 Unk(h:H) printtuples
 Wrap(h1:H,f:F,h2:H) printtuples
+EscapingAny(t:T,h:H) printtuples
 
 # Rules
-# Escaping(t,h) :- ThrowMH(m,h), HT(h,t), ExceptionType(t), entryPtM(m).
-Escaping(t,h) :- ThrowMH(m,h), HT(h,t), ExceptionType(t).
+Escaping(t,h) :- ThrowMH(m,h), HT(h,t), ExceptionType(t), entryPtM(m).
+EscapingAny(t,h) :- ThrowMH(m,h), HT(h,t), ExceptionType(t).
 Caught(t,h) :- CatchVH(v,h), HT(h,t), ExceptionType(t), !Escaping(t,h).
 
 
