@@ -12,10 +12,8 @@ CatchVH(v:V,h:H) input                   # Variable v which is the formal parame
 ExceptionType(t:T) input                 # Type t is an exception type
 HT(h:H,t:T) input                        # Allocation site h as Type t
 entryPtM(m:M) input                      # Entry point methods of the assembly.
-
-Caught(t:T,h:H) printtuples              # h is an exception object of Type t that is caught somewhere within the application
-Escaping(t:T,h:H) printtuples            # h is an exception object of Type t that is escaping from the application
-
+Caught(t:T,h:H) input                    # h is an exception object of Type t that is caught somewhere within the application
+Escaping(t:T,h:H) input                  # h is an exception object of Type t that is escaping from the application
 
 
 HFHO(h1:H,f:F,h2:H) input
@@ -31,12 +29,7 @@ Wrap(h1:H,f:F,h2:H) printtuples
 EscapingAny(t:T,h:H) printtuples
 
 # Rules
-Escaping(t,h) :- ThrowMH(m,h), HT(h,t), ExceptionType(t), entryPtM(m).
 EscapingAny(t,h) :- ThrowMH(m,h), HT(h,t), ExceptionType(t).
-Caught(t,h) :- CatchVH(v,h), HT(h,t), ExceptionType(t), !Escaping(t,h).
-
-
-
 ExcObject(h) :- HT(h,t), ExceptionType(t).
 VExc(h) :- VHO(v,h), HT(h,t), ExceptionType(t).
 RAExc(h) :- reachableM(m), MAlloc(m,v,h), HT(h,t), ExceptionType(t).
