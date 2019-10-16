@@ -113,9 +113,16 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
             }
             rtaLogSW.WriteLine();
             rtaLogSW.WriteLine();
-            foreach (ITypeDefinition m in rtaAnalyzer.classes)
+            foreach (ITypeDefinition cl in rtaAnalyzer.classes)
             {
-                rtaLogSW.WriteLine(m.FullName());
+                rtaLogSW.WriteLine(cl.FullName());
+            }
+
+            rtaLogSW.WriteLine();
+            rtaLogSW.WriteLine("ALLOC CLASSES");
+            foreach (ITypeDefinition cl in rtaAnalyzer.allocClasses)
+            {
+                rtaLogSW.WriteLine(cl.FullName());
             }
             rtaLogSW.WriteLine("+++++++++++++++ RTA DONE ++++++++++++++++++");
 

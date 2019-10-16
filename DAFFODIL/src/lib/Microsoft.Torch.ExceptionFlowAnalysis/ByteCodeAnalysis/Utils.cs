@@ -165,6 +165,19 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
             return null;
         }
 
+        public static IMethodDefinition GetMethodSignMatchRecursive(ITypeDefinition ty, IMethodDefinition meth)
+        {
+            IMethodDefinition signMatchMeth = GetMethodSignMatch(ty, meth);
+            if (signMatchMeth != null) return signMatchMeth;
+
+            foreach (ITypeReference bty in ty.BaseClasses)
+            {
+                ITypeDefinition analBty = Stubber.GetTypeToAnalyze(bty.ResolvedType);
+                if (analBty != null && !Stubber.SuppressF(analBty)) return GetMethodSignMatchRecursive(analBty, meth);
+            }
+            return null;
+        }
+
         public static IMethodDefinition GetMethodByName(ITypeDefinition ty, string methName)
         {
             foreach (IMethodDefinition tyMeth in ty.Methods)

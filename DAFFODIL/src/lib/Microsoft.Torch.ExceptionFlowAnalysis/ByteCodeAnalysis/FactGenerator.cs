@@ -304,51 +304,56 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
                         else continue;
                         foreach (IMethodDefinition meth in instantiatedMeths)
                         {
-                            MethodRefWrapper methW = WrapperProvider.getMethodRefW(meth);
+                            IMethodDefinition methArg;
+                            methArg = (meth is IGenericMethodInstance && tyMeth.IsGeneric) ? tyMeth : meth;
                             foreach (ITypeDefinition candidateTy in allocClasses)
                             {
                                 if (candidateTy is IArrayTypeReference) continue;
-                                TypeRefWrapper candidateTyW = WrapperProvider.getTypeRefW(candidateTy);
-                                bool implementationExists = false;
+                                IMethodDefinition candidateMeth = null;
                                 if (tyIsInterface)
                                 {
-                                    implementationExists = Utils.ImplementsInterface(candidateTy, ty);
+                                    if (Utils.ImplementsInterface(candidateTy, ty)) 
+                                        candidateMeth = Utils.GetMethodSignMatch(candidateTy, methArg);
                                 }
                                 else
                                 {
-                                    implementationExists = Utils.ExtendsClass(candidateTy, ty);
-                                }
-                                if (implementationExists)
-                                {
-                                    IMethodDefinition candidateMeth = null;
-                                    if (meth is IGenericMethodInstance && tyMeth.IsGeneric)
+                                    if (Utils.ExtendsClass(candidateTy, ty))
                                     {
-                                        IMethodDefinition candidateTemplateMeth = Utils.GetMethodSignMatch(candidateTy, tyMeth);
-                                        if (candidateTemplateMeth != null &&
-                                            ClassAndMethodVisitor.genericMethodMap.ContainsKey(candidateTemplateMeth))
-                                        {
-                                            IDictionary<string, IMethodDefinition> candidateInsts =
-                                                ClassAndMethodVisitor.genericMethodMap[candidateTemplateMeth];
-                                            string genericArgsStr =
-                                                GenericMethods.GetGenericArgStr((meth as IGenericMethodInstance).GenericArguments);
-                                            if (candidateInsts.ContainsKey(genericArgsStr))
-                                                candidateMeth = candidateInsts[genericArgsStr];
-                                        }
-                                    }
-                                    else
-                                    {
-                                        candidateMeth = Utils.GetMethodSignMatch(candidateTy, meth);
-                                    }
-                                    if (candidateMeth != null && methods.Contains(candidateMeth))
-                                    {
-                                        MethodRefWrapper candidateMethW = WrapperProvider.getMethodRefW(candidateMeth);
-                                        ProgramRels.relCha.Add(methW, candidateTyW, candidateMethW);
+                                        candidateMeth = Utils.GetMethodSignMatchRecursive(candidateTy, methArg);
+                                        if (candidateMeth.IsAbstract || candidateMeth.IsExternal) candidateMeth = null;
                                     }
                                 }
+                                if (candidateMeth != null) InsertIntoCha(meth, candidateTy, candidateMeth);
                             }
                         }
                     }
                 }
+            }
+        }
+
+        void InsertIntoCha(IMethodDefinition meth, ITypeDefinition candidateTy, IMethodDefinition candidateMeth)
+        {
+            if (meth is IGenericMethodInstance && candidateMeth.IsGeneric)
+            {
+                if (candidateMeth != null &&
+                    ClassAndMethodVisitor.genericMethodMap.ContainsKey(candidateMeth))
+                {
+                    IDictionary<string, IMethodDefinition> candidateInsts =
+                        ClassAndMethodVisitor.genericMethodMap[candidateMeth];
+                    string genericArgsStr =
+                        GenericMethods.GetGenericArgStr((meth as IGenericMethodInstance).GenericArguments);
+                    if (candidateInsts.ContainsKey(genericArgsStr))
+                        candidateMeth = candidateInsts[genericArgsStr];
+                    else
+                        candidateMeth = null;
+                }
+            }
+            if (candidateMeth != null && methods.Contains(candidateMeth))
+            {
+                MethodRefWrapper methW = WrapperProvider.getMethodRefW(meth);
+                MethodRefWrapper candidateMethW = WrapperProvider.getMethodRefW(candidateMeth);
+                TypeRefWrapper candidateTyW = WrapperProvider.getTypeRefW(candidateTy);
+                ProgramRels.relCha.Add(methW, candidateTyW, candidateMethW);
             }
         }
 
