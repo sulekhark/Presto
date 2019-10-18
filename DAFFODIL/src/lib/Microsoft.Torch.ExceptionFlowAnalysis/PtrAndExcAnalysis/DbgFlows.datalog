@@ -3,6 +3,7 @@
 .include "H.dom"                         # domain of allocation sites
 .include "V.dom"                         # domain of variables
 .include "F.dom"
+.include "P.dom"
 
 
 relH(h:H) input
@@ -14,6 +15,7 @@ HT(h:H,t:T) input                        # Allocation site h as Type t
 entryPtM(m:M) input                      # Entry point methods of the assembly.
 Caught(t:T,h:H) input                    # h is an exception object of Type t that is caught somewhere within the application
 Escaping(t:T,h:H) input                  # h is an exception object of Type t that is escaping from the application
+ThrowPV(m:M,p:P,v:V)  input              # Instruction p of Method m throws Variable v
 
 
 HFHO(h1:H,f:F,h2:H) input
@@ -22,19 +24,23 @@ reachableM(m:M) input
 MAlloc(m:M,v:V,h:H) input
 
 ExcObject(h:H) printtuples
-VExc(h:H) printtuples
+VExcH(h:H) printtuples
+VExcT(t:T) printtuples
 RAExc(h:H) printtuples
 Unk(h:H) printtuples
 Wrap(h1:H,f:F,h2:H) printtuples
 EscapingAny(t:T,h:H) printtuples
+ThrownExcObject(h:H) printtuples
 
 # Rules
 EscapingAny(t,h) :- ThrowMH(m,h), HT(h,t), ExceptionType(t).
 ExcObject(h) :- HT(h,t), ExceptionType(t).
-VExc(h) :- VHO(v,h), HT(h,t), ExceptionType(t).
+VExcH(h) :- VHO(v,h), HT(h,t), ExceptionType(t).
+VExcT(t) :- VHO(v,h), HT(h,t), ExceptionType(t).
 RAExc(h) :- reachableM(m), MAlloc(m,v,h), HT(h,t), ExceptionType(t).
-Unk(h) :- VExc(h), !Escaping(t,h), HT(h,t), ExceptionType(t).
+Unk(h) :- VExcH(h), !Escaping(t,h), HT(h,t), ExceptionType(t).
 Wrap(h1,f,h2) :- HFHO(h1,f,h2), HT(h1,t1), ExceptionType(t1), HT(h2,t2), ExceptionType(t2).
+ThrownExcObject(h) :- reachableM(m), ThrowPV(m,p,v), VHO(v,h), HT(h,t), ExceptionType(t).
 
 
 
@@ -49,3 +55,4 @@ Wrap(h1,f,h2) :- HFHO(h1,f,h2), HT(h1,t1), ExceptionType(t1), HT(h2,t2), Excepti
 .include "reachableM.datalog"
 .include "MAlloc.datalog"
 .include "HFHO.datalog"
+.include "ThrowPV.datalog"
