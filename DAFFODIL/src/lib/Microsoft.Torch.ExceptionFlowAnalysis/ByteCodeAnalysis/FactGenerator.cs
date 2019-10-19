@@ -767,7 +767,9 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
             else if (declType.IsDelegate && callTgt.Name.ToString() == "Invoke")
             {
                 ProgramDoms.domI.Add(instW);
+                ProgramDoms.domP.Add(instW);
                 ProgramRels.relMI.Add(mRefW, instW);
+                ProgramRels.relPI.Add(instW, instW);
                 if (invkInst.HasResult)
                 {
                     IVariable lhsVar = invkInst.Result;
