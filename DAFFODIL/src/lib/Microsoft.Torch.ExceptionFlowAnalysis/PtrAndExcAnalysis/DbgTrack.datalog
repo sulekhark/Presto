@@ -1,0 +1,51 @@
+.include "T.dom"                         # domain of types
+.include "M.dom"                         # domain of methods
+.include "H.dom"                         # domain of allocation sites
+.include "V.dom"                         # domain of variables
+.include "F.dom"
+.include "P.dom"
+.include "EH.dom"
+
+
+relH(h:H) input
+relT(t:T) input
+ThrowMH(m:M,h:H) input                   # The exception object h escapes Method m.
+CatchVH(v:V,h:H) input                   # Variable v which is the formal parameter of some catch handler, points-to exception object h.
+ExceptionType(t:T) input                 # Type t is an exception type
+HT(h:H,t:T) input                        # Allocation site h as Type t
+entryPtM(m:M) input                      # Entry point methods of the assembly.
+Caught(t:T,h:H) input                    # h is an exception object of Type t that is caught somewhere within the application
+Escaping(t:T,h:H) input                  # h is an exception object of Type t that is escaping from the application
+ThrowPV(m:M,p:P,v:V)  input              # Instruction p of Method m throws Variable v
+HFHO(h1:H,f:F,h2:H) input
+VHO(v:V,h:H)  input
+reachableM(m:M) input
+MAlloc(m:M,v:V,h:H) input
+VarEH(eh:EH,v:V) input
+MEH(m:M,eh:EH) input
+Track(h:H) input
+
+TrackThrow(m:M,h:H) printtuples
+TrackCatch(m:M,v:V,h:H) printtuples
+
+# Rules
+TrackThrow(m,h) :- ThrowMH(m,h), Track(h).
+TrackCatch(m,v,h) :- CatchVH(v,h), Track(h), VarEH(eh,v), MEH(m,eh).
+
+.include "relH.datalog"
+.include "relT.datalog"
+.include "ThrowMH.datalog"
+.include "CatchVH.datalog"
+.include "ExceptionType.datalog"
+.include "HT.datalog"
+.include "entryPtM.datalog"
+.include "VHO.datalog"
+.include "reachableM.datalog"
+.include "MAlloc.datalog"
+.include "HFHO.datalog"
+.include "ThrowPV.datalog"
+.include "Caught.datalog"
+.include "Escaping.datalog"
+.include "Track.datalog"
+.include "VarEH.datalog"
+.include "MEH.datalog"
