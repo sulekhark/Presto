@@ -13,12 +13,16 @@ dos2unix ExcFlows.datalog
 echo -n "" >> ExcFlows.datalog
 dos2unix DbgFlows.datalog
 echo -n "" >> DbgFlows.datalog
+dos2unix DbgTrack.datalog
+echo -n "" >> DbgTrack.datalog
 dos2unix parse_z3_out.py
 echo -n "" >> parse_z3_out.py
 dos2unix run_all.sh
 echo -n "" >> run_all.sh
-dos2unix run_dbg.sh
-echo -n "" >> run_dbg.sh
+dos2unix run_dbg_flows.sh
+echo -n "" >> run_dbg_flows.sh
+dos2unix run_dbg_track.sh
+echo -n "" >> run_dbg_track.sh
 cp ../logs/rta_log.txt .
 cp ../logs/tac_log.txt .
 dos2unix tac_log.txt

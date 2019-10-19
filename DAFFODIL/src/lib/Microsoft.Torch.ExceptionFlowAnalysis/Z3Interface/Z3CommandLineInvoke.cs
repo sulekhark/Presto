@@ -24,7 +24,11 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.Z3Interface
             Process pr7 = new Process();
             CopyFile(pr7, Path.Combine(ConfigParams.AnalysesPath, "DbgFlows.datalog"), destDir);
             Process pr8 = new Process();
-            CopyFile(pr8, Path.Combine(ConfigParams.AnalysesPath, "run_dbg.sh"), destDir);
+            CopyFile(pr8, Path.Combine(ConfigParams.AnalysesPath, "run_dbg_flows.sh"), destDir);
+            Process pr9 = new Process();
+            CopyFile(pr8, Path.Combine(ConfigParams.AnalysesPath, "run_dbg_track.sh"), destDir);
+            Process pr10 = new Process();
+            CopyFile(pr8, Path.Combine(ConfigParams.AnalysesPath, "DbgTrack.datalog"), destDir);
         }
 
         private static void CopyFile(Process pr, string filePath, string destDir)
