@@ -179,6 +179,7 @@
     <Compile Include="ProgramFacts\Relations\RelExceptionType.cs" />
     <Compile Include="ProgramFacts\Relations\RelFH.cs" />
     <Compile Include="ProgramFacts\Relations\RelFinalEH.cs" />
+    <Compile Include="ProgramFacts\Relations\RelFT.cs" />
     <Compile Include="ProgramFacts\Relations\RelFX.cs" />
     <Compile Include="ProgramFacts\Relations\RelHFH.cs" />
     <Compile Include="ProgramFacts\Relations\RelHFX.cs" />
@@ -207,6 +208,7 @@
     <Compile Include="ProgramFacts\Relations\RelMStatFldRead.cs" />
     <Compile Include="ProgramFacts\Relations\RelMStatFldWrite.cs" />
     <Compile Include="ProgramFacts\Relations\RelMStructHFH.cs" />
+    <Compile Include="ProgramFacts\Relations\RelMV.cs" />
     <Compile Include="ProgramFacts\Relations\RelPI.cs" />
     <Compile Include="ProgramFacts\Relations\RelPrevEH.cs" />
     <Compile Include="ProgramFacts\Relations\RelReachableI.cs" />

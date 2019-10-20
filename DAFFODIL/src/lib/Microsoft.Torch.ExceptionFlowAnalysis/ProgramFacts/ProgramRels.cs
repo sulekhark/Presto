@@ -80,6 +80,8 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.ProgramFacts
         public static RelThisRefV relThisRefV;
         public static RelTStructFH relTStructFH;
         public static RelStructHFH relStructHFH;
+        public static RelMV relMV;
+        public static RelFT relFT;
 
 
         public static Dictionary<string, Rel> nameToRelMap;
@@ -308,6 +310,12 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.ProgramFacts
 
             relStructHFH = new RelStructHFH();
             nameToRelMap.Add(relStructHFH.GetName(), relStructHFH);
+
+            relMV = new RelMV();
+            nameToRelMap.Add(relMV.GetName(), relMV);
+
+            relFT = new RelFT();
+            nameToRelMap.Add(relFT.GetName(), relFT);
         }
 
         public static void Save()
@@ -364,6 +372,8 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.ProgramFacts
             relThisRefV.Save();
             relTStructFH.Save();
             relStructHFH.Save();
+            relMV.Save();
+            relFT.Save();
         }
     }
 }

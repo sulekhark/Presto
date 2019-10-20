@@ -42,6 +42,7 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
             prefixesToSuppressMeth.Add("System.Text");
             prefixesToSuppressMeth.Add("System.Threading");
             prefixesToSuppressMeth.Add("System.Xml");
+            prefixesToSuppressMeth.Add("System.Convert");
             prefixesToSuppressMeth.Add("Microsoft.Cci");
 
             prefixesToSuppressFull = new List<string>();
@@ -61,6 +62,7 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
             prefixesToSuppressFull.Add("System.UInt32");
             prefixesToSuppressFull.Add("System.UInt16");
             prefixesToSuppressFull.Add("System.UChar");
+            prefixesToSuppressFull.Add("System.Decimal");
         }
 
         public static void SetupRTAAnalyzer(RTAAnalyzer rta)

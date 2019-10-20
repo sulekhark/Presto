@@ -18,8 +18,11 @@ Escaping(t:T,h:H) input                  # h is an exception object of Type t th
 ThrowPV(m:M,p:P,v:V)  input              # Instruction p of Method m throws Variable v
 HFHO(h1:H,f:F,h2:H) input
 VHO(v:V,h:H)  input
+FHO(f:F,h:H) input
 reachableM(m:M) input
 MAlloc(m:M,v:V,h:H) input
+VT(v:V,t:T) input
+FT(f:F,t:T) input
 
 Wrap(h1:H,f:F,h2:H)
 CaughtOrEscaping(h:H)
@@ -32,6 +35,8 @@ EscapingAny(t:T,h:H) printtuples
 ThrownExcObject(h:H) printtuples
 WrapOnly(h:H) printtuples
 Missing(h:H) printtuples
+EscObjType(t1:T,h:H,t2:T) printtuples
+CaughtObjType(t1:T,h:H,t2:T) printtuples
 
 # Rules
 EscapingAny(t,h) :- ThrowMH(m,h), HT(h,t), ExceptionType(t).
@@ -47,6 +52,13 @@ CaughtOrEscaping(h) :- Escaping(t,h).
 WrapOnly(h2) :- Wrap(h1,f,h2), CaughtOrEscaping(h1), !CaughtOrEscaping(h2), HT(h2,t), ExceptionType(t).
 Missing(h) :- !CaughtOrEscaping(h), VExcH(h), HT(h,t), ExceptionType(t).
 
+EscObjType(t1,h,t2) :- Escaping(t1,h), VHO(v,h), VT(v,t2).
+EscObjType(t1,h,t2) :- Escaping(t1,h), FHO(f,h), FT(f,t2).
+EscObjType(t1,h,t2) :- Escaping(t1,h), HFHO(h0,f,h), FT(f,t2).
+CaughtObjType(t1,h,t2) :- Caught(t1,h), VHO(v,h), VT(v,t2).
+CaughtObjType(t1,h,t2) :- Caught(t1,h), FHO(f,h), FT(f,t2).
+CaughtObjType(t1,h,t2) :- Caught(t1,h), HFHO(h0,f,h), FT(f,t2).
+
 
 .include "relH.datalog"
 .include "relT.datalog"
@@ -55,10 +67,13 @@ Missing(h) :- !CaughtOrEscaping(h), VExcH(h), HT(h,t), ExceptionType(t).
 .include "ExceptionType.datalog"
 .include "HT.datalog"
 .include "entryPtM.datalog"
-.include "VHO.datalog"
 .include "reachableM.datalog"
 .include "MAlloc.datalog"
+.include "VHO.datalog"
 .include "HFHO.datalog"
+.include "FHO.datalog"
 .include "ThrowPV.datalog"
 .include "Caught.datalog"
 .include "Escaping.datalog"
+.include "VT.datalog"
+.include "FT.datalog"

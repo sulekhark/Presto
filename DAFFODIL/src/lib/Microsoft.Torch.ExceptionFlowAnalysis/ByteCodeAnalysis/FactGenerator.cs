@@ -208,6 +208,7 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
                     TypeRefWrapper fldTypeRefW = WrapperProvider.getTypeRefW(fldType);
                     ProgramDoms.domT.Add(fldTypeRefW);
                     ProgramDoms.domF.Add(fldW);
+                    ProgramRels.relFT.Add(fldW, fldTypeRefW);
                     if (fld.IsStatic)
                     {
                         ProgramRels.relStaticTF.Add(tyW, fldW);
@@ -368,6 +369,7 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
                 {
                     VariableWrapper paramW = WrapperProvider.getVarW(param);
                     ProgramDoms.domV.Add(paramW);
+                    ProgramRels.relMV.Add(mRefW, paramW);
                     ProgramRels.relMmethArg.Add(mRefW, paramNdx, paramW);
                     ITypeReference varTypeRef = param.Type;
                     TypeRefWrapper varTypeRefW = WrapperProvider.getTypeRefW(varTypeRef.ResolvedType);
@@ -398,6 +400,7 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
                     {
                         VariableWrapper lclW = WrapperProvider.getVarW(lclVar);
                         ProgramDoms.domV.Add(lclW);
+                        ProgramRels.relMV.Add(mRefW, lclW);
                         ITypeReference varTypeRef = lclVar.Type;
                         TypeRefWrapper varTypeRefW = WrapperProvider.getTypeRefW(varTypeRef.ResolvedType);
                         ProgramDoms.domT.Add(varTypeRefW);
@@ -667,11 +670,13 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
             {
                 VariableWrapper lhsW = WrapperProvider.getVarW(lhsVar);
                 ProgramDoms.domV.Add(lhsW);
+                ProgramRels.relMV.Add(mRefW, lhsW);
                 IList<IVariable> phiArgList = phiInst.Arguments;
                 foreach (IVariable arg in phiArgList)
                 {
                     VariableWrapper argW = WrapperProvider.getVarW(arg);
                     ProgramDoms.domV.Add(argW);
+                    ProgramRels.relMV.Add(mRefW, argW);
                     bool success = ProgramRels.relMMove.Add(mRefW, lhsW, argW);
                 }
             }
