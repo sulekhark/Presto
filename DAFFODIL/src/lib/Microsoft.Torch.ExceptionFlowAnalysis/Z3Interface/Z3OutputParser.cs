@@ -50,7 +50,7 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.Z3Interface
                     matches = false;
                 }
             }
-            // Line is a tuple belongign to the relation
+            // Line is a tuple belonging to the relation
             else if (line.StartsWith("("))
             {
                 string[] elems = line.Split(new char[] { ',' });

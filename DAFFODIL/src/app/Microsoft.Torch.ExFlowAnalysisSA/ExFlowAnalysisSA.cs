@@ -11,10 +11,10 @@ namespace Microsoft.Torch.ExFlowAnalysisSA
         {
             if (args.Length == 0)
             {
-                // ConfigParams.LoadConfig(@"C:\Users\torch\work\DAFFODIL\DAFFODIL\src\test\T4\daffodil.cfg");
-                // ConfigParams.LoadConfig(@"C:\Users\torch\work\Test\storage-blob-dotnet-getting-started\BlobStorage\daffodil.cfg");
-                // ConfigParams.LoadConfig(@"C:\Users\torch\work\Test\StorageBug3\StorageBug3\daffodil.cfg");
-                ConfigParams.LoadConfig(@"C:\Users\torch\work\FromGithub\bmk1\storage\good\rtable\ConfigurationAgent\daffodil.cfg");
+                // ConfigParams.LoadConfig(@"C:\Users\sulek\work\ExcAnalysis\DAFFODIL\DAFFODIL\src\test\T4\daffodil.cfg");
+                // ConfigParams.LoadConfig(@"C:\Users\sulek\work\ExcAnalysis\Test\storage-blob-dotnet-getting-started\BlobStorage\daffodil.cfg");
+                // ConfigParams.LoadConfig(@"C:\Users\sulek\work\ExcAnalysis\Test\StorageBug3\StorageBug3\daffodil.cfg");
+                ConfigParams.LoadConfig(@"C:\Users\sulek\work\ExcAnalysis\FromGithub\bmk1\storage\good\rtable\ConfigurationAgent\daffodil.cfg");
             }
             else if (args.Length == 1)
             {
