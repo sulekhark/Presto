@@ -289,8 +289,6 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
 
                     foreach (IMethodDefinition tyMeth in ty.Methods)
                     {
-                        if (tyMeth.Visibility == TypeMemberVisibility.Private) continue;
-                        if (tyMeth.IsConstructor) continue;
                         if (!tyMeth.IsGeneric && !methods.Contains(tyMeth)) continue;
                         IList<IMethodDefinition> instantiatedMeths;
                         if (tyMeth.IsGeneric && ClassAndMethodVisitor.genericMethodMap.ContainsKey(tyMeth))
@@ -303,6 +301,11 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
                             instantiatedMeths.Add(tyMeth);
                         }
                         else continue;
+                        if (tyMeth.Visibility == TypeMemberVisibility.Private || tyMeth.IsConstructor)
+                        {
+                            foreach (IMethodDefinition meth in instantiatedMeths) InsertIntoCha(meth, ty, meth);
+                            continue; // No need to check for dynamic dispatch possibilities.
+                        }
                         foreach (IMethodDefinition meth in instantiatedMeths)
                         {
                             IMethodDefinition methArg;
