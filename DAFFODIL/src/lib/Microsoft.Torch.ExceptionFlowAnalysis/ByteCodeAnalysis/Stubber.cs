@@ -29,11 +29,13 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
             prefixesToSuppressMeth.Add("System.String");  // causes crash in TypeInference
             prefixesToSuppressMeth.Add("System.Environment");
             prefixesToSuppressMeth.Add("System.ComponentModel");
+            prefixesToSuppressMeth.Add("System.Configuration");
             prefixesToSuppressMeth.Add("System.Data");
             prefixesToSuppressMeth.Add("System.Diagnostics");
             prefixesToSuppressMeth.Add("System.Globalization");
             prefixesToSuppressMeth.Add("System.IO");
-            prefixesToSuppressMeth.Add("System.Linq");
+            prefixesToSuppressMeth.Add("System.Linq.Expressions");
+            prefixesToSuppressMeth.Add("System.Linq.Parallel");
             prefixesToSuppressMeth.Add("System.Net");
             prefixesToSuppressMeth.Add("System.Reflection");
             prefixesToSuppressMeth.Add("System.Resources");

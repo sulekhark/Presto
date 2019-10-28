@@ -227,29 +227,29 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
                     if (Utils.ExtendsClass(cl, calleeClass))
                         process = true;
                     if (!process) continue;
-                    foreach (IMethodDefinition meth in cl.Methods)
+                    IMethodDefinition calleeArg;
+                    if (mCallee is IGenericMethodInstance)
                     {
-                        if (meth.IsGeneric && calleeTemplate != null)
-                        {
-                            if (Utils.MethodSignMatch(calleeTemplate, meth))
-                            {
-                                IMethodDefinition instMeth = GenericMethods.RecordInfo(meth, mCallee, /* createIfReqd = */true);
-                                IMethodDefinition addedMeth = Stubber.CheckAndAdd(instMeth);
-                                if (addedMeth != null && isAddrTaken) addrTakenMethods.Add(addedMeth);
-                                break;
-                            }
-                        }
-                        else if (meth.IsGeneric && calleeTemplate == null) continue;
-                        else if (!meth.IsGeneric && calleeTemplate != null) continue;
-                        else // meth is not generic and calleeTemplate is null
-                        {
-                            if (Utils.MethodSignMatch(mCallee, meth))
-                            {
-                                IMethodDefinition addedMeth = Stubber.CheckAndAdd(meth);
-                                if (addedMeth != null && isAddrTaken) addrTakenMethods.Add(addedMeth);
-                                break;
-                            }
-                        }
+                        calleeArg = calleeTemplate;
+                    }
+                    else
+                    {
+                        calleeArg = mCallee;
+                    }
+                    IMethodDefinition meth = Utils.GetMethodSignMatchRecursive(cl, calleeArg);
+                    if (meth == null) continue;
+                    if (meth.IsGeneric && calleeTemplate != null)
+                    {
+                        IMethodDefinition instMeth = GenericMethods.RecordInfo(meth, mCallee, /* createIfReqd = */true);
+                        IMethodDefinition addedMeth = Stubber.CheckAndAdd(instMeth);
+                        if (addedMeth != null && isAddrTaken) addrTakenMethods.Add(addedMeth);
+                    }
+                    else if (meth.IsGeneric && calleeTemplate == null) continue;
+                    else if (!meth.IsGeneric && calleeTemplate != null) continue;
+                    else // meth is not generic and calleeTemplate is null
+                    {
+                        IMethodDefinition addedMeth = Stubber.CheckAndAdd(meth);
+                        if (addedMeth != null && isAddrTaken) addrTakenMethods.Add(addedMeth);
                     }
                 }
             }

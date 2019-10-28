@@ -30,6 +30,11 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
                 ITypeReference analItf = Stubber.GetTypeToAnalyze(itf.ResolvedType);
                 if (analItf != null && ImplementsInterface(analItf.ResolvedType, queryItf)) return true;
             }
+            foreach (ITypeReference bcl in tgt.BaseClasses)
+            {
+                ITypeReference analBcl = Stubber.GetTypeToAnalyze(bcl.ResolvedType);
+                if (analBcl != null && ImplementsInterface(analBcl.ResolvedType, queryItf)) return true;
+            }
             return false;
         }
 

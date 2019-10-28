@@ -317,7 +317,7 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
                                 if (tyIsInterface)
                                 {
                                     if (Utils.ImplementsInterface(candidateTy, ty)) 
-                                        candidateMeth = Utils.GetMethodSignMatch(candidateTy, methArg);
+                                        candidateMeth = Utils.GetMethodSignMatchRecursive(candidateTy, methArg);
                                 }
                                 else
                                 {

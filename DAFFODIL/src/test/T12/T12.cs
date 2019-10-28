@@ -106,12 +106,14 @@ namespace T12
         {
             tazObj.tazField = this;
             bazObj.BazFunc();
+            bazObj.BazBaseFunc();
         }
 
         public void FooFuncOrdinary(Baz ordBaz, Taz ordTaz)
         {
             barArray = new Bar[10];
             ordTaz.tazField = this;
+            ordTaz.TazBaseFunc();
             ordBaz.BazFunc();
         }
     }
@@ -119,17 +121,32 @@ namespace T12
     interface IBaz
     {
         void BazFunc();
+        void BazBaseFunc();
     }
 
-    class Baz : IBaz
+    class Baz : BazBase, IBaz
     {
         public Foo bazField;
         //public Taz tazMember;
+
+        public Baz() { }
         public void BazFunc() { }
     }
 
-    class Taz 
+    class BazBase
+    {
+        public void BazBaseFunc() { }
+    }
+
+    class Taz : TazBase
     {
         public Foo tazField;
+
+        public Taz() { }
+    }
+
+    class TazBase
+    {
+        public void TazBaseFunc() { }
     }
 }
