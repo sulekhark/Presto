@@ -1,0 +1,33 @@
+﻿namespace T20
+{
+    class T20
+    {
+        static void Main(string[] args)
+        {
+            Foo fooObj = new Foo();
+            Process(fooObj);
+        }
+
+        static void Process(IFoo fooParam)
+        {
+            fooParam.FooFunc();
+            Bar barObj = fooParam as Bar;
+            barObj.BarFunc();
+            IBaz bazObj = fooParam as IBaz;
+            bazObj.BazFunc();
+        }
+    }
+
+    abstract class Bar { public abstract void BarFunc(); }
+
+    interface IBaz { void BazFunc(); }
+
+    interface IFoo { void FooFunc(); }
+
+    class Foo : IFoo
+    {
+        public void FooFunc() { }
+        public void BarFunc() { }
+        public void BazFunc() { }
+    }
+}
