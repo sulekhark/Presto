@@ -4,6 +4,8 @@ import logging
 import re
 import sys
 
+# Note: Parsing is sensitive to white space. Does not handle it elegantly.
+
 analysisFileName = sys.argv[1]
 outputFileName = sys.argv[2]
 

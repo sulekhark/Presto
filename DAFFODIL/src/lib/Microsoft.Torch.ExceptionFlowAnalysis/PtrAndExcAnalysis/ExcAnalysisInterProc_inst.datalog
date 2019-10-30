@@ -1,0 +1,333 @@
+.include "T.dom"                         # domain of types
+.include "F.dom"                         # domain of fields
+.include "M.dom"                         # domain of methods
+.include "I.dom"                         # domain of invoke statements
+.include "H.dom"                         # domain of allocation sites
+.include "V.dom"                         # domain of variables
+.include "Z.dom"                         # domain of integer indexes
+.include "X.dom"                         # domain of addresses for all objects, fields of objects and structs whose address can be taken.
+.include "P.dom"                         # domain of program points
+.include "EH.dom"                        # domain of exception handlers
+
+############
+# Relations
+############
+
+relV(v:V) input
+relH(h:H) input
+HT(h:H,t:T) input                        # Allocation site h allocates an object of Type t
+MI(m:M,i:I) input                        # Method m contains InvokeStmt i
+VarEH(eh:EH,v:V)  input                  # ExceptionHandler eh has the formal paramter as Variable v
+ThrowPV(m:M,p:P,v:V)  input              # Instruction p of Method m throws Variable v
+PI(p:P,i:I) input                        # Connects program points that are invoke statements to corresponding entries in domI
+
+MmethArg(m:M,n:Z,v:V) input              # Variable v is the nth parameter of Method m
+MmethRet(m:M,n:Z,v:V) input              # Variable v is returned from Method m (n is always 0 - not used).
+IinvkArg0(i:I,v:V) input                 # Variable v is the receiver of the method call in the InvokeStmt i
+IinvkArg(i:I,n:Z,v:V) input              # Variable v is the nth argument of the method call in the InvokeStmt i
+IinvkRet(i:I,n:Z,v:V) input              # Variable v is the lhs of InvokeStmt i (n is always 0 - not used)
+
+AddrOfMX(m:M,x:X) input                  # Method m has Address x
+AddrOfHFX(h:H,f:F,x:X) input             # The Field f of the abstract object allocated at AllocSite h has Address x
+AddrOfVX(v:V,x:X) input                  # Variable v has Address x
+AddrOfFX(f:F,x:X) input                  # Static field f has Address x
+
+MAlloc(m:M,l:V,h:H) input                # Method m contains stmt: l = new ... (alloc site h)
+MMove(m:M,l:V,r:V) input                 # Method m contains: l = r
+MInstFldRead(m:M,l:V,r:V,f:F) input      # Method m contains: l = r.f
+MInstFldWrite(m:M,l:V,f:F,r:V) input     # Method m contains: l.f = r
+MStatFldRead(m:M,l:V,f:F) input          # Method m contains: l = f
+MStatFldWrite(m:M,f:F,r:V) input         # Method m contains: f = r
+
+MAddrTakenLocal(m:M,l:V,r:V) input       # Method m contains l = &r
+MAddrTakenInstFld(m:M,l:V,r:V,f:F) input # Method m contains l = &r.f
+MAddrTakenStatFld(m:M,l:V,f:F) input     # Method m contains l = &f
+MAddrTakenFunc(m1:M,l:V,m2:M)            # Method m1 contains l = &m2, where m2 is a method.
+
+MDerefLeft(m:M,l:V,r:V) input            # Method m contains *l = r
+MDerefRight(m:M,l:V,r:V) input           # Method m contains l = *r
+
+structV(v:V) input                       # Local variable v is of type struct
+structRefV(v:V) input                    # Local variable v is of type reference to struct
+thisRefV(v:V) input                      # "this" argument is passed by reference. Ex: foo(ref v)
+structH(h:H) input                       # Heap element h is of type struct
+
+IM(i:I,m:M) input                        # InvokeStmt i may call Method m
+reachableM(m:M) input                    # Methods reachable from Main method or entry point methods
+FinalEH(eh:EH,t:T,p:P) input             # ExceptionHandler eh catches an exception of Type t thrown at Program point p.
+EscapeMTP(m:M,t:T,p:P) input             # Exception of type t if thrown at Program Point p, escapes Method m.
+
+# Below six relations are "input" points-to relations 
+VH(v:V,h:H)  input                       # Variable v may point to AllocSite h
+VX(v:V,x:X)  input                       # Variable v may point to Address x
+FH(f:F,h:H)  input                       # Static field f may point to AllocSite h
+FX(f:F,x:X)  input                       # Static field f may point to Address x
+HFH(h1:H,f:F,h2:H)  input                # Field f of object allocated at AllocSite h1 may point to AllocSite h2
+HFX(h:H,f:F,x:X)  input                  # Field f of object allocated at AllocSite h may point to Address x
+
+# The below relations are output relations of the inter-procedural exception analysis
+VHO(v:V,h:H)  input                      # Variable v may point to AllocSite h
+VXO(v:V,x:X)  input                      # Variable v may point to Address x
+FHO(f:F,h:H)  input                      # Static field f may point to AllocSite h
+FXO(f:F,x:X)  input                      # Static field f may point to Address x
+HFHO(h1:H,f:F,h2:H)  input               # Field f of object allocated at AllocSite h1 may point to AllocSite h2
+HFXO(h:H,f:F,x:X)  input                 # Field f of object allocated at AllocSite h may point to Address x
+
+thisIVH(i:I,v:V,h:H) input               # Invoke statement i has reference variable v as the "this" variable && v points-to h
+
+Alloc(l:V,h:H) input
+Move(l:V,r:V) input
+InstFldRead(l:V,h:H,f:F) input
+InstFldWrite(h:H,f:F,r:V) input
+StatFldRead(l:V,f:F) input
+StatFldWrite(f:F,r:V) input
+
+StrMove(lh:H,rh:H) input
+CalleeAt(m:M,p:P,mcallee:M) input
+
+AddrTakenLocal(l:V,r:V) input
+AddrTakenInstFld(l:V,r:V,f:F) input
+AddrTakenStatFld(l:V,f:F) input
+AddrTakenFunc(l:V, m:M) input
+DerefLeft(l:V,r:V) input
+DerefRight(l:V,r:V) input
+
+ThrowMH(m:M,h:H) input                   # The exception object h escapes Method m.
+CatchVH(v:V,h:H) input                   # Variable v which is the formal parameter of some catch handler, points-to exception object h.
+
+
+
+########################
+#Instrumented Relations
+########################
+
+VHO_i1(v:V,h:H)  printtuples
+VHO_i2(v:V,h:H,i:I,m:M,u:V) printtuples
+VHO_i3(v:V,h:H)  printtuples
+VHO_i4(l:V,h:H,r:V)  printtuples
+VHO_i5(l:V,hfh:H,h:H,f:F)  printtuples
+VHO_i6(l:V,h:H,f:F)  printtuples
+VHO_i7(v1:V,h:H,v2:V)  printtuples
+VHO_i8(v1:V,h:H,v2:V,h2:H,f:F)  printtuples
+VHO_i9(v1:V,h:H,f:F)  printtuples
+VHO_i10(v:V,h:H)  printtuples
+VXO_i1(v:V,x:X)  printtuples
+VXO_i2(l:V,x:X,r:V)  printtuples
+VXO_i3(l:V,x:X,h:H,f:F)  printtuples
+VXO_i4(l:V,x:X,f:F)  printtuples
+VXO_i5(v1:V,x:X,v2:V)  printtuples
+VXO_i6(v1:V,x:X,v2:V,h2:H,f:F)  printtuples
+VXO_i7(v1:V,x:X,f:F)  printtuples
+VXO_i8(v1:V,x:X,m:M)  printtuples
+FHO_i1(f:F,h:H)  printtuples
+FHO_i2(f:F,h:H,r:V)  printtuples
+FXO_i1(f:F,x:X)  printtuples
+FXO_i2(f:F,x:X,r:V)  printtuples
+HFHO_i1(h1:H,f:F,h2:H)  printtuples
+HFHO_i2(h1:H,f:F,h2:H,r:V)  printtuples
+HFHO_i3(lh:H,f:F,rhfh:H,rh:H)  printtuples
+HFXO_i1(h:H,f:F,x:X)  printtuples
+HFXO_i2(h:H,f:F,x:X,r:V)  printtuples
+
+thisIVH_i1(i:I,v:V,h:H,x:X,v1:V) printtuples
+thisIVH_i2(i:I,v:V,h:H,x:X,h1:H,f:F) printtuples
+thisIVH_i3(i:I,v:V,h:H,x:X,f1:F) printtuples
+
+Alloc_i1(l:V,h:H,m:M) printtuples
+Move_i1(l:V,r:V,i:I,z:Z,m:M) printtuples
+Move_i2(l:V,r:V,i:I,z:Z,m:M) printtuples
+Move_i3(l:V,r:V,i:I,z:Z,m:M) printtuples
+Move_i4(l:V,r:V,m:M) printtuples
+Move_i5(v:V,r:V,l:V,x:X) printtuples
+Move_i6(l:V,v:V,r:V,x:X) printtuples
+InstFldRead_i1(l:V,h:H,f:F,m:M,r:V) printtuples
+InstFldRead_i2(l:V,h:H,f:F,m:M,r:V,x:X) printtuples
+InstFldRead_i3(l:V,h:H,f:F,r:V,x:X) printtuples
+InstFldWrite_i1(h:H,f:F,r:V,m:M,l:V) printtuples
+InstFldWrite_i2(h:H,f:F,r:V,m:M,l:V,x:X) printtuples
+InstFldWrite_i3(h:H,f:F,r:V,l:V,x:X) printtuples
+StatFldRead_i1(l:V,f:F,m:M) printtuples
+StatFldRead_i2(l:V,f:F,r:V,x:X) printtuples
+StatFldWrite_i1(f:F,r:V,m:M) printtuples
+StatFldWrite_i2(f:F,r:V,l:V,x:X) printtuples
+StrMove_i1(lh:H,rh:H,l:V,r:V) printtuples
+StrMove_i2(lh:H,hfh:H,l:V,h:H,f:F) printtuples
+StrMove_i3(hfh:H,rh:H,h:H,f:F,r:V) printtuples
+StrMove_i4(lh:H,fh:H,l:V,f:F) printtuples
+StrMove_i5(fh:H,rh:H,f:F,r:V) printtuples
+StrMove_i6(lhfh:H,rhfh:H,lh:H,rh:H,f:F) printtuples
+CalleeAt_i1(m:M,p:P,mcallee:M,i:I) printtuples
+AddrTakenLocal_i1(l:V,r:V,m:M) printtuples
+AddrTakenInstFld_i1(l:V,r:V,f:F,m:M) printtuples
+AddrTakenStatFld_i1(l:V,f:F,m:M) printtuples
+AddrTakenFunc_i1(l:V,m:M,m1:M) printtuples
+DerefLeft_i1(l:V,r:V,m:M) printtuples
+DerefRight_i1(l:V,r:V,m:M) printtuples
+ThrowMH_i1(m:M,h:H,p:P,v:V,t:T) printtuples
+ThrowMH_i2(m:M,h:H,p:P,mcallee:M,t:T) printtuples
+CatchVH_i1(v:V,h:H,m:M,p:P,v1:V,t:T,eh:EH) printtuples
+CatchVH_i2(v:V,h:H,m:M,p:P,mcallee:M,t:T,eh:EH) printtuples
+
+
+
+
+############################
+# Instrumented Constraints
+############################
+
+VHO_i1(v,h) :- VH(v,h).
+VXO_i1(v,x) :- VX(v,x).
+FHO_i1(f,h) :- FH(f,h).
+FXO_i1(f,x) :- FX(f,x).
+HFHO_i1(h1,f,h2) :- HFH(h1,f,h2).
+HFXO_i1(h,f,x) :- HFX(h,f,x). 
+
+thisIVH_i1(i,v,h,x,v1) :- IinvkArg0(i,v), VXO(v,x), AddrOfVX(v1,x), VHO(v1,h).
+thisIVH_i2(i,v,h,x,h1,f) :- IinvkArg0(i,v), VXO(v,x), AddrOfHFX(h1,f,x), HFHO(h1,f,h).
+thisIVH_i3(i,v,h,x,f1) :- IinvkArg0(i,v), VXO(v,x), AddrOfFX(f1,x), FHO(f1,h).
+
+# arguments and return variables
+VHO_i2(v,h,i,m,u) :- IM(i,m), thisIVH(i,u,h), MmethArg(m,0,v), thisRefV(u), !structRefV(u).
+Move_i1(v,u,i,z,m) :- IinvkArg(i,z,u), IM(i,m), MmethArg(m,z,v), thisRefV(u), structRefV(u).
+Move_i2(v,u,i,z,m) :- IinvkArg(i,z,u), IM(i,m), MmethArg(m,z,v), !thisRefV(u).
+Move_i3(u,v,i,z,m) :- IinvkRet(i,z,u), IM(i,m), MmethRet(m,z,v).
+
+Alloc_i1(l,h,m) :- reachableM(m), MAlloc(m,l,h).
+Move_i4(l,r,m) :- reachableM(m), MMove(m,l,r).
+InstFldRead_i1(l,h,f,m,r) :- reachableM(m), MInstFldRead(m,l,r,f), VHO(r,h).
+InstFldRead_i2(l,h,f,m,r,x) :- reachableM(m), MInstFldRead(m,l,r,f), VXO(r,x), AddrOfHFX(h,f,x).
+InstFldWrite_i1(h,f,r,m,l) :- reachableM(m), MInstFldWrite(m,l,f,r), VHO(l,h).
+InstFldWrite_i2(h,f,r,m,l,x) :- reachableM(m), MInstFldWrite(m,l,f,r), VXO(l,x), AddrOfHFX(h,f,x).
+StatFldRead_i1(l,f,m) :- reachableM(m), MStatFldRead(m,l,f).
+StatFldWrite_i1(f,r,m) :- reachableM(m), MStatFldWrite(m,f,r).
+
+AddrTakenLocal_i1(l,r,m) :- reachableM(m), MAddrTakenLocal(m,l,r).
+AddrTakenInstFld_i1(l,r,f,m) :- reachableM(m), MAddrTakenInstFld(m,l,r,f).
+AddrTakenStatFld_i1(l,f,m) :- reachableM(m), MAddrTakenStatFld(m,l,f).
+AddrTakenFunc_i1(l,m2,m1) :- reachableM(m1), MAddrTakenFunc(m1,l,m2).
+DerefLeft_i1(l,r,m) :- reachableM(m), MDerefLeft(m,l,r).
+DerefRight_i1(l,r,m) :- reachableM(m), MDerefRight(m,l,r).
+
+VHO_i3(l,h) :- Alloc(l,h).
+
+VHO_i4(l,h,r) :- Move(l,r), VHO(r,h), !structV(l).
+StrMove_i1(lh,rh,l,r) :- Move(l,r), VHO(l,lh), VHO(r,rh), structV(l).
+VXO_i2(l,x,r) :- Move(l,r), VXO(r,x).
+
+VHO_i5(l,hfh,h,f) :- InstFldRead(l,h,f), HFHO(h,f,hfh), !structV(l).
+StrMove_i2(lh,hfh,l,h,f) :- InstFldRead(l,h,f), VHO(l,lh), HFHO(h,f,hfh), structV(l).
+VXO_i3(l,x,h,f) :- InstFldRead(l,h,f), HFXO(h,f,x).
+
+HFHO_i2(h,f,rh,r) :- InstFldWrite(h,f,r), VHO(r,rh), !structV(r).
+StrMove_i3(hfh,rh,h,f,r) :- InstFldWrite(h,f,r), HFHO(h,f,hfh), VHO(r,rh), structV(r).
+HFXO_i2(h,f,x,r) :- InstFldWrite(h,f,r), VXO(r,x).
+
+VHO_i6(l,h,f) :- StatFldRead(l,f), FHO(f,h), !structV(l).
+StrMove_i4(lh,fh,l,f) :- StatFldRead(l,f), VHO(l,lh), FHO(f,fh), structV(l).
+VXO_i4(l,x,f) :- StatFldRead(l,f), FXO(f,x).
+
+FHO_i2(f,h,r) :- StatFldWrite(f,r), VHO(r,h), !structV(r).
+StrMove_i5(fh,rh,f,r) :- StatFldWrite(f,r), FHO(f,fh), VHO(r,rh), structV(r).
+FXO_i2(f,x,r) :- StatFldWrite(f,r), VXO(r,x).
+
+
+# handling structs
+StrMove_i6(lhfh,rhfh,lh,rh,f) :- StrMove(lh,rh), HFHO(lh,f, lhfh), HFHO(rh,f,rhfh), structH(lhfh), structH(rhfh).
+HFHO_i3(lh,f,rhfh,rh) :- StrMove(lh,rh), !structH(rhfh), HFHO(rh,f,rhfh).
+
+
+# Handling & operator
+# v1 = &v2, v1 = &v2.f, v1 = &f, v1 = &m
+VXO_i5(v1,x,v2) :- AddrTakenLocal(v1,v2), AddrOfVX(v2,x), !structV(v2).
+VHO_i7(v1,h,v2) :- AddrTakenLocal(v1,v2), VHO(v2,h), structV(v2).
+VXO_i6(v1,x,v2,h2,f) :- AddrTakenInstFld(v1,v2,f), VHO(v2,h2), AddrOfHFX(h2,f,x), !structRefV(v1).
+VHO_i8(v1,h,v2,h2,f) :- AddrTakenInstFld(v1,v2,f), VHO(v2,h2), HFHO(h2,f,h), structRefV(v1).
+VXO_i7(v1,x,f) :- AddrTakenStatFld(v1,f), AddrOfFX(f,x), !structRefV(v1).
+VHO_i9(v1,h,f) :- AddrTakenStatFld(v1,f), FHO(f,h), structRefV(v1).
+VXO_i8(v1,x,m) :- AddrTakenFunc(v1,m), AddrOfMX(m,x).
+
+# Handling dereference
+# *l = r
+Move_i5(v,r,l,x) :- DerefLeft(l,r), VXO(l,x), AddrOfVX(v,x).
+InstFldWrite_i3(h,f,r,l,x) :- DerefLeft(l,r), VXO(l,x), AddrOfHFX(h,f,x).
+StatFldWrite_i2(f,r,l,x) :- DerefLeft(l,r), VXO(l,x), AddrOfFX(f,x).
+
+# l = *r
+Move_i6(l,v,r,x) :- DerefRight(l,r), VXO(r,x), AddrOfVX(v,x).
+InstFldRead_i3(l,h,f,r,x) :- DerefRight(l,r), VXO(r,x), AddrOfHFX(h,f,x).
+StatFldRead_i2(l,f,r,x) :- DerefRight(l,r), VXO(r,x), AddrOfFX(f,x).
+
+# Propagating exception points-to
+CalleeAt_i1(m,p,mcallee,i) :- MI(m,i), IM(i,mcallee), PI(p,i).
+ThrowMH_i1(m,h,p,v,t) :- ThrowPV(m,p,v), VHO(v,h), HT(h,t), EscapeMTP(m,t,p).
+ThrowMH_i2(m,h,p,mcallee,t) :- CalleeAt(m,p,mcallee), ThrowMH(mcallee,h), HT(h,t), EscapeMTP(m,t,p).
+CatchVH_i1(ehv,h,m,p,v,t,eh) :- ThrowPV(m,p,v), VHO(v,h), HT(h,t), FinalEH(eh,t,p), VarEH(eh,ehv).
+CatchVH_i2(v,h,m,p,mcallee,t,eh) :- CalleeAt(m,p,mcallee), ThrowMH(mcallee,h), HT(h,t), FinalEH(eh,t,p), VarEH(eh,v).
+VHO_i10(v,h) :- CatchVH(v,h).
+
+
+
+
+.include "relV.datalog"
+.include "relH.datalog"
+.include "HT.datalog"
+.include "MI.datalog"
+.include "VarEH.datalog"
+.include "ThrowPV.datalog"
+.include "IinvkArg.datalog"
+.include "IinvkArg0.datalog"
+.include "IinvkRet.datalog"
+.include "MAlloc.datalog"
+.include "MInstFldRead.datalog"
+.include "MInstFldWrite.datalog"
+.include "MmethArg.datalog"
+.include "MmethRet.datalog"
+.include "MMove.datalog"
+.include "MStatFldRead.datalog"
+.include "MStatFldWrite.datalog"
+.include "AddrOfFX.datalog"
+.include "AddrOfHFX.datalog"
+.include "AddrOfMX.datalog"
+.include "AddrOfVX.datalog"
+.include "MAddrTakenFunc.datalog"
+.include "MAddrTakenInstFld.datalog"
+.include "MAddrTakenLocal.datalog"
+.include "MAddrTakenStatFld.datalog"
+.include "MDerefLeft.datalog"
+.include "MDerefRight.datalog"
+.include "structH.datalog"
+.include "structV.datalog"
+.include "IM.datalog"
+.include "reachableM.datalog"
+.include "VH.datalog"
+.include "VX.datalog"
+.include "FH.datalog"
+.include "FX.datalog"
+.include "HFH.datalog"
+.include "HFX.datalog"
+.include "PI.datalog"
+.include "FinalEH.datalog"
+.include "EscapeMTP.datalog"
+.include "VHO.datalog"
+.include "VXO.datalog"
+.include "FHO.datalog"
+.include "FXO.datalog"
+.include "HFHO.datalog"
+.include "HFXO.datalog"
+.include "thisIVH.datalog"
+.include "Alloc.datalog"
+.include "Move.datalog"
+.include "InstFldRead.datalog"
+.include "InstFldWrite.datalog"
+.include "StatFldRead.datalog"
+.include "StatFldWrite.datalog"
+.include "StrMove.datalog"
+.include "CalleeAt.datalog"
+.include "AddrTakenLocal.datalog"
+.include "AddrTakenInstFld.datalog"
+.include "AddrTakenStatFld.datalog"
+.include "AddrTakenFunc.datalog"
+.include "DerefLeft.datalog"
+.include "DerefRight.datalog"
+.include "ThrowMH.datalog"
+.include "CatchVH.datalog"

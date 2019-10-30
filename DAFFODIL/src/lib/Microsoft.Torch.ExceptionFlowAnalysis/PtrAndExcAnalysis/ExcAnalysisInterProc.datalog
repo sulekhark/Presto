@@ -75,22 +75,22 @@ HFXO(h:H,f:F,x:X)  printtuples           # Field f of object allocated at AllocS
 
 thisIVH(i:I,v:V,h:H) printtuples         # Invoke statement i has reference variable v as the "this" variable && v points-to h
 
-Alloc(l:V,h:H)
+Alloc(l:V,h:H) printtuples
 Move(l:V,r:V) printtuples
-InstFldRead(l:V,h:H,f:F)
-InstFldWrite(h:H,f:F,r:V)
-StatFldRead(l:V,f:F)
-StatFldWrite(f:F,r:V)
+InstFldRead(l:V,h:H,f:F) printtuples
+InstFldWrite(h:H,f:F,r:V) printtuples
+StatFldRead(l:V,f:F) printtuples
+StatFldWrite(f:F,r:V) printtuples
 
-StrMove(lh:H,rh:H)
+StrMove(lh:H,rh:H) printtuples
 CalleeAt(m:M,p:P,mcallee:M) printtuples
 
-AddrTakenLocal(l:V,r:V)
-AddrTakenInstFld(l:V,r:V,f:F)
-AddrTakenStatFld(l:V,f:F)
-AddrTakenFunc(l:V, m:M)
-DerefLeft(l:V,r:V)
-DerefRight(l:V,r:V)
+AddrTakenLocal(l:V,r:V) printtuples
+AddrTakenInstFld(l:V,r:V,f:F) printtuples
+AddrTakenStatFld(l:V,f:F) printtuples
+AddrTakenFunc(l:V, m:M) printtuples
+DerefLeft(l:V,r:V) printtuples
+DerefRight(l:V,r:V) printtuples
 
 ThrowMH(m:M,h:H) printtuples             # The exception object h escapes Method m.
 CatchVH(v:V,h:H) printtuples             # Variable v which is the formal parameter of some catch handler, points-to exception object h.
