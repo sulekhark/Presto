@@ -88,7 +88,7 @@ CalleeAt(m:M,p:P,mcallee:M) printtuples
 AddrTakenLocal(l:V,r:V) printtuples
 AddrTakenInstFld(l:V,r:V,f:F) printtuples
 AddrTakenStatFld(l:V,f:F) printtuples
-AddrTakenFunc(l:V, m:M) printtuples
+AddrTakenFunc(l:V,m:M) printtuples
 DerefLeft(l:V,r:V) printtuples
 DerefRight(l:V,r:V) printtuples
 

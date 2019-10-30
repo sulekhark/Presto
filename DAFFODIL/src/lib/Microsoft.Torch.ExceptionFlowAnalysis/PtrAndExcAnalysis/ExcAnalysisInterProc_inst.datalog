@@ -88,7 +88,7 @@ CalleeAt(m:M,p:P,mcallee:M) input
 AddrTakenLocal(l:V,r:V) input
 AddrTakenInstFld(l:V,r:V,f:F) input
 AddrTakenStatFld(l:V,f:F) input
-AddrTakenFunc(l:V, m:M) input
+AddrTakenFunc(l:V,m:M) input
 DerefLeft(l:V,r:V) input
 DerefRight(l:V,r:V) input
 
