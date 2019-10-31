@@ -170,6 +170,35 @@ CatchVH_i2(v:V,h:H,m:M,p:P,mcallee:M,t:T,eh:EH) printtuples
 
 
 
+##################
+# Argument Counts
+##################
+
+# ARG_COUNT VHO 2
+# ARG_COUNT VXO 2
+# ARG_COUNT FHO 2
+# ARG_COUNT FXO 2
+# ARG_COUNT HFHO 3
+# ARG_COUNT HFXO 3
+# ARG_COUNT thisIVH 3
+# ARG_COUNT Alloc 2
+# ARG_COUNT Move 2
+# ARG_COUNT InstFldRead 3
+# ARG_COUNT InstFldWrite 3
+# ARG_COUNT StatFldRead 2
+# ARG_COUNT StatFldWrite 2
+# ARG_COUNT StrMove 2
+# ARG_COUNT CalleeAt 3
+# ARG_COUNT AddrTakenLocal 2
+# ARG_COUNT AddrTakenInstFld 3
+# ARG_COUNT AddrTakenStatFld 2
+# ARG_COUNT AddrTakenFunc 2
+# ARG_COUNT DerefLeft 2
+# ARG_COUNT DerefRight 2
+# ARG_COUNT ThrowMH 2
+# ARG_COUNT CatchVH 2
+
+
 
 ############################
 # Instrumented Constraints
@@ -232,7 +261,7 @@ FXO_i2(f,x,r) :- StatFldWrite(f,r), VXO(r,x).
 
 
 # handling structs
-StrMove_i6(lhfh,rhfh,lh,rh,f) :- StrMove(lh,rh), HFHO(lh,f, lhfh), HFHO(rh,f,rhfh), structH(lhfh), structH(rhfh).
+StrMove_i6(lhfh,rhfh,lh,rh,f) :- StrMove(lh,rh), HFHO(lh,f,lhfh), HFHO(rh,f,rhfh), structH(lhfh), structH(rhfh).
 HFHO_i3(lh,f,rhfh,rh) :- StrMove(lh,rh), !structH(rhfh), HFHO(rh,f,rhfh).
 
 
