@@ -14,5 +14,5 @@ python3 parse_z3_out.py ExcAnalysisInterProc.datalog exc_inter.out >> full_run.o
 z3 ExcFlows.datalog > exc_flows.out 2>&1
 python3 parse_z3_out.py ExcFlows.datalog exc_flows.out >> full_run.out 2>&1
 
-z3 ExcAnalysisInterProc_inst.datalog > exc_inter_inst.out 2>&1
-python3 parse_z3_out.py ExcAnalysisInterProc_inst.datalog exc_inter_inst.out >> full_run.out 2>&1
+z3 ExcAnalysis_inst.datalog > exc_analysis_inst.out 2>&1
+python3 parse_z3_out.py ExcAnalysis_inst.datalog exc_analysis_inst.out >> full_run.out 2>&1
