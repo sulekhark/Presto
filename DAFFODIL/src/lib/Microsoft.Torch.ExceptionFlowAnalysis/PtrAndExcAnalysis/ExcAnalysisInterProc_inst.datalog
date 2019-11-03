@@ -95,6 +95,10 @@ DerefRight(l:V,r:V) input
 ThrowMH(m:M,h:H) input                   # The exception object h escapes Method m.
 CatchVH(v:V,h:H) input                   # Variable v which is the formal parameter of some catch handler, points-to exception object h.
 
+ExceptionType(t:T) input                 # Type t is an exception type
+entryPtM(m:M) input                      # Entry point methods of the assembly.
+Caught(t:T,h:H) input                    # h is an exception object of Type t that is caught somewhere within the application
+Escaping(t:T,h:H) input                  # h is an exception object of Type t that is escaping from the application
 
 
 ########################
@@ -167,6 +171,8 @@ ThrowMH_i1(m:M,h:H,p:P,v:V,t:T) printtuples
 ThrowMH_i2(m:M,h:H,p:P,mcallee:M,t:T) printtuples
 CatchVH_i1(v:V,h:H,m:M,p:P,v1:V,t:T,eh:EH) printtuples
 CatchVH_i2(v:V,h:H,m:M,p:P,mcallee:M,t:T,eh:EH) printtuples
+Caught_i1(t:T,h:H,v:V) printtuples
+Escaping_i1(t:T,h:H,m:M) printtuples
 
 
 
@@ -197,6 +203,8 @@ CatchVH_i2(v:V,h:H,m:M,p:P,mcallee:M,t:T,eh:EH) printtuples
 # ARG_COUNT DerefRight 2
 # ARG_COUNT ThrowMH 2
 # ARG_COUNT CatchVH 2
+# ARG_COUNT Caught 2
+# ARG_COUNT Escaping 2
 
 
 
@@ -294,6 +302,8 @@ CatchVH_i1(ehv,h,m,p,v,t,eh) :- ThrowPV(m,p,v), VHO(v,h), HT(h,t), FinalEH(eh,t,
 CatchVH_i2(v,h,m,p,mcallee,t,eh) :- CalleeAt(m,p,mcallee), ThrowMH(mcallee,h), HT(h,t), FinalEH(eh,t,p), VarEH(eh,v).
 VHO_i10(v,h) :- CatchVH(v,h).
 
+Escaping_i1(t,h,m) :- ThrowMH(m,h), HT(h,t), ExceptionType(t), entryPtM(m).
+Caught_i1(t,h,v) :- CatchVH(v,h), HT(h,t), ExceptionType(t), !Escaping(t,h).
 
 
 
@@ -360,3 +370,7 @@ VHO_i10(v,h) :- CatchVH(v,h).
 .include "DerefRight.datalog"
 .include "ThrowMH.datalog"
 .include "CatchVH.datalog"
+.include "ExceptionType.datalog"
+.include "entryPtM.datalog"
+.include "Caught.datalog"
+.include "Escaping.datalog"
