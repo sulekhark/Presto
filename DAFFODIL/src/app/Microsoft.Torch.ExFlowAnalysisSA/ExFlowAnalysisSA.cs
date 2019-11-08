@@ -14,7 +14,7 @@ namespace Microsoft.Torch.ExFlowAnalysisSA
                 // ConfigParams.LoadConfig(@"C:\Users\sulek\work\ExcAnalysis\DAFFODIL\DAFFODIL\src\test\T4\daffodil.cfg");
                 // ConfigParams.LoadConfig(@"C:\Users\sulek\work\ExcAnalysis\Test\storage-blob-dotnet-getting-started\BlobStorage\daffodil.cfg");
                 // ConfigParams.LoadConfig(@"C:\Users\sulek\work\ExcAnalysis\Test\StorageBug3\StorageBug3\daffodil.cfg");
-                ConfigParams.LoadConfig(@"C:\Users\sulek\work\ExcAnalysis\FromGithub\bmk1\storage\good\rtable\ConfigurationAgent\daffodil.cfg");
+                ConfigParams.LoadConfig(@"C:\Users\sulek\work\ExcAnalysis\FromGithub\bmk1\storage\good\azure-storage-net-data-movement\samples\DataMovementSamples\DataMovementSamples\daffodil.cfg");
             }
             else if (args.Length == 1)
             {
@@ -30,11 +30,6 @@ namespace Microsoft.Torch.ExFlowAnalysisSA
             ByteCodeAnalyzer.GenerateEDBFacts(ConfigParams.AssemblyPath);
             ProgramDoms.Save();
             ProgramRels.Save();
-            Z3CommandLineInvoke.CopyFiles(ConfigParams.DatalogDir);
-            // Z3CommandLineInvoke.LaunchZ3("CIPtrAnalysis.datalog", ConfigParams.DatalogDir);
-            // Z3CommandLineInvoke.LaunchZ3("ExcAnalysisIntraProc.datalog", ConfigParams.DatalogDir);     
-            // Z3CommandLineInvoke.LaunchZ3("ExcAnalysisInterProc.datalog", ConfigParams.DatalogDir);         
-            // Z3CommandLineInvoke.LaunchZ3("ExcFlows.datalog", ConfigParams.DatalogDir);
         }
     }
 }
