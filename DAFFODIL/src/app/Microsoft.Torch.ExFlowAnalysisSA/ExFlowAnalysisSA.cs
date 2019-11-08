@@ -1,5 +1,4 @@
 ﻿using Microsoft.Torch.ExceptionFlowAnalysis.Common;
-using Microsoft.Torch.ExceptionFlowAnalysis.Z3Interface;
 using Microsoft.Torch.ExceptionFlowAnalysis.ProgramFacts;
 using Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole;
 

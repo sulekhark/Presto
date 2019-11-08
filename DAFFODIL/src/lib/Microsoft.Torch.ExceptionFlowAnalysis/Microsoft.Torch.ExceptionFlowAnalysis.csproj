@@ -247,8 +247,6 @@
     <Compile Include="Utils\IndexMap.cs" />
     <Compile Include="Utils\ArraySet.cs" />
     <Compile Include="Utils\IntArrayComparer.cs" />
-    <Compile Include="Z3Interface\Z3CommandLineInvoke.cs" />
-    <Compile Include="Z3Interface\Z3OutputParser.cs" />
   </ItemGroup>
   <ItemGroup />
   <ItemGroup>
