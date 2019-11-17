@@ -19,10 +19,22 @@ import os
 #
 #  5. No gap between '!' and relation name for negated antecedent facts.
 
+# USAGE:
+# python3 ./extract_dgraph.py <file-containing-instrumented-constraints-in-datalog> <output_dir>
+# Example: python3 ./extract_dgraph.py ExcAnalysis_inst.datalog ../bnet
+#
 instrumentedAnalFileName = sys.argv[1]
-dgraphFileName = sys.argv[2]
+outDirName = sys.argv[2]
+dgraphFileName = outDirName + os.path.sep + "named_cons_all.txt"
 dgraphFile = open(dgraphFileName, 'w')
+ruleDictFileName = outDirName + os.path.sep + "rule_dict.txt"
+ruleDictFile = open(ruleDictFileName, 'w')
+baseQueriesFileName = outDirName + os.path.sep + "base_queries.txt"
+baseQueriesFile = open(baseQueriesFileName, 'w')
 
+outputRelFileName = "Escaping.datalog"
+ruleNamePrefix = "R"
+ruleNameCount = 0
 marker = '@'
 relNameToArgCount = {}
 
@@ -138,12 +150,17 @@ def convertConsequent(relTuple):
 
 def getTemplate(lhs, rhs):
     global templateStr
+    global ruleNameCount
+    global ruleNamePrefix
     processLHS(lhs)
     rhs = rhs[:-1] # remove the trailing dot.
     parts = rhs.split(', ') # get the terms of the rhs
     for part in parts:
         templateStr = templateStr + convertAntecedent(part) + ', '
-    templateStr = templateStr + convertConsequent(lhs) 
+    currRuleName = ruleNamePrefix + str(ruleNameCount) + ": " 
+    templateStr = currRuleName + templateStr + convertConsequent(lhs)
+    print(templateStr, file=ruleDictFile)
+    ruleNameCount += 1
     return
 
 
@@ -211,5 +228,12 @@ for line in open(instrumentedAnalFileName):
         reset()
         processConstraint(line)
 dgraphFile.close()
+ruleDictFile.close()
+
+for line in open(outputRelFileName):
+    line = line.strip()
+    line = line[:-1] # remove the trailing '.'
+    print(line, file=baseQueriesFile)
+baseQueriesFile.close()
 
 ####################################################################    
