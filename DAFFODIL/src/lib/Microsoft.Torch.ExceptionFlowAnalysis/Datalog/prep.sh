@@ -27,6 +27,7 @@ echo -n "" >> run_dbg_track.sh
 cp ../logs/rta_log.txt .
 cp ../logs/tac_log.txt .
 dos2unix tac_log.txt
+dos2unix modules.txt
 
 cd ..
 tar czf $data_dir.tgz $data_dir 
