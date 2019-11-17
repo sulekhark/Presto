@@ -3,6 +3,7 @@
 data_dir=$1
 
 cd $data_dir
+cp ~/work/ExcAnalysis/DAFFODIL/DAFFODIL/src/lib/Microsoft.Torch.ExceptionFlowAnalysis/Datalog/* .
 dos2unix CIPtrAnalysis.datalog
 echo -n "" >> CIPtrAnalysis.datalog
 dos2unix ExcAnalysisInterProc.datalog

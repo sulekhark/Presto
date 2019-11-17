@@ -695,6 +695,7 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
             ProgramDoms.domP.Add(instW);  // At present, for throw/catch processing
             ProgramRels.relMI.Add(mRefW, instW);
             ProgramRels.relPI.Add(instW, instW);
+            ProgramRels.relILoc.Add(instW, (int)invkInst.Offset);
 
             if (invkInst.HasResult)
             {
@@ -778,6 +779,7 @@ namespace Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole
                 ProgramDoms.domP.Add(instW);
                 ProgramRels.relMI.Add(mRefW, instW);
                 ProgramRels.relPI.Add(instW, instW);
+                ProgramRels.relILoc.Add(instW, (int)invkInst.Offset);
                 if (invkInst.HasResult)
                 {
                     IVariable lhsVar = invkInst.Result;

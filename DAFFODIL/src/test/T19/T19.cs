@@ -24,7 +24,7 @@ namespace T19
         //this method prints to a file
         public static bool WriteToFile(string stat1Param, string stat2Param, int i)
         {
-            fs = new FileStream("c:\\message.txt", FileMode.Append, FileAccess.Write);
+            fs = new FileStream(".\\message.txt", FileMode.Append, FileAccess.Write);
             sw = new StreamWriter(fs);
             sw.WriteLine(stat1Param);
             return true;
@@ -45,8 +45,8 @@ namespace T19
             mainTObj.fooMember = fooInst;
             printString ps1 = new printString(mainTObj.WriteToScreen);
             printString ps2 = new printString(WriteToFile);
-            sendString(ps1);
-            sendString(ps2);
+            // sendString(ps1);
+            // sendString(ps2);
 
             printString ps = ps1;
             ps += ps2;
