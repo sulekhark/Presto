@@ -2,19 +2,16 @@
 
 # Given a set of constraints as input on stdin, computes which tuples are EDBs
 # The input set of constraints should have the unnecessary set of tuples elided out.
-# We need two sets of EDB tuples:
-#   1) All EDB tuples: All of these will be clamped to "true" just before inference.
-#   2) The set of EDB tuples for which we will get a probability from the dynamic analysis.
+# The output is the set of EDB tuples for which we will get a probability from the dynamic analysis.
 
-# get_edb_tuples.py all_edb_tuples.txt prob_edb_tuples.txt < named_cons_all.txt.ee
+# get_edb_tuples.py prob_edb_tuples.txt < named_cons_all.txt.ee
 
 import logging
 import re
 import sys
 
 
-allEdbTuplesFileName = sys.argv[1]
-probEdbTuplesFileName = sys.argv[2]
+probEdbTuplesFileName = sys.argv[1]
 
 logging.basicConfig(level=logging.INFO, \
                     format="[%(asctime)s] %(levelname)s [%(name)s.%(funcName)s:%(lineno)d] %(message)s", \
@@ -74,10 +71,6 @@ for clause in allClauses:
 
 ########################################################################################################################
 # 3. Print output
-
-with open(allEdbTuplesFileName, 'w') as allEdbTuplesFile:
-    for tup in allInputTuples:
-        print('{0}'.format(tup), file=allEdbTuplesFile)
 
 with open(probEdbTuplesFileName, 'w') as probEdbTuplesFile:
     for tup in probEdbTuples:

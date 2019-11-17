@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-# driver_ranking.py bnet_dict.out factorGraph.fg base_queries.txt all_edb_tuples.txt
+# driver_ranking.py bnet_dict.out factorGraph.fg base_queries.txt
 #
 # Accepts human-readable commands from stdin, and passes them to LibDAI/wrapper.cpp, thus acting as a convenient driver.
 # Arguments:
@@ -21,7 +21,6 @@ import re
 dictFileName = sys.argv[1]
 fgFileName = sys.argv[2]
 baseQueriesFileName = sys.argv[3]
-edbTupleFileName = sys.argv[4]
 
 # wrapperExecutable = './libdai/wrapper'
 wrapperExecutable = '/home/sulekha/Error-Ranking/chord-fork/libdai/wrapper'
@@ -46,12 +45,9 @@ for line in open(dictFileName):
 # alarms in the ground truth.
 labelledTuples = {}
 
-edbTuples = set([ line.strip() for line in open(edbTupleFileName) if len(line.strip()) > 0 ])
 baseQueries = set([ line.strip() for line in open(baseQueriesFileName) if len(line.strip()) > 0 ])
-assert(edbTuples.issubset(set(bnetDict.keys())))
 assert(baseQueries.issubset(set(bnetDict.keys())))
 
-logging.info('Populated {0} edb tuples.'.format(len(edbTuples)))
 logging.info('Populated {0} base queries.'.format(len(baseQueries)))
 
 
