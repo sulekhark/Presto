@@ -1,0 +1,16 @@
+#!/usr/bin/env bash
+
+# Example command: arcmd <path to driver_ranking.py> bnet_dict.out factorGraph.fg base_queries.txt all_edb_tuples.txt 500 &
+
+driverPath=$1
+bnetDictFN=$2
+factorGraphFN=$3
+baseQueriesFN=$4
+edbTuplesFN=$5
+MIN=$6
+
+MAX=$((MIN + 500))
+
+nohup $driverPath/driver_ranking.py $bnetDictFN $factorGraphFN $baseQueriesFN $edbTuplesFN > arcmd.out 2> arcmd.log << EOF 
+AR 1e-6 $MIN $MAX 100 alarm_ranking.txt 
+EOF
