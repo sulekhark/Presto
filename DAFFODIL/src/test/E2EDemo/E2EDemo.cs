@@ -21,7 +21,14 @@ namespace E2EDemo
             }
             catch (Exception e)
             {
-                System.Console.WriteLine(e.Message);
+                if (e is ArgumentException)
+                {
+                    throw e;
+                }
+                else
+                {
+                    System.Console.WriteLine(e.Message);
+                }
             }
             finally
             {
