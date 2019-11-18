@@ -1,0 +1,8 @@
+<?xml version="1.0"?>
+<SystemControllerConfiguration>
+  <Disable>false</Disable>
+  <Controllers>
+    <ControllerSpecifications ControllerType="Logger" Enable="true" ConfigFile="torch-logging.torchconfig"/>
+    <ControllerSpecifications ControllerType="FaultInjection" Enable="true" ConfigFile="torch-fault.torchconfig" />
+  </Controllers>
+</SystemControllerConfiguration>

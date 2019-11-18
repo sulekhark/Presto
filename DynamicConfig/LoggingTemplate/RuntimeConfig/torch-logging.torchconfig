@@ -1,0 +1,11 @@
+<?xml version="1.0"?>
+<LoggingSpecification>
+  <EnableLog4Net>true</EnableLog4Net>
+  <EnableFile>false</EnableFile>
+  <EnableETW>false</EnableETW>
+  <SamplingParameters SamplingEnabled="false">
+    <SamplingScope>Global</SamplingScope>
+    <MaxSamplingWindowMs>1000</MaxSamplingWindowMs>
+    <SamplingProb>0.1</SamplingProb>
+  </SamplingParameters>
+</LoggingSpecification>
