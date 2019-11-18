@@ -194,14 +194,15 @@ def processConstraint(line):
     parts = line.split(':-')
     lhs = parts[0].strip()
     rhs = parts[1].strip() 
-    getTemplate(lhs, rhs)
-    processInstantiations()
-    print(relFileName)
-    print(instrumentedRelArgCnt)
-    print(instrumentedRelArgs)
-    print(templateStr)
-    print('')
-    print('')
+    if ("_i" in lhs):
+        getTemplate(lhs, rhs)
+        processInstantiations()
+        print(relFileName)
+        print(instrumentedRelArgCnt)
+        print(instrumentedRelArgs)
+        print(templateStr)
+        print('')
+        print('')
     return
 
 
