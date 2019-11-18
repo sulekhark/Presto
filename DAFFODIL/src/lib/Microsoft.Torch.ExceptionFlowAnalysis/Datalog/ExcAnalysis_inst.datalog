@@ -5,6 +5,7 @@
 .include "V.dom"                         # domain of variables
 .include "P.dom"                         # domain of program points
 .include "EH.dom"                        # domain of exception handlers
+.include "N.dom"                         # domain of integer location values
 
 ############
 # Relations
@@ -28,6 +29,7 @@ ExceptionType(t:T) input                 # Type t is an exception type
 entryPtM(m:M) input                      # Entry point methods of the assembly.
 Caught(t:T,h:H) input                    # h is an exception object of Type t that is caught somewhere within the application
 Escaping(t:T,h:H) input                  # h is an exception object of Type t that is escaping from the application
+ILoc(i:I,n:N) input
 
 
 
@@ -38,6 +40,7 @@ Escaping(t:T,h:H) input                  # h is an exception object of Type t th
 ThrowMH_i1(m:M,h:H,p:P,v:V,t:T) printtuples
 ThrowMH_i2(m:M,h:H,p:P,mcallee:M,t:T) printtuples
 Escaping_i1(t:T,h:H,m:M) printtuples
+FInject(m:M,n:N,mcallee:M,t:T) printtuples
 
 
 
@@ -53,6 +56,9 @@ Escaping_i1(t:T,h:H,m:M) printtuples
 ############################
 # Instrumented Constraints
 ############################
+
+# Information for fault injection
+FInject(m,n,mcallee,t) :- CalleeAt(m,p,mcallee), ThrowMH(mcallee,h), HT(h,t), EscapeMTP(m,t,p), PI(p,i), ILoc(i,n).
 
 # Propagating exception points-to
 ThrowMH_i1(m,h,p,v,t) :- ThrowPV(m,p,v), VHO(v,h), HT(h,t), EscapeMTP(m,t,p).
@@ -79,3 +85,4 @@ Escaping_i1(t,h,m) :- ThrowMH(m,h), HT(h,t), ExceptionType(t), entryPtM(m).
 .include "entryPtM.datalog"
 .include "Caught.datalog"
 .include "Escaping.datalog"
+.include "ILoc.datalog"
