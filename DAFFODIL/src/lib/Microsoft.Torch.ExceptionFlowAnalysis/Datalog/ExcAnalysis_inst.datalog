@@ -41,6 +41,7 @@ ThrowMH_i1(m:M,h:H,p:P,v:V,t:T) printtuples
 ThrowMH_i2(m:M,h:H,p:P,mcallee:M,t:T) printtuples
 Escaping_i1(t:T,h:H,m:M) printtuples
 FInject(m:M,n:N,mcallee:M,t:T) printtuples
+FInject1(m1:M,n1:N,m:M,n:N,mcallee:M) printtuples
 
 
 
@@ -59,6 +60,7 @@ FInject(m:M,n:N,mcallee:M,t:T) printtuples
 
 # Information for fault injection
 FInject(m,n,mcallee,t) :- CalleeAt(m,p,mcallee), ThrowMH(mcallee,h), HT(h,t), EscapeMTP(m,t,p), PI(p,i), ILoc(i,n).
+FInject1(m1,n1,m,n,mcallee) :- FInject(m,n,mcallee,t), CalleeAt(m1,p1,m), PI(p1,i1), ILoc(i1,n1).
 
 # Propagating exception points-to
 ThrowMH_i1(m,h,p,v,t) :- ThrowPV(m,p,v), VHO(v,h), HT(h,t), EscapeMTP(m,t,p).
