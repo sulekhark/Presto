@@ -12,8 +12,10 @@ excFileName="id_to_exctype_map.txt"
 while read -r line
 do
     dirName="$(echo $line | cut -d'@' -f1)"    
-    caller="$(echo $line | cut -d'@' -f2)"    
-    callee="$(echo $line | cut -d'@' -f4)"    
+    callerFull="$(echo $line | cut -d'@' -f2)"    
+    caller="$(echo $callerFull | cut -d'(' -f1)*"    
+    calleeFull="$(echo $line | cut -d'@' -f4)"    
+    callee="$(echo $calleeFull | cut -d'(' -f1)*"    
     excType="$(echo $line | cut -d'@' -f5)"    
 
     mkdir $dirName
