@@ -155,11 +155,19 @@ do
         mCalleeCnt_tot=0
         for logfile in `find $dirName -name torch*`
         do
-            ctxtSeqNum=`awk -F';' -v ctcallerN="$ctxtCallerName" '$7 ~ ctcallerN' $logfile | awk -F';' -v ctcallP="$ctxtPpLoc" '$11 == ctcallP' | awk -F';' -v calleeN="$callerName" '$8 ~ calleeN' | awk -F';' '{print $4;}' | head -n 1`
-            mCnt=`awk -F';' -v callerN="$callerName" '$7 ~ callerN' $logfile | awk -F';' -v callP="$ppLoc" '$11 == callP' | awk -F';' -v ctN="$ctxtSeqNum" '$4 > ctN+0' | wc -l`
-            mCalleeCnt=`awk -F';' -v callerN="$callerName" '$7 ~ callerN' $logfile | awk -F';' -v callP="$ppLoc" '$11 == callP' | awk -F';' -v calleeN="$calleeName" '$8 ~ calleeN' | awk -F';' -v ctN="$ctxtSeqNum" '$4 > ctN+0' | wc -l`
-            mCnt_tot=$((mCnt_tot + mCnt))
-            mCalleeCnt_tot=$((mCalleeCnt_tot + mCalleeCnt))
+            if [ $ctxtCallerName == $callerName -a $ctxtPpLoc == $ppLoc ]
+            then
+                mCnt=`awk -F';' -v callerN="$callerName" '$7 ~ callerN' $logfile | awk -F';' -v callP="$ppLoc" '$11 == callP' | wc -l`
+                mCalleeCnt=`awk -F';' -v callerN="$callerName" '$7 ~ callerN' $logfile | awk -F';' -v callP="$ppLoc" '$11 == callP' | awk -F';' -v calleeN="$calleeName" '$8 ~ calleeN' | wc -l`
+                mCnt_tot=$((mCnt_tot + mCnt))
+                mCalleeCnt_tot=$((mCalleeCnt_tot + mCalleeCnt))
+            else
+                ctxtSeqNum=`awk -F';' -v ctcallerN="$ctxtCallerName" '$7 ~ ctcallerN' $logfile | awk -F';' -v ctcallP="$ctxtPpLoc" '$11 == ctcallP' | awk -F';' -v calleeN="$callerName" '$8 ~ calleeN' | awk -F';' '{print $4;}' | head -n 1`
+                mCnt=`awk -F';' -v callerN="$callerName" '$7 ~ callerN' $logfile | awk -F';' -v callP="$ppLoc" '$11 == callP' | awk -F';' -v ctN="$ctxtSeqNum" '$4 > ctN+0' | wc -l`
+                mCalleeCnt=`awk -F';' -v callerN="$callerName" '$7 ~ callerN' $logfile | awk -F';' -v callP="$ppLoc" '$11 == callP' | awk -F';' -v calleeN="$calleeName" '$8 ~ calleeN' | awk -F';' -v ctN="$ctxtSeqNum" '$4 > ctN+0' | wc -l`
+                mCnt_tot=$((mCnt_tot + mCnt))
+                mCalleeCnt_tot=$((mCalleeCnt_tot + mCalleeCnt))
+            fi
         done 
         if [ $mCnt_tot -eq 0 ]
         then
