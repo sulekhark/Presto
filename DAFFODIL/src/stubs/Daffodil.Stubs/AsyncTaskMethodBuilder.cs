@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Microsoft.Torch.Stubs
+namespace Daffodil.Stubs
 {
     internal class VoidTaskResult
     {

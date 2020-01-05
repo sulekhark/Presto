@@ -6,8 +6,8 @@
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProjectGuid>{A906EE51-515F-43E6-98C9-DC524F526869}</ProjectGuid>
     <OutputType>Exe</OutputType>
-    <RootNamespace>Microsoft.Torch.ExamineCatchBlock</RootNamespace>
-    <AssemblyName>Microsoft.Torch.ExamineCatchBlock</AssemblyName>
+    <RootNamespace>Daffodil.ExamineCatchBlock</RootNamespace>
+    <AssemblyName>Daffodil.ExamineCatchBlock</AssemblyName>
     <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>

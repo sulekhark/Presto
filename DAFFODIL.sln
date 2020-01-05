@@ -11,11 +11,11 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Docs", "Docs", "{79C66793-6
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{AE2D211D-4EA0-4BCC-8E6F-A3F833635FD0}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.Torch.ExamineCatchBlock", "DAFFODIL\src\app\Microsoft.Torch.ExamineCatchBlock\Microsoft.Torch.ExamineCatchBlock.csproj", "{A906EE51-515F-43E6-98C9-DC524F526869}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Daffodil.ExamineCatchBlock", "DAFFODIL\src\app\Daffodil.ExamineCatchBlock\Daffodil.ExamineCatchBlock.csproj", "{A906EE51-515F-43E6-98C9-DC524F526869}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.Torch.ExFlowAnalysisSA", "DAFFODIL\src\app\Microsoft.Torch.ExFlowAnalysisSA\Microsoft.Torch.ExFlowAnalysisSA.csproj", "{DBD052FC-CEA9-41E6-B26A-85DAD56A001A}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Daffodil.ExFlowAnalysisSA", "DAFFODIL\src\app\Daffodil.ExFlowAnalysisSA\Daffodil.ExFlowAnalysisSA.csproj", "{DBD052FC-CEA9-41E6-B26A-85DAD56A001A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.Torch.ExceptionFlowAnalysis", "DAFFODIL\src\lib\Microsoft.Torch.ExceptionFlowAnalysis\Microsoft.Torch.ExceptionFlowAnalysis.csproj", "{60A1151A-D3BB-4C0E-B92D-9D124D1B076B}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Daffodil.ExceptionFlowAnalysis", "DAFFODIL\src\lib\Daffodil.ExceptionFlowAnalysis\Daffodil.ExceptionFlowAnalysis.csproj", "{60A1151A-D3BB-4C0E-B92D-9D124D1B076B}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "T1", "DAFFODIL\src\test\T1\T1.csproj", "{924A4038-6914-4216-8DE0-2902CC319AC7}"
 EndProject
@@ -47,7 +47,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "T14", "DAFFODIL\src\test\T1
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Stubs", "Stubs", "{F8677B83-ED88-47BD-819E-2E9D62328F38}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.Torch.Stubs", "DAFFODIL\src\stubs\Microsoft.Torch.Stubs\Microsoft.Torch.Stubs.csproj", "{A89DDF60-5CE4-4901-A120-80BDF51B6662}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Daffodil.Stubs", "DAFFODIL\src\stubs\Daffodil.Stubs\Daffodil.Stubs.csproj", "{A89DDF60-5CE4-4901-A120-80BDF51B6662}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "T15", "DAFFODIL\src\test\T15\T15.csproj", "{3EECDD7D-93FE-4759-95B5-AAC94E47E643}"
 EndProject

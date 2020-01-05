@@ -1,6 +1,6 @@
 ﻿
 
-namespace Microsoft.Torch.Stubs
+namespace Daffodil.Stubs
 {
     public interface IAsyncStateMachine
     {

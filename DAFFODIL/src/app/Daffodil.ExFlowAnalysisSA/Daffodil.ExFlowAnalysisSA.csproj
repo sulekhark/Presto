@@ -6,8 +6,8 @@
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProjectGuid>{DBD052FC-CEA9-41E6-B26A-85DAD56A001A}</ProjectGuid>
     <OutputType>Exe</OutputType>
-    <RootNamespace>Microsoft.Torch.ExFlowAnalysisSA</RootNamespace>
-    <AssemblyName>Microsoft.Torch.ExFlowAnalysisSA</AssemblyName>
+    <RootNamespace>Daffodil.ExFlowAnalysisSA</RootNamespace>
+    <AssemblyName>Daffodil.ExFlowAnalysisSA</AssemblyName>
     <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
@@ -50,9 +50,9 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\lib\Microsoft.Torch.ExceptionFlowAnalysis\Microsoft.Torch.ExceptionFlowAnalysis.csproj">
+    <ProjectReference Include="..\..\lib\Daffodil.ExceptionFlowAnalysis\Daffodil.ExceptionFlowAnalysis.csproj">
       <Project>{60a1151a-d3bb-4c0e-b92d-9d124d1b076b}</Project>
-      <Name>Microsoft.Torch.ExceptionFlowAnalysis</Name>
+      <Name>Daffodil.ExceptionFlowAnalysis</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

@@ -5,11 +5,11 @@ using System.Runtime.InteropServices;
 // General Information about an assembly is controlled through the following
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("Microsoft.Torch.Stubs")]
+[assembly: AssemblyTitle("Daffodil.ExamineCatchBlock")]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("")]
-[assembly: AssemblyProduct("Microsoft.Torch.Stubs")]
+[assembly: AssemblyProduct("Daffodil.ExamineCatchBlock")]
 [assembly: AssemblyCopyright("Copyright ©  2019")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
@@ -20,7 +20,7 @@ using System.Runtime.InteropServices;
 [assembly: ComVisible(false)]
 
 // The following GUID is for the ID of the typelib if this project is exposed to COM
-[assembly: Guid("a89ddf60-5ce4-4901-a120-80bdf51b6662")]
+[assembly: Guid("a906ee51-515f-43e6-98c9-dc524f526869")]
 
 // Version information for an assembly consists of the following four values:
 //

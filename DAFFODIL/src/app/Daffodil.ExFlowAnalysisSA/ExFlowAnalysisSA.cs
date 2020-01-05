@@ -1,8 +1,8 @@
-﻿using Microsoft.Torch.ExceptionFlowAnalysis.Common;
-using Microsoft.Torch.ExceptionFlowAnalysis.ProgramFacts;
-using Microsoft.Torch.ExceptionFlowAnalysis.AnalysisNetConsole;
+﻿using Daffodil.ExceptionFlowAnalysis.Common;
+using Daffodil.ExceptionFlowAnalysis.ProgramFacts;
+using Daffodil.ExceptionFlowAnalysis.AnalysisNetConsole;
 
-namespace Microsoft.Torch.ExFlowAnalysisSA
+namespace Daffodil.ExFlowAnalysisSA
 {
     class ExFlowAnalysisSA
     {
