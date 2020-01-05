@@ -16,19 +16,11 @@ namespace E2EDemo
         {
             try
             {
-                CFoo objFoo = new CFoo();
-                M2(objFoo);
+                M4();
             }
             catch (Exception e)
             {
-                if (e is ArgumentException)
-                {
-                    throw e;
-                }
-                else
-                {
-                    System.Console.WriteLine(e.Message);
-                }
+                System.Console.WriteLine(e.Message);
             }
             finally
             {
@@ -36,18 +28,24 @@ namespace E2EDemo
             }
         }
 
+        static void M4()
+        {
+            CFoo objFoo = new CFoo();
+            M2(objFoo);
+        }
+
         static void M2(CFoo paramFoo)
         {
             if (paramFoo != null)
             {
-                M4();
                 M5();
+                M6();
             }
         }
 
         static void M3() { if (flag) throw new ArgumentException(); }
-        static void M4() { if (flag) throw new NullReferenceException(); }
-        static void M5() { if (flag) throw new FieldAccessException(); }
+        static void M5() { if (flag) throw new NullReferenceException(); }
+        static void M6() { if (flag) throw new FieldAccessException(); }
     }
 
     class CFoo { }
