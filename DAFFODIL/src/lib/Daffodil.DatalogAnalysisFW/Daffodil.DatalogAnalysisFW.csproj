@@ -251,13 +251,5 @@
     <Compile Include="Utils\IntArrayComparer.cs" />
   </ItemGroup>
   <ItemGroup />
-  <ItemGroup>
-    <None Include="PtrAndExcAnalysis\CIPtrAnalysis.datalog" />
-    <None Include="PtrAndExcAnalysis\ExcAnalysisInterProc.datalog" />
-    <None Include="PtrAndExcAnalysis\ExcAnalysisIntraProc.datalog" />
-    <None Include="PtrAndExcAnalysis\ExcFlows.datalog" />
-    <None Include="PtrAndExcAnalysis\parse_z3_out.py" />
-    <None Include="PtrAndExcAnalysis\run_all.sh" />
-  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
