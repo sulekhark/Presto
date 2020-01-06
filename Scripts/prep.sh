@@ -3,7 +3,7 @@
 data_dir=$1
 
 cd $data_dir
-for i in ~/work/ExcAnalysis/DAFFODIL/DAFFODIL/src/lib/Daffodil.ExceptionFlowAnalysis/Datalog/*
+for i in $DAFFODIL_HOME/DAFFODIL/Datalog/*
 do
     cp $i .
     fname=`basename $i`
