@@ -13,9 +13,9 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{AE2D211D
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Daffodil.ExamineCatchBlock", "DAFFODIL\src\app\Daffodil.ExamineCatchBlock\Daffodil.ExamineCatchBlock.csproj", "{A906EE51-515F-43E6-98C9-DC524F526869}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Daffodil.ExFlowAnalysisSA", "DAFFODIL\src\app\Daffodil.ExFlowAnalysisSA\Daffodil.ExFlowAnalysisSA.csproj", "{DBD052FC-CEA9-41E6-B26A-85DAD56A001A}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Daffodil.FactGeneratorSA", "DAFFODIL\src\app\Daffodil.FactGeneratorSA\Daffodil.FactGeneratorSA.csproj", "{DBD052FC-CEA9-41E6-B26A-85DAD56A001A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Daffodil.ExceptionFlowAnalysis", "DAFFODIL\src\lib\Daffodil.ExceptionFlowAnalysis\Daffodil.ExceptionFlowAnalysis.csproj", "{60A1151A-D3BB-4C0E-B92D-9D124D1B076B}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Daffodil.DatalogAnalysisFW", "DAFFODIL\src\lib\Daffodil.DatalogAnalysisFW\Daffodil.DatalogAnalysisFW.csproj", "{60A1151A-D3BB-4C0E-B92D-9D124D1B076B}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "T1", "DAFFODIL\src\test\T1\T1.csproj", "{924A4038-6914-4216-8DE0-2902CC319AC7}"
 EndProject
