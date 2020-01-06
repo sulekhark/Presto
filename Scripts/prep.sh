@@ -3,7 +3,7 @@
 data_dir=$1
 
 cd $data_dir
-for i in $DAFFODIL_HOME/DAFFODIL/Datalog/*
+for i in $DAFFODIL_HOME/Datalog/*
 do
     cp $i .
     fname=`basename $i`
