@@ -8,7 +8,7 @@ dirFileName="fault_config_dirs.txt"
 methFileName="id_to_method_map.txt"
 excFileName="id_to_exctype_map.txt"
 
-../../../DynamicConfig/scripts/parse_finject.py $faultInjectInfoFile $tempFileName $dirFileName $methFileName $excFileName 
+$DAFFODIL_HOME/DynamicConfig/scripts/parse_finject.py $faultInjectInfoFile $tempFileName $dirFileName $methFileName $excFileName 
 while read -r line
 do
     dirName="$(echo $line | cut -d'@' -f1)"    
@@ -19,8 +19,8 @@ do
     excType="$(echo $line | cut -d'@' -f5)"    
 
     mkdir $dirName
-    cp -r ../../../DynamicConfig/FaultInjectionTemplate/* $dirName 
-    ../../../DynamicConfig/scripts/logging_config.sh $dirName ../assemblies.txt
+    cp -r $DAFFODIL_HOME/DynamicConfig/FaultInjectionTemplate/* $dirName 
+    $DAFFODIL_HOME/DynamicConfig/scripts/logging_config.sh $dirName ../assemblies.txt
     sed "s/DAFFODIL_TORCH_CALLEE/$callee/g" $dirName/torch-instrumentation.torchconfig > t
     mv t $dirName/torch-instrumentation.torchconfig
     sed "s/DAFFODIL_TORCH_CALLEE/$callee/g" $dirName/RuntimeConfig/torch-fault.torchconfig > t
