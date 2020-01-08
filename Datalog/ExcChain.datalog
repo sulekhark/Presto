@@ -38,6 +38,7 @@ TransCall(m1:M,m2:M)
 Rethrown(v:V,h:H,m:M)
 Nested(v:V,h1:H,m:M,h2:H)
 Related(v:V,h1:H,m:M,h2:H)
+EscapingThrow(m:M,p:P,v:V)
 
 ThrowMHR(m:M,h:H) printtuples 
 CatchVHR(v:V,h:H) printtuples
@@ -95,15 +96,15 @@ NewThrowMH(m,h) :- ThrowMHR(m,h), !ThrowMH(m,h).
 .include "CatchVH.datalog"
 .include "ExceptionType.datalog"
 .include "HT.datalog"
-.include "IM(i:I,m:M)"
-.include "VHO(v:V,h:H)"
-.include "FHO(f:F,h:H)"
-.include "HFHO(h1:H,f:F,h2:H)"
-.include "HasThrow(eh:EH,p:P)"
-.include "HasMethInvk(eh:EH,i:I)"
-.include "MM(m1:M,m2:M)"
-.include "MEH(m:M,eh:EH)"
-.include "ThrowPV(m:M,p:P,v:V)"
-.include "VarEH(eh:EH,v:V)"
-.include "EscapeMTP(m:M,t:T,p:P)"
+.include "IM.datalog"
+.include "VHO.datalog"
+.include "FHO.datalog"
+.include "HFHO.datalog"
+.include "HasThrow.datalog"
+.include "HasMethInvk.datalog"
+.include "MM.datalog"
+.include "MEH.datalog"
+.include "ThrowPV.datalog"
+.include "VarEH.datalog"
+.include "EscapeMTP.datalog"
 
