@@ -39,7 +39,9 @@ Rethrown(v:V,h:H,m:M)
 Nested(v:V,h1:H,m:M,h2:H)
 Related(v:V,h1:H,m:M,h2:H)
 
-ThrowMHO(m:M,h:H) printtuples 
+ThrowMHR(m:M,h:H) printtuples 
+CatchVHR(v:V,h:H) printtuples
+NewThrowMH(m:M,h:H) printtuples
 
 # Rules
 
@@ -63,25 +65,29 @@ SharesFld(h1,h2) :- TransLink(h1,h), TransLink(h2,h), ExceptionObj(h1), Exceptio
 
 HasMeth(eh,m) :- HasMethInvk(eh,i), IM(i,m).
 EscapingThrow(m,p,v) :- ThrowPV(m,p,v), VHO(v,h), HT(h,t), EscapeMTP(m,t,p).
-ThrowEH(eh,m,v) :- HasThrow(eh,p), MEH(m,eh), ThrowPV(m,p,v).
+ThrowEH(eh,m,v) :- HasThrow(eh,p), MEH(m,eh), EscapingThrow(m,p,v).
 TransCall(m1,m2) :- HasMeth(eh,m1), MM(m1,m2).
 TransCall(m1,m3) :- TransCall(m1,m2), MM(m2,m3).
-ThrowEH(eh,m,v) :- HasMeth(eh,m), ThrowPV(m,p,v). 
-ThrowEH(eh,m,v) :- HasMeth(eh,m1), TransCall(m1,m), ThrowPV(m,p,v). 
+ThrowEH(eh,m,v) :- HasMeth(eh,m), EscapingThrow(m,p,v). 
+ThrowEH(eh,m,v) :- HasMeth(eh,m1), TransCall(m1,m), EscapingThrow(m,p,v). 
 
 # Step 3: Find if a catch variable and a subsumed-throw variable point to the same
 #         exception object or,
 #         if they point to h1 and h2,
 #         then find if either WrapsEx(h1,h2) or SharesFld(h1,h2) hold.
 
-ThrowMHO(m,h) :- ThrowMH(m,h).
+ThrowMHR(m,h) :- ThrowMH(m,h).
 Rethrown(v1,h,m) :- VarEH(eh,v1), VHO(v1,h), ExceptionObj(h), ThrowEH(eh,m,v2), VHO(v2,h).
-ThrowMHO(m,h) :- CatchVH(v,h), Rethrown(v,h,m).
+ThrowMHR(m,h) :- CatchVH(v,h), Rethrown(v,h,m).
 Nested(v1,h1,m,h2) :- VarEH(eh,v1), VHO(v1,h1), ThrowEH(eh,m,v2), VHO(v2,h2), WrapsEx(h1,h2).
-ThrowMHO(m,h2) :- CatchVH(v,h1), Nested(v,h1,m,h2).
+ThrowMHR(m,h2) :- CatchVH(v,h1), Nested(v,h1,m,h2).
 Related(v1,h1,m,h2) :- VarEH(eh,v1), VHO(v1,h1), ThrowEH(eh,m,v2), VHO(v2,h2), SharesFld(h1,h2).
-ThrowMHO(m,h2) :- CatchVH(v,h1), Related(v,h1,m,h2).
+ThrowMHR(m,h2) :- CatchVH(v,h1), Related(v,h1,m,h2).
+CatchVHR(v,h) :- CatchVH(v,h).
  
+# Below rule only present for debugging
+NewThrowMH(m,h) :- ThrowMHR(m,h), !ThrowMH(m,h).
+
 
 .include "relH.datalog"
 .include "relT.datalog"
