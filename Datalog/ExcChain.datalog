@@ -2,6 +2,10 @@
 .include "M.dom"                         # domain of methods
 .include "H.dom"                         # domain of allocation sites
 .include "V.dom"                         # domain of variables
+.include "I.dom"                         # domain of invoke statements
+.include "EH.dom"                        # domain of exception handlers
+.include "P.dom"                         # domain of program points
+.include "F.dom"                         # domain of fields
 
 
 relH(h:H) input
@@ -10,22 +14,32 @@ ThrowMH(m:M,h:H) input                   # The exception object h escapes Method
 CatchVH(v:V,h:H) input                   # Variable v which is the formal parameter of some catch handler, points-to exception object h.
 ExceptionType(t:T) input                 # Type t is an exception type
 HT(h:H,t:T) input                        # Allocation site h as Type t
-entryPtM(m:M) input                      # Entry point methods of the assembly.
+IM(i:I,m:M) input                        # Invoke statement i may call method m
 
 VHO(v:V,h:H)  input                      # Variable v may point to AllocSite h
-VXO(v:V,x:X)  input                      # Variable v may point to Address x
 FHO(f:F,h:H)  input                      # Static field f may point to AllocSite h
-FXO(f:F,x:X)  input                      # Static field f may point to Address x
 HFHO(h1:H,f:F,h2:H)  input               # Field f of object allocated at AllocSite h1 may point to AllocSite h2
-HFXO(h:H,f:F,x:X)  input                 # Field f of object allocated at AllocSite h may point to Address x
 
 HasThrow(eh:EH,p:P) input                # Catch block eh contains throw statement p
-HasMeth(eh:EH,m:M) input                 # Catch block eh contains a call to method m
+HasMethInvk(eh:EH,i:I) input             # Catch block eh contains the invoke statement i 
 MM(m1:M,m2:M) input                      # Method m1 calls method m2
 MEH(m:M,eh:EH) input                     # Method m contains exception handler eh (exception handler and catch block: both are the same)
 ThrowPV(m:M,p:P,v:V) input               # Instruction p of method m throws variable v
 VarEH(eh:EH,v:V) input                   # Variable v is the variable of the catch block eh
-EscapeMTP(m:M,t:T,p:P) input
+EscapeMTP(m:M,t:T,p:P) input             # Exception of type t if thrown at Program Point p, escapes Method m.
+
+ExceptionObj(h:H)
+TransLink(h1:H,h2:H)
+WrapsEx(h1:H,h2:H)
+SharesFld(h1:H,h2:H)
+HasMeth(eh:EH,m:M)
+ThrowEH(eh:EH,m:M,v:V)
+TransCall(m1:M,m2:M)
+Rethrown(v:V,h:H,m:M)
+Nested(v:V,h1:H,m:M,h2:H)
+Related(v:V,h1:H,m:M,h2:H)
+
+ThrowMHO(m:M,h:H) printtuples 
 
 # Rules
 
@@ -43,9 +57,11 @@ ExceptionObj(h) :- HFHO(h1,f,h), HT(h,t), ExceptionType(t).
 TransLink(h1,h2) :- HFHO(h1,f1,h), HFHO(h,f2,h2), !ExceptionObj(h).
 TransLink(h1,h2) :- HFHO(h1,f,h), TransLink(h,h2), !ExceptionObj(h).
 WrapsEx(h1,h2) :- ExceptionObj(h1), ExceptionObj(h2), TransLink(h1,h2).
-Sharesfld(h1,h2) :- TransLink(h1,h), TransLink(h2,h), ExceptionObj(h1), ExceptionObj(h2), !ExceptionObj(h).
+SharesFld(h1,h2) :- TransLink(h1,h), TransLink(h2,h), ExceptionObj(h1), ExceptionObj(h2), !ExceptionObj(h).
 
 # Step 2: Find "throw" statements within the (interprocedural) scope of a catch block
+
+HasMeth(eh,m) :- HasMethInvk(eh,i), IM(i,m).
 EscapingThrow(m,p,v) :- ThrowPV(m,p,v), VHO(v,h), HT(h,t), EscapeMTP(m,t,p).
 ThrowEH(eh,m,v) :- HasThrow(eh,p), MEH(m,eh), ThrowPV(m,p,v).
 TransCall(m1,m2) :- HasMeth(eh,m1), MM(m1,m2).
@@ -57,17 +73,31 @@ ThrowEH(eh,m,v) :- HasMeth(eh,m1), TransCall(m1,m), ThrowPV(m,p,v).
 #         exception object or,
 #         if they point to h1 and h2,
 #         then find if either WrapsEx(h1,h2) or SharesFld(h1,h2) hold.
+
+ThrowMHO(m,h) :- ThrowMH(m,h).
 Rethrown(v1,h,m) :- VarEH(eh,v1), VHO(v1,h), ExceptionObj(h), ThrowEH(eh,m,v2), VHO(v2,h).
-ThrowMH(m,h) :- CatchVH(v,h), Rethrown(v,h,m).
+ThrowMHO(m,h) :- CatchVH(v,h), Rethrown(v,h,m).
 Nested(v1,h1,m,h2) :- VarEH(eh,v1), VHO(v1,h1), ThrowEH(eh,m,v2), VHO(v2,h2), WrapsEx(h1,h2).
-ThrowMH(m,h2) :- CatchVH(v,h1), Nested(v,h1,m,h2).
+ThrowMHO(m,h2) :- CatchVH(v,h1), Nested(v,h1,m,h2).
 Related(v1,h1,m,h2) :- VarEH(eh,v1), VHO(v1,h1), ThrowEH(eh,m,v2), VHO(v2,h2), SharesFld(h1,h2).
-ThrowMH(m,h2) :- CatchVH(v,h1), Related(v,h1,m,h2).
+ThrowMHO(m,h2) :- CatchVH(v,h1), Related(v,h1,m,h2).
  
+
 .include "relH.datalog"
 .include "relT.datalog"
 .include "ThrowMH.datalog"
 .include "CatchVH.datalog"
 .include "ExceptionType.datalog"
 .include "HT.datalog"
-.include "entryPtM.datalog"
+.include "IM(i:I,m:M)"
+.include "VHO(v:V,h:H)"
+.include "FHO(f:F,h:H)"
+.include "HFHO(h1:H,f:F,h2:H)"
+.include "HasThrow(eh:EH,p:P)"
+.include "HasMethInvk(eh:EH,i:I)"
+.include "MM(m1:M,m2:M)"
+.include "MEH(m:M,eh:EH)"
+.include "ThrowPV(m:M,p:P,v:V)"
+.include "VarEH(eh:EH,v:V)"
+.include "EscapeMTP(m:M,t:T,p:P)"
+
