@@ -11,6 +11,7 @@ using Daffodil.DatalogAnalysisFW.AnalysisNetBackend.Wrappers;
 using Daffodil.DatalogAnalysisFW.AnalysisNetBackend.ThreeAddressCode.Values;
 using Daffodil.DatalogAnalysisFW.AnalysisNetBackend.ThreeAddressCode.Instructions;
 using Daffodil.DatalogAnalysisFW.ProgramFacts;
+using Daffodil.DatalogAnalysisFW.AnalysisNetBackend.ThreeAddressCode;
 
 namespace Daffodil.DatalogAnalysisFW.AnalysisNetConsole
 {
@@ -29,6 +30,17 @@ namespace Daffodil.DatalogAnalysisFW.AnalysisNetConsole
         public StreamWriter tacLogSW;
         public StreamWriter factGenLogSW;
 
+        // To be cleared for each method.
+        private IVariable currentCatchVar;
+        private ExHandlerWrapper prevEhW;
+        struct EhStruct
+        {
+            public CatchExceptionHandler ehInfo;
+            public ExHandlerWrapper ehW;
+        }
+        private readonly Stack<EhStruct> ehStack = new Stack<EhStruct>();
+
+
         public FactGenerator(StreamWriter sw1, StreamWriter sw2)
         {
             tacLogSW = sw1;
@@ -38,17 +50,25 @@ namespace Daffodil.DatalogAnalysisFW.AnalysisNetConsole
             ProgramDoms.domF.Add(nullFieldRefW);
         }
 
-        public void GenerateFacts(MethodBody mBody, ControlFlowGraph cfg)
+        public void GenerateFacts(MethodBody mBody, ControlFlowGraph cfg, IList<CatchExceptionHandler> ehInfoList)
         {
+            // Initialize exception handling book-keeping variables for each analyzed method.
+            currentCatchVar = null;
+            prevEhW = null;
+            ehStack.Clear();
+
             IMethodDefinition methDef = mBody.MethodDefinition;
-            IVariable currentCatchVar = null;
             MethodRefWrapper mRefW = WrapperProvider.getMethodRefW(methDef, mBody);
             tacLogSW.WriteLine();
             tacLogSW.WriteLine(methDef.FullName());
             tacLogSW.WriteLine("==========================================");
+            foreach (CatchExceptionHandler eh in ehInfoList)
+            {
+                tacLogSW.WriteLine(eh.ToString());
+            }
+            tacLogSW.WriteLine("==========================================");
             ProcessParams(mBody, mRefW);
             ProcessLocals(mBody, mRefW);
-            ExHandlerWrapper prevEhW = null;
 
             // Going through the instructions via cfg nodes instead of directly iterating over the instructions
             // of the methodBody becuase Phi instructions may not have been inserted in the insts of the methodBody.
@@ -71,6 +91,22 @@ namespace Daffodil.DatalogAnalysisFW.AnalysisNetConsole
                     // tacLogSW.WriteLine();
                     InstructionWrapper instW = WrapperProvider.getInstW(instruction, methDef);
                     ProgramDoms.domP.Add(instW);
+
+                    CatchExceptionHandler currEhInfo = null;
+                    string currLoc = instruction.Label;
+                    if (ehStack.Count > 0)
+                    {
+                        EhStruct stackTop = ehStack.Peek();
+                        if (currLoc.Equals(stackTop.ehInfo.End)) ehStack.Pop(); // Two catch handlers can never end at the same location: one pop will suffice.
+                    }
+                    foreach (CatchExceptionHandler eh in ehInfoList)
+                    {
+                        if (currLoc.Equals(eh.Start))
+                        {
+                            currEhInfo = eh;
+                            break; // Two catch handlers will never start at the same location.
+                        }
+                    }
 
                     if (instruction is LoadInstruction)
                     {
@@ -115,12 +151,12 @@ namespace Daffodil.DatalogAnalysisFW.AnalysisNetConsole
                     else if (instruction is ThrowInstruction)
                     {
                         ThrowInstruction throwInst = instruction as ThrowInstruction;
-                        ProcessThrowInst(throwInst, instW, mRefW, currentCatchVar);
+                        ProcessThrowInst(throwInst, instW, mRefW);
                     }
                     else if (instruction is CatchInstruction)
                     {
                         CatchInstruction catchInst = instruction as CatchInstruction;
-                        prevEhW = ProcessCatchInst(catchInst, prevEhW, mRefW, ref currentCatchVar, methDef);
+                        ProcessCatchInst(catchInst, mRefW, methDef, currEhInfo);
                     }
                     else if (instruction is InitializeObjectInstruction)
                     {
@@ -696,6 +732,7 @@ namespace Daffodil.DatalogAnalysisFW.AnalysisNetConsole
             ProgramRels.relMI.Add(mRefW, instW);
             ProgramRels.relPI.Add(instW, instW);
             ProgramRels.relILoc.Add(instW, (int)invkInst.Offset);
+            foreach (EhStruct ehs in ehStack) ProgramRels.relHasMethInvk.Add(ehs.ehW, instW);
 
             if (invkInst.HasResult)
             {
@@ -757,10 +794,6 @@ namespace Daffodil.DatalogAnalysisFW.AnalysisNetConsole
             IMethodDefinition callTgtDef = callTgt.ResolvedMethod;
             ITypeDefinition declType = callTgtDef.ContainingTypeDefinition;
 
-            if (declType.IsDelegate)
-            {
-
-            }
             if (declType.IsDelegate && callTgtDef.IsConstructor)
             {
                 IList<IVariable> invkArgs = invkInst.Arguments;
@@ -780,6 +813,8 @@ namespace Daffodil.DatalogAnalysisFW.AnalysisNetConsole
                 ProgramRels.relMI.Add(mRefW, instW);
                 ProgramRels.relPI.Add(instW, instW);
                 ProgramRels.relILoc.Add(instW, (int)invkInst.Offset);
+                foreach (EhStruct ehs in ehStack) ProgramRels.relHasMethInvk.Add(ehs.ehW, instW);
+
                 if (invkInst.HasResult)
                 {
                     IVariable lhsVar = invkInst.Result;
@@ -848,18 +883,19 @@ namespace Daffodil.DatalogAnalysisFW.AnalysisNetConsole
             return;
         }
 
-        void ProcessThrowInst(ThrowInstruction throwInst, InstructionWrapper instW, MethodRefWrapper mRefW,
-                              IVariable currentCatchVar)
+        void ProcessThrowInst(ThrowInstruction throwInst, InstructionWrapper instW, MethodRefWrapper mRefW)
         {
             ProgramDoms.domP.Add(instW);
             IVariable throwVar = throwInst.Operand;
             if (throwVar == null) throwVar = currentCatchVar;
             VariableWrapper varW = WrapperProvider.getVarW(throwVar);
             ProgramRels.relThrowPV.Add(mRefW, instW, varW);
+            foreach (EhStruct ehs in ehStack) ProgramRels.relHasThrow.Add(ehs.ehW, instW);
+            return;
         }
 
-        ExHandlerWrapper ProcessCatchInst(CatchInstruction catchInst, ExHandlerWrapper prevEhW, MethodRefWrapper mRefW,
-                                          ref IVariable currentCatchVar, IMethodDefinition methDef)
+        void ProcessCatchInst(CatchInstruction catchInst, MethodRefWrapper mRefW, IMethodDefinition methDef,
+                              CatchExceptionHandler currEhInfo)
         {
             ExHandlerWrapper currEhW = WrapperProvider.getExHandlerW(catchInst, methDef);
             ProgramDoms.domEH.Add(currEhW);
@@ -872,7 +908,12 @@ namespace Daffodil.DatalogAnalysisFW.AnalysisNetConsole
             ProgramRels.relVarEH.Add(currEhW, varW);
             ProgramRels.relTypeEH.Add(currEhW, typeRefW);
             if (prevEhW != null) ProgramRels.relPrevEH.Add(prevEhW, currEhW);
-            return currEhW;
+            EhStruct ehs = new EhStruct();
+            ehs.ehInfo = currEhInfo;
+            ehs.ehW = currEhW;
+            ehStack.Push(ehs);
+            prevEhW = currEhW;
+            return;
         }
 
         void ComputeExceptionRanges(IList<CFGNode> cfgList, IMethodDefinition methDef)

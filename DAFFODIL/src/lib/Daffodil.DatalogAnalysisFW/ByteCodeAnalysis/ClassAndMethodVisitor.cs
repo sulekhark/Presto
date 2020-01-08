@@ -17,11 +17,13 @@ namespace Daffodil.DatalogAnalysisFW.AnalysisNetConsole
     {
         public ControlFlowGraph cfg;
         public MethodBody methodBody;
+        public IList<CatchExceptionHandler> ehInfoList;
 
         public MethodCfgAndTac(ControlFlowGraph g, MethodBody m)
         {
             cfg = g;
             methodBody = m;
+            ehInfoList = new List<CatchExceptionHandler>();
         }
     }
 
@@ -140,6 +142,10 @@ namespace Daffodil.DatalogAnalysisFW.AnalysisNetConsole
             methodBody.UpdateVariables();
 
             MethodCfgAndTac mct = new MethodCfgAndTac(cfg, methodBody);
+            foreach (IExceptionHandlerBlock ehInfo in disassembler.GetExceptionHandlers())
+            {
+                if (ehInfo is CatchExceptionHandler) mct.ehInfoList.Add(ehInfo as CatchExceptionHandler);
+            }
             return mct;
         }
 
@@ -148,12 +154,14 @@ namespace Daffodil.DatalogAnalysisFW.AnalysisNetConsole
 		{
             ControlFlowGraph cfg;
             MethodBody methodBody;
+            IList<CatchExceptionHandler> ehInfoList;
             if (methodToCfgAndTacMap.ContainsKey(methodDefinition))
             {
                 MethodCfgAndTac mct = methodToCfgAndTacMap[methodDefinition];
                 if (mct == null) return;
                 cfg = mct.cfg;
                 methodBody = mct.methodBody;
+                ehInfoList = mct.ehInfoList;
             }
             else
             {
@@ -162,6 +170,7 @@ namespace Daffodil.DatalogAnalysisFW.AnalysisNetConsole
                 if (mct == null) return;
                 cfg = mct.cfg;
                 methodBody = mct.methodBody;
+                ehInfoList = mct.ehInfoList;
             }
 
             if (rtaAnalyzer != null)
@@ -209,7 +218,7 @@ namespace Daffodil.DatalogAnalysisFW.AnalysisNetConsole
             {
                 if (factGen.methods.Contains(methodDefinition))
                 {
-                    factGen.GenerateFacts(methodBody, cfg);
+                    factGen.GenerateFacts(methodBody, cfg, ehInfoList);
                 }
             }
         }

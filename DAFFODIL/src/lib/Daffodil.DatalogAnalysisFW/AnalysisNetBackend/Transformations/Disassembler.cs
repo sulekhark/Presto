@@ -166,6 +166,16 @@ namespace Daffodil.DatalogAnalysisFW.AnalysisNetBackend.Transformations
 			}
 		}
 
+        public IList<IExceptionHandlerBlock> GetExceptionHandlers()
+        {
+            IList<IExceptionHandlerBlock> retList = new List<IExceptionHandlerBlock>();
+            foreach (IList<IExceptionHandlerBlock> l in this.exceptionHandlersStart.Values)
+            {
+                retList.AddRange(l);
+            }
+            return retList;
+        }
+
 		public MethodBody Execute()
 		{
 			var body = new MethodBody(method);

@@ -184,6 +184,8 @@
     <Compile Include="ProgramFacts\Relations\RelFT.cs" />
     <Compile Include="ProgramFacts\Relations\RelFX.cs" />
     <Compile Include="ProgramFacts\Relations\RelFXO.cs" />
+    <Compile Include="ProgramFacts\Relations\RelHasMethInvk.cs" />
+    <Compile Include="ProgramFacts\Relations\RelHasThrow.cs" />
     <Compile Include="ProgramFacts\Relations\RelHFH.cs" />
     <Compile Include="ProgramFacts\Relations\RelHFHO.cs" />
     <Compile Include="ProgramFacts\Relations\RelHFX.cs" />

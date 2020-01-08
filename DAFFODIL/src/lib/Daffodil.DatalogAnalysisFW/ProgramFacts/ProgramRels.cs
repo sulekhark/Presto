@@ -89,6 +89,8 @@ namespace Daffodil.DatalogAnalysisFW.ProgramFacts
         public static RelFXO relFXO;
         public static RelHFXO relHFXO;
         public static RelILoc relILoc;
+        public static RelHasThrow relHasThrow;
+        public static RelHasMethInvk relHasMethInvk;
 
 
         public static Dictionary<string, Rel> nameToRelMap;
@@ -345,6 +347,12 @@ namespace Daffodil.DatalogAnalysisFW.ProgramFacts
 
             relILoc = new RelILoc();
             nameToRelMap.Add(relILoc.GetName(), relILoc);
+            
+            relHasThrow = new RelHasThrow();
+            nameToRelMap.Add(relHasThrow.GetName(), relHasThrow);
+
+            relHasMethInvk = new RelHasMethInvk();
+            nameToRelMap.Add(relHasMethInvk.GetName(), relHasMethInvk);
         }
 
         public static void Save()
@@ -404,6 +412,8 @@ namespace Daffodil.DatalogAnalysisFW.ProgramFacts
             relMV.Save();
             relFT.Save();
             relILoc.Save();
+            relHasThrow.Save();
+            relHasMethInvk.Save();
         }
     }
 }

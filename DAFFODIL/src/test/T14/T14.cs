@@ -14,6 +14,14 @@ namespace T14
             catch(ArgumentException ae)
             {
                 Console.WriteLine("argument exc {0}", ae.Message);
+                try
+                {
+                    throw new Exception();
+                }
+                catch (Exception e)
+                {
+
+                }
             }
             catch(FieldAccessException fae)
             {
