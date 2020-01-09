@@ -10,8 +10,8 @@
 
 relH(h:H) input
 relT(t:T) input
-ThrowMH(m:M,h:H) input                   # The exception object h escapes Method m.
-CatchVH(v:V,h:H) input                   # Variable v which is the formal parameter of some catch handler, points-to exception object h.
+ThrowMH(m:M,h:H) input printtuples       # The exception object h escapes Method m.
+CatchVH(v:V,h:H) input printtuples       # Variable v which is the formal parameter of some catch handler, points-to exception object h.
 ExceptionType(t:T) input                 # Type t is an exception type
 HT(h:H,t:T) input                        # Allocation site h as Type t
 IM(i:I,m:M) input                        # Invoke statement i may call method m
@@ -40,9 +40,6 @@ Nested(v:V,h1:H,m:M,h2:H)
 Related(v:V,h1:H,m:M,h2:H)
 EscapingThrow(m:M,p:P,v:V)
 
-ThrowMHR(m:M,h:H) printtuples 
-CatchVHR(v:V,h:H) printtuples
-NewThrowMH(m:M,h:H) printtuples
 
 # Rules
 
@@ -77,18 +74,13 @@ ThrowEH(eh,m,v) :- HasMeth(eh,m1), TransCall(m1,m), EscapingThrow(m,p,v).
 #         if they point to h1 and h2,
 #         then find if either WrapsEx(h1,h2) or SharesFld(h1,h2) hold.
 
-ThrowMHR(m,h) :- ThrowMH(m,h).
 Rethrown(v1,h,m) :- VarEH(eh,v1), VHO(v1,h), ExceptionObj(h), ThrowEH(eh,m,v2), VHO(v2,h).
-ThrowMHR(m,h) :- CatchVH(v,h), Rethrown(v,h,m).
+ThrowMH(m,h) :- CatchVH(v,h), Rethrown(v,h,m).
 Nested(v1,h1,m,h2) :- VarEH(eh,v1), VHO(v1,h1), ThrowEH(eh,m,v2), VHO(v2,h2), WrapsEx(h1,h2).
-ThrowMHR(m,h2) :- CatchVH(v,h1), Nested(v,h1,m,h2).
+ThrowMH(m,h2) :- CatchVH(v,h1), Nested(v,h1,m,h2).
 Related(v1,h1,m,h2) :- VarEH(eh,v1), VHO(v1,h1), ThrowEH(eh,m,v2), VHO(v2,h2), SharesFld(h1,h2).
-ThrowMHR(m,h2) :- CatchVH(v,h1), Related(v,h1,m,h2).
-CatchVHR(v,h) :- CatchVH(v,h).
+ThrowMH(m,h2) :- CatchVH(v,h1), Related(v,h1,m,h2).
  
-# Below rule only present for debugging
-NewThrowMH(m,h) :- ThrowMHR(m,h), !ThrowMH(m,h).
-
 
 .include "relH.datalog"
 .include "relT.datalog"
