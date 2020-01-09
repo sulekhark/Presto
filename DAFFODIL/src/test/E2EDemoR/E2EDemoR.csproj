@@ -4,10 +4,10 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{4627FA3B-1526-451B-8279-F9B51C702E6F}</ProjectGuid>
+    <ProjectGuid>{660AC771-3BE9-4C87-A795-F7EEE13BADCD}</ProjectGuid>
     <OutputType>Exe</OutputType>
-    <RootNamespace>E2EDemo</RootNamespace>
-    <AssemblyName>E2EDemo</AssemblyName>
+    <RootNamespace>E2EDemoR</RootNamespace>
+    <AssemblyName>E2EDemoR</AssemblyName>
     <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
@@ -43,7 +43,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="E2EDemo.cs" />
+    <Compile Include="E2EDemoR.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
