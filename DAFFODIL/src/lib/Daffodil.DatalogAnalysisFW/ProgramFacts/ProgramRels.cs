@@ -67,7 +67,7 @@ namespace Daffodil.DatalogAnalysisFW.ProgramFacts
         public static RelThrowMH relThrowMH;
         public static RelCatchVH relCatchVH;
         public static RelPI relPI;
-        public static RelCalleeAt relCalleeAt;
+        public static RelCallAt relCallAt;
         public static RelMEH relMEH;
         public static RelExceptionType relExceptionType;
         public static RelEscapeMTP relEscapeMTP;
@@ -281,8 +281,8 @@ namespace Daffodil.DatalogAnalysisFW.ProgramFacts
             relPI = new RelPI();
             nameToRelMap.Add(relPI.GetName(), relPI);
 
-            relCalleeAt = new RelCalleeAt();
-            nameToRelMap.Add(relCalleeAt.GetName(), relCalleeAt);
+            relCallAt = new RelCallAt();
+            nameToRelMap.Add(relCallAt.GetName(), relCallAt);
 
             relMEH = new RelMEH();
             nameToRelMap.Add(relMEH.GetName(), relMEH);

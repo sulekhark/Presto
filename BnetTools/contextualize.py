@@ -58,7 +58,7 @@ logging.info('Discovered {0} input tuples.'.format(len(allInputTuples)))
 def getCATuple(clause):
     for lit in clause:
         tup = lit2Tuple(lit)
-        if (tup.startswith('CalleeAt')):
+        if (tup.startswith('CallAt')):
             return tup
         else:
             return None
@@ -78,14 +78,14 @@ def generateContextualizedTuple(calleeTuple, ctxtTuple):
     calleeArgs = getArgs(calleeTuple, 0) # get all arguments
     ctxtArgs = getArgs(ctxtTuple, 2) # get the first two arguments
     newArgs = ctxtArgs + calleeArgs
-    newTuple = "CtxtCalleeAt(" + ','.join(newArgs) + ')'
+    newTuple = "CtxtCallAt(" + ','.join(newArgs) + ')'
     return newTuple
 
 
 def replaceWithCtxt(clauseList, ctxtTuple):
     ndx = 0
     for lit in clauseList:
-        if "CalleeAt" in lit:
+        if "CallAt" in lit:
             break;
         else:
             ndx = ndx + 1

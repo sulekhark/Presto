@@ -22,7 +22,7 @@ IM(i:I,m:M) input                        # InvokeStmt i may call Method m
 FinalEH(eh:EH,t:T,p:P) input             # ExceptionHandler eh catches an exception of Type t thrown at Program point p.
 EscapeMTP(m:M,t:T,p:P) input             # Exception of type t if thrown at Program Point p, escapes Method m.
 VHO(v:V,h:H)  input                      # Variable v may point to AllocSite h
-CalleeAt(m:M,p:P,mcallee:M) input
+CallAt(m:M,p:P,mcallee:M) input
 ThrowMH(m:M,h:H) input                   # The exception object h escapes Method m.
 CatchVH(v:V,h:H) input                   # Variable v which is the formal parameter of some catch handler, points-to exception object h.
 ExceptionType(t:T) input                 # Type t is an exception type
@@ -60,13 +60,13 @@ PNMap(p:P,n:N) printtuples
 ############################
 
 # Information for fault injection
-FInject(m,n,mcallee,t) :- CalleeAt(m,p,mcallee), ThrowMH(mcallee,h), HT(h,t), EscapeMTP(m,t,p), PI(p,i), ILoc(i,n).
-FInject1(m1,n1,m,n,mcallee) :- FInject(m,n,mcallee,t), CalleeAt(m1,p1,m), PI(p1,i1), ILoc(i1,n1).
-PNMap(p,n) :- CalleeAt(m,p,mcallee), PI(p,i), ILoc(i,n).
+FInject(m,n,mcallee,t) :- CallAt(m,p,mcallee), ThrowMH(mcallee,h), HT(h,t), EscapeMTP(m,t,p), PI(p,i), ILoc(i,n).
+FInject1(m1,n1,m,n,mcallee) :- FInject(m,n,mcallee,t), CallAt(m1,p1,m), PI(p1,i1), ILoc(i1,n1).
+PNMap(p,n) :- CallAt(m,p,mcallee), PI(p,i), ILoc(i,n).
 
 # Propagating exception points-to
 ThrowMH_i1(m,h,p,v,t) :- ThrowPV(m,p,v), VHO(v,h), HT(h,t), EscapeMTP(m,t,p).
-ThrowMH_i2(m,h,p,mcallee,t) :- CalleeAt(m,p,mcallee), ThrowMH(mcallee,h), HT(h,t), EscapeMTP(m,t,p).
+ThrowMH_i2(m,h,p,mcallee,t) :- CallAt(m,p,mcallee), ThrowMH(mcallee,h), HT(h,t), EscapeMTP(m,t,p).
 Escaping_i1(t,h,m) :- ThrowMH(m,h), HT(h,t), ExceptionType(t), entryPtM(m).
 
 
@@ -82,7 +82,7 @@ Escaping_i1(t,h,m) :- ThrowMH(m,h), HT(h,t), ExceptionType(t), entryPtM(m).
 .include "FinalEH.datalog"
 .include "EscapeMTP.datalog"
 .include "VHO.datalog"
-.include "CalleeAt.datalog"
+.include "CallAt.datalog"
 .include "ThrowMH.datalog"
 .include "CatchVH.datalog"
 .include "ExceptionType.datalog"

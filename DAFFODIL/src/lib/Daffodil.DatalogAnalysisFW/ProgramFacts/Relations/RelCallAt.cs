@@ -2,9 +2,9 @@
 
 namespace Daffodil.DatalogAnalysisFW.ProgramFacts.Relations
 {
-    public class RelCalleeAt : Rel
+    public class RelCallAt : Rel
     {
-        public RelCalleeAt() : base(3, "CalleeAt")
+        public RelCallAt() : base(3, "CallAt")
         {
             domNames = new string[3];
             domNames[0] = ProgramDoms.domM.GetName();

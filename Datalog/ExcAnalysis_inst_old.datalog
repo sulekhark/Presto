@@ -83,7 +83,7 @@ StatFldRead(l:V,f:F) input
 StatFldWrite(f:F,r:V) input
 
 StrMove(lh:H,rh:H) input
-CalleeAt(m:M,p:P,mcallee:M) input
+CallAt(m:M,p:P,mcallee:M) input
 
 AddrTakenLocal(l:V,r:V) input
 AddrTakenInstFld(l:V,r:V,f:F) input
@@ -160,7 +160,7 @@ StrMove_i3(hfh:H,rh:H,h:H,f:F,r:V) printtuples
 StrMove_i4(lh:H,fh:H,l:V,f:F) printtuples
 StrMove_i5(fh:H,rh:H,f:F,r:V) printtuples
 StrMove_i6(lhfh:H,rhfh:H,lh:H,rh:H,f:F) printtuples
-CalleeAt_i1(m:M,p:P,mcallee:M,i:I) printtuples
+CallAt_i1(m:M,p:P,mcallee:M,i:I) printtuples
 AddrTakenLocal_i1(l:V,r:V,m:M) printtuples
 AddrTakenInstFld_i1(l:V,r:V,f:F,m:M) printtuples
 AddrTakenStatFld_i1(l:V,f:F,m:M) printtuples
@@ -194,7 +194,7 @@ Escaping_i1(t:T,h:H,m:M) printtuples
 # ARG_COUNT StatFldRead 2
 # ARG_COUNT StatFldWrite 2
 # ARG_COUNT StrMove 2
-# ARG_COUNT CalleeAt 3
+# ARG_COUNT CallAt 3
 # ARG_COUNT AddrTakenLocal 2
 # ARG_COUNT AddrTakenInstFld 3
 # ARG_COUNT AddrTakenStatFld 2
@@ -295,11 +295,11 @@ InstFldRead_i3(l,h,f,r,x) :- DerefRight(l,r), VXO(r,x), AddrOfHFX(h,f,x).
 StatFldRead_i2(l,f,r,x) :- DerefRight(l,r), VXO(r,x), AddrOfFX(f,x).
 
 # Propagating exception points-to
-CalleeAt_i1(m,p,mcallee,i) :- MI(m,i), IM(i,mcallee), PI(p,i).
+CallAt_i1(m,p,mcallee,i) :- MI(m,i), IM(i,mcallee), PI(p,i).
 ThrowMH_i1(m,h,p,v,t) :- ThrowPV(m,p,v), VHO(v,h), HT(h,t), EscapeMTP(m,t,p).
-ThrowMH_i2(m,h,p,mcallee,t) :- CalleeAt(m,p,mcallee), ThrowMH(mcallee,h), HT(h,t), EscapeMTP(m,t,p).
+ThrowMH_i2(m,h,p,mcallee,t) :- CallAt(m,p,mcallee), ThrowMH(mcallee,h), HT(h,t), EscapeMTP(m,t,p).
 CatchVH_i1(ehv,h,m,p,v,t,eh) :- ThrowPV(m,p,v), VHO(v,h), HT(h,t), FinalEH(eh,t,p), VarEH(eh,ehv).
-CatchVH_i2(v,h,m,p,mcallee,t,eh) :- CalleeAt(m,p,mcallee), ThrowMH(mcallee,h), HT(h,t), FinalEH(eh,t,p), VarEH(eh,v).
+CatchVH_i2(v,h,m,p,mcallee,t,eh) :- CallAt(m,p,mcallee), ThrowMH(mcallee,h), HT(h,t), FinalEH(eh,t,p), VarEH(eh,v).
 VHO_i10(v,h) :- CatchVH(v,h).
 
 Escaping_i1(t,h,m) :- ThrowMH(m,h), HT(h,t), ExceptionType(t), entryPtM(m).
@@ -361,7 +361,7 @@ Caught_i1(t,h,v) :- CatchVH(v,h), HT(h,t), ExceptionType(t), !Escaping(t,h).
 .include "StatFldRead.datalog"
 .include "StatFldWrite.datalog"
 .include "StrMove.datalog"
-.include "CalleeAt.datalog"
+.include "CallAt.datalog"
 .include "AddrTakenLocal.datalog"
 .include "AddrTakenInstFld.datalog"
 .include "AddrTakenStatFld.datalog"

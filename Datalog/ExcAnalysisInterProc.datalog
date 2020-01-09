@@ -83,7 +83,7 @@ StatFldRead(l:V,f:F) printtuples
 StatFldWrite(f:F,r:V) printtuples
 
 StrMove(lh:H,rh:H) printtuples
-CalleeAt(m:M,p:P,mcallee:M) printtuples
+CallAt(m:M,p:P,mcallee:M) printtuples
 
 AddrTakenLocal(l:V,r:V) printtuples
 AddrTakenInstFld(l:V,r:V,f:F) printtuples
@@ -184,11 +184,11 @@ InstFldRead(l,h,f) :- DerefRight(l,r), VXO(r,x), AddrOfHFX(h,f,x).
 StatFldRead(l,f) :- DerefRight(l,r), VXO(r,x), AddrOfFX(f,x).
 
 # Propagating exception points-to
-CalleeAt(m,p,mcallee) :- MI(m,i), IM(i,mcallee), PI(p,i).
+CallAt(m,p,mcallee) :- MI(m,i), IM(i,mcallee), PI(p,i).
 ThrowMH(m,h) :- ThrowPV(m,p,v), VHO(v,h), HT(h,t), EscapeMTP(m,t,p).
-ThrowMH(m,h) :- CalleeAt(m,p,mcallee), ThrowMH(mcallee,h), HT(h,t), EscapeMTP(m,t,p).
+ThrowMH(m,h) :- CallAt(m,p,mcallee), ThrowMH(mcallee,h), HT(h,t), EscapeMTP(m,t,p).
 CatchVH(ehv,h) :- ThrowPV(m,p,v), VHO(v,h), HT(h,t), FinalEH(eh,t,p), VarEH(eh,ehv).
-CatchVH(v,h) :- CalleeAt(m,p,mcallee), ThrowMH(mcallee,h), HT(h,t), FinalEH(eh,t,p), VarEH(eh,v).
+CatchVH(v,h) :- CallAt(m,p,mcallee), ThrowMH(mcallee,h), HT(h,t), FinalEH(eh,t,p), VarEH(eh,v).
 VHO(v,h) :- CatchVH(v,h).
 
 

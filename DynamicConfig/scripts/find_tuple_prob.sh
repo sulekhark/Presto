@@ -100,7 +100,7 @@ do
             echo "$bnetNodeId:" "$prob" >> $outputFile
         fi
     fi
-    if [[ $tupl == CalleeAt* ]]
+    if [[ $tupl == CallAt* ]]
     then
         tuplArgs="$(echo $tupl | cut -d'(' -f2 | cut -d ')' -f1)"
         callerId="$(echo $tuplArgs | cut -d',' -f1)"
@@ -131,7 +131,7 @@ do
         # echo $tupl $prob $mCnt_tot $mCalleeCnt_tot
         echo "$bnetNodeId:" "$prob" >> $outputFile
     fi
-    if [[ $tupl == CtxtCalleeAt* ]]
+    if [[ $tupl == CtxtCallAt* ]]
     then
         tuplArgs="$(echo $tupl | cut -d'(' -f2 | cut -d ')' -f1)"
         ctxtCallerId="$(echo $tuplArgs | cut -d',' -f1)"
