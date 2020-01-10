@@ -33,12 +33,10 @@ TransLink(h1:H,h2:H)
 WrapsEx(h1:H,h2:H)
 SharesFld(h1:H,h2:H)
 HasMeth(eh:EH,m:M)
+EscapingThrow(m:M,p:P,v:V)
 ThrowEH(eh:EH,m:M,v:V)
 TransCall(m1:M,m2:M)
-Rethrown(v:V,h:H,m:M)
-Nested(v:V,h1:H,m:M,h2:H)
-Related(v:V,h1:H,m:M,h2:H)
-EscapingThrow(m:M,p:P,v:V)
+LinkedEx(m1:M,v1:V,m2:M,v2:V)
 
 
 # Rules
@@ -74,13 +72,11 @@ ThrowEH(eh,m,v) :- HasMeth(eh,m1), TransCall(m1,m), EscapingThrow(m,p,v).
 #         if they point to h1 and h2,
 #         then find if either WrapsEx(h1,h2) or SharesFld(h1,h2) hold.
 
-Rethrown(v1,h,m) :- VarEH(eh,v1), VHO(v1,h), ExceptionObj(h), ThrowEH(eh,m,v2), VHO(v2,h).
-ThrowMH(m,h) :- CatchVH(v,h), Rethrown(v,h,m).
-Nested(v1,h1,m,h2) :- VarEH(eh,v1), VHO(v1,h1), ThrowEH(eh,m,v2), VHO(v2,h2), WrapsEx(h1,h2).
-ThrowMH(m,h2) :- CatchVH(v,h1), Nested(v,h1,m,h2).
-Related(v1,h1,m,h2) :- VarEH(eh,v1), VHO(v1,h1), ThrowEH(eh,m,v2), VHO(v2,h2), SharesFld(h1,h2).
-ThrowMH(m,h2) :- CatchVH(v,h1), Related(v,h1,m,h2).
- 
+LinkedEx(m1,v1,m2,v2) :- MEH(m1,eh), VarEH(eh,v1), ThrowEH(eh,m2,v2).
+ThrowMH(m2,h) :- CatchVH(v1,h), LinkedEx(m1,v1,m2,v2), VHO(v2,h), ExceptionObj(h).
+ThrowMH(m2,h2) :- CatchVH(v1,h1), LinkedEx(m1,v1,m2,v2), VHO(v2,h2), WrapsEx(h1,h2), ExceptionObj(h1), ExceptionObj(h2).
+ThrowMH(m2,h2) :- CatchVH(v1,h1), LinkedEx(m1,v1,m2,v2), VHO(v2,h2), SharesFld(h1,h2), ExceptionObj(h1), ExceptionObj(h2).
+
 
 .include "relH.datalog"
 .include "relT.datalog"
