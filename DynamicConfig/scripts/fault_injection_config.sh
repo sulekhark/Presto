@@ -3,7 +3,7 @@
 
 faultInjectInfoFile=$1
 faultAllocInfoFile=$2
-tempFileName="temp_out"
+tempFileName="temp_out_fi"
 dirFileName="fault_config_dirs.txt"
 methFileName="id_to_method_map.txt"
 excFileName="id_to_exctype_map.txt"
@@ -32,3 +32,4 @@ do
     sed "s/DAFFODIL_TORCH_EXCEPTION_EXPRESSION/$allocInfo/g" $dirName/RuntimeConfig/torch-fault.torchconfig > t
     mv t $dirName/RuntimeConfig/torch-fault.torchconfig
 done < $tempFileName
+rm -f $tempFileName

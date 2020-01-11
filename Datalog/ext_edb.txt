@@ -3,3 +3,8 @@ ThrowPV
 VHO
 ExceptionType
 entryPtM
+ExceptionObj
+WrapsEx
+SharedFld
+FinalEH
+VarEH
