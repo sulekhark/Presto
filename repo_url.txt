@@ -1,0 +1,11 @@
+https://github.com/sulekhark/DAFFODIL.git
+
+BnetTools/libdai: The first checked-in version is from: git@bitbucket.org:sulekha/libdai.git
+The last update to the above repo was on: 2018-09-26
+
+BnetTools/gmp_6.1.0: The tra zip file for this is from: git@bitbucket.org:sulekha/commands.git
+From the "resources" directory.
+
+The libdai library reuires boost, gmp and gmpxx libraries to build. 
+On the new fir machines (fir02 and fir01 .seas.upenn.edu), libdia build was able to use the
+system-installed boost library but needed the above gmp library. 
