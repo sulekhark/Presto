@@ -1,0 +1,1 @@
+../mpn/x86_64/k10/rshift.asm

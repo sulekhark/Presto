@@ -1,0 +1,1 @@
+../mpn/x86_64/bd1/sublsh1_n.asm
