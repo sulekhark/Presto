@@ -57,7 +57,7 @@ def isProbEdb(t):
    return False
 
 def isNotEdb(t):
-   if t in allInputTuples):
+   if t in allInputTuples:
       return False
    return True
 
