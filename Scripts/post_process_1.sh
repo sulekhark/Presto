@@ -4,7 +4,7 @@ dlogTgz=$1
 tar xzf $dlogTgz
 rm -rf bnet
 mkdir bnet
-cp datalog/ext_edb.txt bnet
+cp datalog/prob_edb.txt bnet
 
 cd datalog
 . ./run_all.sh
@@ -17,7 +17,7 @@ cp named_cons_all.txt named_cons_coreach.txt
 $DAFFODIL_HOME/BnetTools/dfs_cycle_elim/dfs_cycle_elim named_cons_coreach.txt named_cons_loopfree.txt rule_prob.txt rule_prob_out.txt
 #$DAFFODIL_HOME/BnetTools/get_coreachable/get_coreachable named_cons_loopfree.txt named_cons_cr_lf_cr.txt base_queries.txt 0 0
 cp named_cons_loopfree.txt named_cons_cr_lf_cr.txt
-$DAFFODIL_HOME/BnetTools/elide_edb_ext.py ext_edb.txt < named_cons_cr_lf_cr.txt > named_cons_cr_lf_cr.txt.ee
+$DAFFODIL_HOME/BnetTools/elide_edb_ext.py prob_edb.txt < named_cons_cr_lf_cr.txt > named_cons_cr_lf_cr.txt.ee
 $DAFFODIL_HOME/BnetTools/get_edb_tuples.py prob_edb_tuples.txt < named_cons_cr_lf_cr.txt.ee
 
 cd ..

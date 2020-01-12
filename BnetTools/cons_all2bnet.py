@@ -48,10 +48,8 @@ for line in sys.stdin:
     clause = tuple(clause)
     allClauses.add(clause)
     allRuleNames[clause] = ruleName
-
     for literal in clause:
         allTuples.add(lit2Tuple(literal))
-
     allConsequents.add(clause2Consequent(clause))
 
 allInputTuples = allTuples - allConsequents

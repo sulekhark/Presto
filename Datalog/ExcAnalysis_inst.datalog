@@ -37,12 +37,15 @@ SharesFld(h1:H,h2:H) input
 #Instrumented Relations
 ########################
 
-ThrowMH_i1(m:M,h:H,p:P,mcallee:M,t:T) printtuples
-ThrowMH_i2(m2:M,h:H,m1:M,v1:V,t:T,v2:V) printtuples
-ThrowMH_i3(m2:M,h2:H,m1:M,v1:V,t1:T,h1:H,v2:V,t2:T) printtuples
+# ThrowMH_i1(m:M,h:H,p:P,v:V,t:T) printtuples
+ThrowMH_i2(m:M,h:H,p:P,mcallee:M,t:T) printtuples
+ThrowMH_i3(m2:M,h:H,m1:M,v1:V,t:T,v2:V) printtuples
 ThrowMH_i4(m2:M,h2:H,m1:M,v1:V,t1:T,h1:H,v2:V,t2:T) printtuples
-CatchVH_i1(v:V,h:H,m:M,p:P,mcallee:M,t:T,eh:EH) printtuples
+ThrowMH_i5(m2:M,h2:H,m1:M,v1:V,t1:T,h1:H,v2:V,t2:T) printtuples
+# CatchVH_i1(ehv:V,h:H,m:M,p:P,v:V,t:T,eh:EH) printtuples
+CatchVH_i2(v:V,h:H,m:M,p:P,mcallee:M,t:T,eh:EH) printtuples
 Escaping_i1(t:T,h:H,m:M) printtuples
+
 FInject(m:M,n:N,mcallee:M,t:T) printtuples
 PNMap(p:P,n:N) printtuples
 
@@ -67,11 +70,13 @@ FInject(m,n,mcallee,t) :- CallAt(m,p,mcallee), ThrowMH(mcallee,h), HT(h,t), Esca
 PNMap(p,n) :- CallAt(m,p,mcallee), PI(p,i), ILoc(i,n).
 
 # Propagating exception points-to
-ThrowMH_i1(m,h,p,mcallee,t) :- CallAt(m,p,mcallee), ThrowMH(mcallee,h), HT(h,t), EscapeMTP(m,t,p).
-ThrowMH_i2(m2,h,m1,v1,t,v2) :- CatchVH(v1,h), LinkedEx(m1,v1,t,m2,v2,t), VHO(v2,h), ExceptionObj(h), HT(h,t).
-ThrowMH_i3(m2,h2,m1,v1,t1,h1,v2,t2) :- CatchVH(v1,h1), LinkedEx(m1,v1,t1,m2,v2,t2), VHO(v2,h2), WrapsEx(h1,h2), HT(h1,t1), HT(h2,t2).
-ThrowMH_i4(m2,h2,m1,v1,t1,h1,v2,t2) :- CatchVH(v1,h1), LinkedEx(m1,v1,t1,m2,v2,t2), VHO(v2,h2), SharesFld(h1,h2), HT(h1,t1), HT(h2,t2).
-CatchVH_i1(v,h,m,p,mcallee,t,eh) :- CallAt(m,p,mcallee), ThrowMH(mcallee,h), HT(h,t), FinalEH(eh,t,p), VarEH(eh,v).
+# ThrowMH_i1(m,h,p,v,t) :- ThrowPV(m,p,v), VHO(v,h), HT(h,t), EscapeMTP(m,t,p).
+ThrowMH_i2(m,h,p,mcallee,t) :- CallAt(m,p,mcallee), ThrowMH(mcallee,h), HT(h,t), EscapeMTP(m,t,p).
+ThrowMH_i3(m2,h,m1,v1,t,v2) :- CatchVH(v1,h), LinkedEx(m1,v1,t,m2,v2,t), VHO(v2,h), ExceptionObj(h), HT(h,t).
+ThrowMH_i4(m2,h2,m1,v1,t1,h1,v2,t2) :- CatchVH(v1,h1), LinkedEx(m1,v1,t1,m2,v2,t2), VHO(v2,h2), WrapsEx(h1,h2), HT(h1,t1), HT(h2,t2).
+ThrowMH_i5(m2,h2,m1,v1,t1,h1,v2,t2) :- CatchVH(v1,h1), LinkedEx(m1,v1,t1,m2,v2,t2), VHO(v2,h2), SharesFld(h1,h2), HT(h1,t1), HT(h2,t2).
+# CatchVH_i1(ehv,h,m,p,v,t,eh) :- ThrowPV(m,p,v), VHO(v,h), HT(h,t), FinalEH(eh,t,p), VarEH(eh,ehv).
+CatchVH_i2(v,h,m,p,mcallee,t,eh) :- CallAt(m,p,mcallee), ThrowMH(mcallee,h), HT(h,t), FinalEH(eh,t,p), VarEH(eh,v).
 Escaping_i1(t,h,m) :- ThrowMH(m,h), HT(h,t), ExceptionType(t), entryPtM(m).
 
 

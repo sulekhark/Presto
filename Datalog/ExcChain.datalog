@@ -58,7 +58,11 @@ ExceptionObj(h) :- HFHO(h1,f,h), HT(h,t), ExceptionType(t).
 
 TransLink(h1,h2) :- HFHO(h1,f1,h), HFHO(h,f2,h2), !ExceptionObj(h).
 TransLink(h1,h2) :- HFHO(h1,f,h), TransLink(h,h2), !ExceptionObj(h).
+WrapsEx(h1,h2) :- ExceptionObj(h1), ExceptionObj(h2), HFHO(h1,f,h2).
 WrapsEx(h1,h2) :- ExceptionObj(h1), ExceptionObj(h2), TransLink(h1,h2).
+SharesFld(h1,h2) :- HFHO(h1,f1,h), HFHO(h2,f2,h), ExceptionObj(h1), ExceptionObj(h2), !ExceptionObj(h).
+SharesFld(h1,h2) :- HFHO(h1,f,h), TransLink(h2,h), ExceptionObj(h1), ExceptionObj(h2), !ExceptionObj(h).
+SharesFld(h1,h2) :- TransLink(h1,h), HFHO(h2,f,h), ExceptionObj(h1), ExceptionObj(h2), !ExceptionObj(h).
 SharesFld(h1,h2) :- TransLink(h1,h), TransLink(h2,h), ExceptionObj(h1), ExceptionObj(h2), !ExceptionObj(h).
 
 # Step 2: Find "throw" statements within the (interprocedural) scope of a catch block
@@ -77,10 +81,10 @@ ThrowEH(eh,m,v) :- HasMeth(eh,m1), TransCall(m1,m), EscapingThrow(m,p,v).
 #         then find if either WrapsEx(h1,h2) or SharesFld(h1,h2) hold.
 
 MVarEH(m,eh,v) :- MEH(m,eh), VarEH(eh,v).
-ValidExType(v,t,t1) :- VT(v,t), sub(t,t1), ExceptionType(t), ExceptionType(t1).
+ValidExType(v,t,t1) :- VT(v,t), sub(t1,t), ExceptionType(t), ExceptionType(t1).
 LinkedEx(m1,v1,t11,m2,v2,t22) :- MVarEH(m1,eh,v1), ThrowEH(eh,m2,v2), ValidExType(v1,t1,t11), ValidExType(v2,t2,t22).
 ThrowMH(m2,h) :- CatchVH(v1,h), LinkedEx(m1,v1,t,m2,v2,t), VHO(v2,h), ExceptionObj(h), HT(h,t).
-ThrowMH(m2,h2) :- CatchVH(v1,h1), LinkedEx(m1,v1,t1,m2,v2,t2), VHO(v2,h2), WrapsEx(h1,h2), HT(h1,t1), HT(h2,t2).
+ThrowMH(m2,h2) :- CatchVH(v1,h1), LinkedEx(m1,v1,t1,m2,v2,t2), VHO(v2,h2), WrapsEx(h2,h1), HT(h1,t1), HT(h2,t2).
 ThrowMH(m2,h2) :- CatchVH(v1,h1), LinkedEx(m1,v1,t1,m2,v2,t2), VHO(v2,h2), SharesFld(h1,h2), HT(h1,t1), HT(h2,t2).
 
 

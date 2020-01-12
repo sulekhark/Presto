@@ -63,11 +63,10 @@ logging.info('Discovered {0} input tuples.'.format(len(allInputTuples)))
 probEdbTuples = set()
 
 for clause in allClauses:
-    if allRuleNames[clause] == "R1":
-        antecedents = clause2Antecedents(clause)
-        for literal in antecedents:
-            if not lit2Tuple(literal) in allConsequents:
-                probEdbTuples.add(lit2Tuple(literal))
+    antecedents = clause2Antecedents(clause)
+    for literal in antecedents:
+        if not lit2Tuple(literal) in allConsequents:
+            probEdbTuples.add(lit2Tuple(literal))
 
 ########################################################################################################################
 # 3. Print output
