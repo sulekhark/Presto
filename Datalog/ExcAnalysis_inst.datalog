@@ -14,11 +14,9 @@
 relV(v:V) input
 relH(h:H) input
 HT(h:H,t:T) input                        # Allocation site h allocates an object of Type t
-MI(m:M,i:I) input                        # Method m contains InvokeStmt i
 VarEH(eh:EH,v:V)  input                  # ExceptionHandler eh has the formal paramter as Variable v
 ThrowPV(m:M,p:P,v:V)  input              # Instruction p of Method m throws Variable v
 PI(p:P,i:I) input                        # Connects program points that are invoke statements to corresponding entries in domI
-IM(i:I,m:M) input                        # InvokeStmt i may call Method m
 FinalEH(eh:EH,t:T,p:P) input             # ExceptionHandler eh catches an exception of Type t thrown at Program point p.
 EscapeMTP(m:M,t:T,p:P) input             # Exception of type t if thrown at Program Point p, escapes Method m.
 VHO(v:V,h:H)  input                      # Variable v may point to AllocSite h
@@ -27,9 +25,11 @@ ThrowMH(m:M,h:H) input                   # The exception object h escapes Method
 CatchVH(v:V,h:H) input                   # Variable v which is the formal parameter of some catch handler, points-to exception object h.
 ExceptionType(t:T) input                 # Type t is an exception type
 entryPtM(m:M) input                      # Entry point methods of the assembly.
-Caught(t:T,h:H) input                    # h is an exception object of Type t that is caught somewhere within the application
-Escaping(t:T,h:H) input                  # h is an exception object of Type t that is escaping from the application
 ILoc(i:I,n:N) input
+LinkedEx(m1:M,v1:V,t1:T,m2:M,v2:V,t2:T) input
+ExceptionObj(h:H) input
+WrapsEx(h1:H,h2:H) input
+SharesFld(h1:H,h2:H) input
 
 
 
@@ -79,10 +79,8 @@ Escaping_i1(t,h,m) :- ThrowMH(m,h), HT(h,t), ExceptionType(t), entryPtM(m).
 .include "relV.datalog"
 .include "relH.datalog"
 .include "HT.datalog"
-.include "MI.datalog"
 .include "VarEH.datalog"
 .include "ThrowPV.datalog"
-.include "IM.datalog"
 .include "PI.datalog"
 .include "FinalEH.datalog"
 .include "EscapeMTP.datalog"
@@ -92,6 +90,8 @@ Escaping_i1(t,h,m) :- ThrowMH(m,h), HT(h,t), ExceptionType(t), entryPtM(m).
 .include "CatchVH.datalog"
 .include "ExceptionType.datalog"
 .include "entryPtM.datalog"
-.include "Caught.datalog"
-.include "Escaping.datalog"
 .include "ILoc.datalog"
+.include "LinkedEx.datalog"
+.include "ExceptionObj.datalog"
+.include "WrapsEx.datalog"
+.include "SharesFld.datalog"

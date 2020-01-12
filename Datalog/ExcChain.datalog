@@ -29,17 +29,17 @@ VarEH(eh:EH,v:V) input                   # Variable v is the variable of the cat
 EscapeMTP(m:M,t:T,p:P) input             # Exception of type t if thrown at Program Point p, escapes Method m.
 VT(v:V,t:T) input                        # Variable v has type t.
 
-ExceptionObj(h:H)
+ExceptionObj(h:H) printtuples
 TransLink(h1:H,h2:H)
-WrapsEx(h1:H,h2:H)
-SharesFld(h1:H,h2:H)
+WrapsEx(h1:H,h2:H) printtuples
+SharesFld(h1:H,h2:H) printtuples
 HasMeth(eh:EH,m:M)
 EscapingThrow(m:M,p:P,v:V)
 ThrowEH(eh:EH,m:M,v:V)
 TransCall(m1:M,m2:M)
 MVarEH(m:M,eh:EH,v:V)
 ValidExType(v:V,t:T,t1:T)
-LinkedEx(m1:M,v1:V,t1:T,m2:M,v2:V,t2:T)
+LinkedEx(m1:M,v1:V,t1:T,m2:M,v2:V,t2:T) printtuples
 
 
 # Rules
