@@ -15,6 +15,7 @@ CatchVH(v:V,h:H) input printtuples       # Variable v which is the formal parame
 ExceptionType(t:T) input                 # Type t is an exception type
 HT(h:H,t:T) input                        # Allocation site h as Type t
 IM(i:I,m:M) input                        # Invoke statement i may call method m
+sub(t:T,t1:T) input                      # Type t is a subtype of type t1
 
 VHO(v:V,h:H)  input                      # Variable v may point to AllocSite h
 FHO(f:F,h:H)  input                      # Static field f may point to AllocSite h
@@ -75,7 +76,7 @@ ThrowEH(eh,m,v) :- HasMeth(eh,m1), TransCall(m1,m), EscapingThrow(m,p,v).
 #         if they point to h1 and h2,
 #         then find if either WrapsEx(h1,h2) or SharesFld(h1,h2) hold.
 
-MVarEh(m,eh,v) :- MEH(m,eh), VarEH(eh,v).
+MVarEH(m,eh,v) :- MEH(m,eh), VarEH(eh,v).
 ValidExType(v,t,t1) :- VT(v,t), sub(t,t1), ExceptionType(t), ExceptionType(t1).
 LinkedEx(m1,v1,t11,m2,v2,t22) :- MVarEH(m1,eh,v1), ThrowEH(eh,m2,v2), ValidExType(v1,t1,t11), ValidExType(v2,t2,t22).
 ThrowMH(m2,h) :- CatchVH(v1,h), LinkedEx(m1,v1,t,m2,v2,t), VHO(v2,h), ExceptionObj(h), HT(h,t).
@@ -101,4 +102,4 @@ ThrowMH(m2,h2) :- CatchVH(v1,h1), LinkedEx(m1,v1,t1,m2,v2,t2), VHO(v2,h2), Share
 .include "VarEH.datalog"
 .include "EscapeMTP.datalog"
 .include "VT.datalog"
-
+.include "sub.datalog"
