@@ -10,7 +10,7 @@
         <!--<OnFirstCall />-->
 	<!--<OnNthCall N="1" />-->
         <!--<OnEveryNthCall N="2" />-->
-        <IfCalledBy Caller="DAFFODIL_TORCH_CALLER" />
+        <IfCalledBy Caller="DAFFODIL_TORCH_CALLER" ILOffset="DAFFODIL_INVOKE_OFFSET"/>
         <!--<IfStackContains StackSubstring="stack substring" />-->
         <!--<OnRandomCall Probability="0.5" />-->
         <!--<IfArgMatchesExpression ArgIndex="0" Expression="null" />-->

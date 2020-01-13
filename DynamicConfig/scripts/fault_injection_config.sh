@@ -11,12 +11,13 @@ excFileName="id_to_exctype_map.txt"
 $DAFFODIL_HOME/DynamicConfig/scripts/parse_finject.py $faultInjectInfoFile $tempFileName $dirFileName $methFileName $excFileName 
 while read -r line
 do
-    dirName="$(echo $line | cut -d'@' -f1)"    
-    callerFull="$(echo $line | cut -d'@' -f2)"    
-    caller="$(echo $callerFull | cut -d'(' -f1)*"    
-    calleeFull="$(echo $line | cut -d'@' -f4)"    
-    callee="$(echo $calleeFull | cut -d'(' -f1)*"    
-    excType="$(echo $line | cut -d'@' -f5)"    
+    dirName="$(echo $line | cut -d'@' -f1)"
+    callerFull="$(echo $line | cut -d'@' -f2)"
+    caller="$(echo $callerFull | cut -d'(' -f1)*"
+    invkOffset="$(echo $line | cut -d'@' -f3)"
+    calleeFull="$(echo $line | cut -d'@' -f4)"
+    callee="$(echo $calleeFull | cut -d'(' -f1)*"
+    excType="$(echo $line | cut -d'@' -f5)"
 
     mkdir $dirName
     cp -r $DAFFODIL_HOME/DynamicConfig/FaultInjectionTemplate/* $dirName 
@@ -26,6 +27,8 @@ do
     sed "s/DAFFODIL_TORCH_CALLEE/$callee/g" $dirName/RuntimeConfig/torch-fault.torchconfig > t
     mv t $dirName/RuntimeConfig/torch-fault.torchconfig
     sed "s/DAFFODIL_TORCH_CALLER/$caller/g" $dirName/RuntimeConfig/torch-fault.torchconfig > t
+    mv t $dirName/RuntimeConfig/torch-fault.torchconfig
+    sed "s/DAFFODIL_INVOKE_OFFSET/$invkOffset/g" $dirName/RuntimeConfig/torch-fault.torchconfig > t
     mv t $dirName/RuntimeConfig/torch-fault.torchconfig
     allocInfoLine=`grep "$excType" $faultAllocInfoFile`
     allocInfo="$(echo $allocInfoLine | cut -d':' -f2)"    
