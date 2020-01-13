@@ -39,6 +39,7 @@ EscapingThrow(m:M,p:P,v:V)
 ThrowEH(eh:EH,m:M,v:V)
 TransCall(m1:M,m2:M)
 MVarEH(m:M,eh:EH,v:V)
+TransSub(t1:T,t2:T)
 ValidExType(v:V,t:T,t1:T)
 LinkedEx(m1:M,v1:V,t1:T,m2:M,v2:V,t2:T) printtuples
 
@@ -81,7 +82,9 @@ ThrowEH(eh,m,v) :- HasMeth(eh,m1), TransCall(m1,m), EscapingThrow(m,p,v).
 #         then find if either WrapsEx(h1,h2) or SharesFld(h1,h2) hold.
 
 MVarEH(m,eh,v) :- MEH(m,eh), VarEH(eh,v).
-ValidExType(v,t,t1) :- VT(v,t), sub(t1,t), ExceptionType(t), ExceptionType(t1).
+TransSub(t1,t2) :- sub(t1,t2).
+TransSub(t1,t2) :- sub(t1,t), TransSub(t,t2).
+ValidExType(v,t,t1) :- VT(v,t), TransSub(t1,t), ExceptionType(t), ExceptionType(t1).
 LinkedEx(m1,v1,t11,m2,v2,t22) :- MVarEH(m1,eh,v1), ThrowEH(eh,m2,v2), ValidExType(v1,t1,t11), ValidExType(v2,t2,t22).
 ThrowMH(m2,h) :- CatchVH(v1,h), LinkedEx(m1,v1,t,m2,v2,t), VHO(v2,h), ExceptionObj(h), HT(h,t).
 ThrowMH(m2,h2) :- CatchVH(v1,h1), LinkedEx(m1,v1,t1,m2,v2,t2), VHO(v2,h2), WrapsEx(h2,h1), HT(h1,t1), HT(h2,t2).
