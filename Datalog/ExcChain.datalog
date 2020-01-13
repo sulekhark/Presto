@@ -88,7 +88,7 @@ ValidExType(v,t,t1) :- VT(v,t), TransSub(t1,t), ExceptionType(t), ExceptionType(
 LinkedEx(m1,v1,t11,m2,v2,t22) :- MVarEH(m1,eh,v1), ThrowEH(eh,m2,v2), ValidExType(v1,t1,t11), ValidExType(v2,t2,t22).
 ThrowMH(m2,h) :- CatchVH(v1,h), LinkedEx(m1,v1,t,m2,v2,t), VHO(v2,h), ExceptionObj(h), HT(h,t).
 ThrowMH(m2,h2) :- CatchVH(v1,h1), LinkedEx(m1,v1,t1,m2,v2,t2), VHO(v2,h2), WrapsEx(h2,h1), HT(h1,t1), HT(h2,t2).
-ThrowMH(m2,h2) :- CatchVH(v1,h1), LinkedEx(m1,v1,t1,m2,v2,t2), VHO(v2,h2), SharesFld(h1,h2), HT(h1,t1), HT(h2,t2).
+# ThrowMH(m2,h2) :- CatchVH(v1,h1), LinkedEx(m1,v1,t1,m2,v2,t2), VHO(v2,h2), SharesFld(h1,h2), HT(h1,t1), HT(h2,t2).
 
 
 .include "relH.datalog"
