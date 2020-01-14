@@ -30,6 +30,8 @@ LinkedEx(m1:M,v1:V,t1:T,m2:M,v2:V,t2:T) input
 ExceptionObj(h:H) input
 WrapsEx(h1:H,h2:H) input
 SharesFld(h1:H,h2:H) input
+InRange(eh:EH,p:P) input                 # An exception raised at Program point P could potentially be caught by ExceptionHandler eh
+IM(i:I,m:M) input                        # Invoke statement i calls method m
 
 
 
@@ -44,6 +46,8 @@ CatchVH_i2(v:V,h:H,m:M,p:P,mcallee:M,t:T,eh:EH) printtuples
 Escaping_i1(t:T,h:H,m:M) printtuples
 
 FInject(m:M,n:N,mcallee:M,t:T) printtuples
+LinkedExSelect(m1:M,v1:V,t1:T,m2:M,v2:V,t2:T) printtuples
+LinkInject(m1:M,v1:V,t1:T,m2:M,v2:V,t2:T,m3:M,n:N) printtuples
 PNMap(p:P,n:N) printtuples
 
 
@@ -63,8 +67,11 @@ PNMap(p:P,n:N) printtuples
 ############################
 
 # Information for fault injection
-FInject(m,n,mcallee,t) :- CallAt(m,p,mcallee), ThrowMH(mcallee,h), HT(h,t), EscapeMTP(m,t,p), PI(p,i), ILoc(i,n).
+FInject(m,n,mcallee,t) :- CallAt(m,p,mcallee), ThrowMH(mcallee,h), HT(h,t), EscapeMTP(m,t,p), PNMap(p,n).
 PNMap(p,n) :- CallAt(m,p,mcallee), PI(p,i), ILoc(i,n).
+LinkedExSelect(m1,v1,t1,m2,v2,t2) :- ThrowMH_i4(m2,h2,m1,v1,t1,h1,v2,t2), LinkedEx(m1,v1,t1,m2,v2,t2).
+LinkedExSelect(m1,v1,t,m2,v2,t) :- ThrowMH_i3(m2,h,m1,v1,t,v2), LinkedEx(m1,v1,t,m2,v2,t).
+LinkInject(m1,v1,t1,m2,v2,t2,m3,n) :- LinkedExSelect(m1,v1,t1,m2,v2,t2), VarEH(eh,v1), InRange(eh,p), PI(p,i), IM(i,m3), ILoc(i,n).
 
 # Propagating exception points-to
 ThrowMH_i2(m,h,p,mcallee,t) :- CallAt(m,p,mcallee), ThrowMH(mcallee,h), HT(h,t), EscapeMTP(m,t,p).
@@ -94,3 +101,5 @@ Escaping_i1(t,h,m) :- ThrowMH(m,h), HT(h,t), ExceptionType(t), entryPtM(m).
 .include "ExceptionObj.datalog"
 .include "WrapsEx.datalog"
 .include "SharesFld.datalog"
+.include "InRange.datalog"
+.include "IM.datalog"

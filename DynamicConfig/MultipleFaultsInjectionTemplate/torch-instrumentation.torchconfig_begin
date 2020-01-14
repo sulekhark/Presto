@@ -1,0 +1,12 @@
+﻿<?xml version="1.0"?>
+<InstrumentationConfiguration>
+  <Assemblies>
+    <!-- put names of assemblies that you want to instrument-->
+    <Assembly>DAFFODIL_TORCH_ASSEMBLY_NAME</Assembly>
+  </Assemblies>
+
+  <LoggingTorchPoints>
+    <API>*</API>  
+  </LoggingTorchPoints>
+
+  <FaultInjectionTorchPoints>

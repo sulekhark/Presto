@@ -1,0 +1,4 @@
+<?xml version="1.0"?>
+<FaultInjectionSpecification>
+  <FaultLogPath>c:\tmp\fault-log.txt</FaultLogPath>
+  <FaultRules>

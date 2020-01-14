@@ -1,7 +1,3 @@
-<?xml version="1.0"?>
-<FaultInjectionSpecification>
-  <FaultLogPath>c:\tmp\fault-log.txt</FaultLogPath>
-  <FaultRules>
     <FaultRule MethodName="DAFFODIL_TORCH_CALLEE">
       <Conditions>
         <IfCalledBy Caller="DAFFODIL_TORCH_CALLER" ILOffset="DAFFODIL_INVOKE_OFFSET"/>
@@ -10,5 +6,3 @@
         <ThrowExceptionExpressionFault ExceptionExpression="DAFFODIL_TORCH_EXCEPTION_EXPRESSION" />
       </Faults>
     </FaultRule>
-  </FaultRules>
-</FaultInjectionSpecification>

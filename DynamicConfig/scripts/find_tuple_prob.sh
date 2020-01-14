@@ -11,8 +11,8 @@ dynCfgDir=../dynconfig
 datalogDir=../datalog
 
 pnMap=$datalogDir/PNMap.datalog
-methodMap=$dynCfgDir/FaultInjectionSet/id_to_method_map.txt
-excMap=$dynCfgDir/FaultInjectionSet/id_to_exctype_map.txt
+methodMap=$dynCfgDir/id_to_method_map.txt
+excMap=$dynCfgDir/id_to_exctype_map.txt
 
 minProb=0.1
 maxProb=0.95
@@ -58,7 +58,7 @@ do
         getMethodName $methId
         getExcType $excTypeId
 
-        dirName="$dynLogDir/FaultInjectionSet/T_${methId}_${ppLoc}_*_${excTypeId}"
+        dirName="$dynLogDir/FaultInjectionSet/EscapeMTP/T_${methId}_${ppLoc}_*_${excTypeId}"
         if [[ $methName == *.Main ]]
         then
             mCnt=0

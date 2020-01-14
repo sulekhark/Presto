@@ -15,7 +15,7 @@ if (len(sys.argv) == 3):
 else:
     ruleProbFileName = ""
 defaultRuleProbability = 1.0 
-defaultEdbProbability = 0.8
+defaultEdbProbability = 0.9
 
 logging.basicConfig(level=logging.INFO, \
                     format="[%(asctime)s] %(levelname)s [%(name)s.%(funcName)s:%(lineno)d] %(message)s", \

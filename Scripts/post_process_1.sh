@@ -25,6 +25,7 @@ rm -rf dynconfig
 mkdir dynconfig
 cd dynconfig
 $DAFFODIL_HOME/DynamicConfig/scripts/get_assemblies.sh ../datalog/modules.txt assemblies.txt
+$DAFFODIL_HOME/DynamicConfig/scripts/generate_maps.sh
 
 mkdir Logging
 cp -r $DAFFODIL_HOME/DynamicConfig/LoggingTemplate/* Logging
@@ -32,7 +33,7 @@ $DAFFODIL_HOME/DynamicConfig/scripts/logging_config.sh Logging assemblies.txt
 
 mkdir FaultInjectionSet
 cd FaultInjectionSet
-$DAFFODIL_HOME/DynamicConfig/scripts/fault_injection_config.sh ../../datalog/FInject.txt ../../datalog/ExceptionInjection.txt
+$DAFFODIL_HOME/DynamicConfig/scripts/fault_injection_config.sh ../../../datalog/FInject.txt ../../../datalog/LinkInject.txt ../../../datalog/ExceptionInjection.txt
 
 cd ../..
 tar czf dynconfig.tgz dynconfig
