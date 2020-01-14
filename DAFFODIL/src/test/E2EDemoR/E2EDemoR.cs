@@ -54,7 +54,7 @@ namespace E2EDemoR
         static void M3() { if (flag) throw new ArgumentException(); }
         static void M5() { if (flag) throw new NullReferenceException(); }
         static void M6() { if (flag) throw new FieldAccessException(); }
-        static void M7(Exception e) { throw new MyException(e); }
+        static void M7(Exception e) { throw new Exception("hello", e); }
     }
 
     class CFoo { }
