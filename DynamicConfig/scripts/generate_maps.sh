@@ -9,8 +9,9 @@ mMapFile="../datalog/M.map"
 exMapFile="../datalog/ExceptionType.txt"
 
 sed 's/ExceptionType(//g' $exMapFile > t
-sed 's/).//g' t > $excFileName
-rm -f t
+sed 's/).//g' t > t1
+sed 's/\r//g' t1 > $excFileName
+rm -f t t1
 
 rm -f $methFileName
 sed 's/  CLASS:.*//g' $mMapFile > t

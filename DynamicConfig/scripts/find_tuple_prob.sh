@@ -70,7 +70,7 @@ do
                 if [ $? -eq 0 ]; then
                     mExcCnt=$((mExcCnt + 1))
                 fi
-            done 
+            done
             if [ $mCnt -eq 0 ]
             then
                 prob=$minProb
@@ -89,7 +89,7 @@ do
                 mExcCnt=`grep $methName $tempFile | grep $excType | wc -l`
                 mCnt_tot=$((mCnt_tot + mCnt))
                 mExcCnt_tot=$((mExcCnt_tot + mExcCnt))
-            done 
+            done
             if [ $mCnt_tot -eq 0 ]
             then
                 prob=$minProb
@@ -99,6 +99,38 @@ do
             # echo $tupl $prob $mCnt_tot $mExcCnt_tot
             echo "$bnetNodeId:" "$prob" >> $outputFile
         fi
+    fi
+    if [[ $tupl == LinkedEx* ]]
+    then
+        tuplArgs="$(echo $tupl | cut -d'(' -f2 | cut -d ')' -f1)"
+        methId="$(echo $tuplArgs | cut -d',' -f4)"
+        excTypeId="$(echo $tuplArgs | cut -d',' -f6)"
+        arg1="$(echo $tuplArgs | cut -d',' -f1)"
+        arg2="$(echo $tuplArgs | cut -d',' -f2)"
+        arg3="$(echo $tuplArgs | cut -d',' -f3)"
+        arg5="$(echo $tuplArgs | cut -d',' -f5)"
+        getMethodName $methId
+        getExcType $excTypeId
+
+        dirName="$dynLogDir/FaultInjectionSet/LinkedEx/T_${arg1}_${arg2}_${arg3}_${methId}_${arg5}_${excTypeId}"
+        mCnt_tot=0
+        mExcCnt_tot=0
+        for logfile in `find $dirName -name torch*`
+        do
+            awk -F';' '{print $8 " " $15;}' $logfile > $tempFile
+            mCnt=`grep $methName $tempFile | wc -l`
+            mExcCnt=`grep $methName $tempFile | grep $excType | wc -l`
+            mCnt_tot=$((mCnt_tot + mCnt))
+            mExcCnt_tot=$((mExcCnt_tot + mExcCnt))
+        done
+        if [ $mCnt_tot -eq 0 ]
+        then
+            prob=$minProb
+        else
+            prob=`echo "scale=2; $minProb + (($maxProb - $minProb) * $mExcCnt_tot / $mCnt_tot)" | bc`
+        fi
+        # echo $tupl $prob $mCnt_tot $mExcCnt_tot
+        echo "$bnetNodeId:" "$prob" >> $outputFile
     fi
     if [[ $tupl == CallAt* ]]
     then
