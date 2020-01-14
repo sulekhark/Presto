@@ -1,4 +1,4 @@
 System.ArgumentException:new ArgumentException('Injected by daffodil-torch');
 System.NullReferenceException:new NullReferenceException('Injected by daffodil-torch');
 System.FieldAccessException:new FieldAccessException('Injected by daffodil-torch');
-System.Exception:new Exception('Injected by daffodil-torch', null);
+System.Exception:new Exception('Injected by daffodil-torch');
