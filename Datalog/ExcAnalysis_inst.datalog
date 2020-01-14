@@ -34,6 +34,7 @@ SharesFld(h1:H,h2:H) input
 InRange(eh:EH,p:P) input                 # An exception raised at Program point P could potentially be caught by ExceptionHandler eh
 IM(i:I,m:M) input                        # Invoke statement i calls method m
 Escaping(t:T,h:H) input
+Caught(t:T,h:H) input
 
 
 
@@ -81,7 +82,7 @@ ThrowMH_i2(m,h,p,mcallee,t) :- CallAt(m,p,mcallee), ThrowMH(mcallee,h), HT(h,t),
 LinkMatch_i1(m1,v1,t,m2,v2,t,h) :- CatchVH(v1,h), LinkedEx(m1,v1,t,m2,v2,t), VHO(v2,h), ExceptionObj(h), HT(h,t).
 LinkMatch_i2(m1,v1,t1,m2,v2,t2,h1,h2) :- CatchVH(v1,h1), LinkedEx(m1,v1,t1,m2,v2,t2), VHO(v2,h2), WrapsEx(h2,h1), HT(h1,t1), HT(h2,t2).
 CatchVH_i2(v,h,m,p,mcallee,t,eh) :- CallAt(m,p,mcallee), ThrowMH(mcallee,h), HT(h,t), FinalEH(eh,t,p), VarEH(eh,v).
-Escaping_i1(t,h,m) :- ThrowMH(m,h), HT(h,t), ExceptionType(t), entryPtM(m).
+Escaping_i1(t,h,m) :- ThrowMH(m,h), HT(h,t), ExceptionType(t), entryPtM(m), !Caught(t,h).
 REscaping_i1(t1,h1,t2,h2,m1,v1,m2,v2) :- WrapsEx(h2,h1), Escaping(t2,h2), LinkMatch(m1,v1,t1,m2,v2,t2), HT(h1,t1).
 
 
@@ -109,3 +110,4 @@ REscaping_i1(t1,h1,t2,h2,m1,v1,m2,v2) :- WrapsEx(h2,h1), Escaping(t2,h2), LinkMa
 .include "InRange.datalog"
 .include "IM.datalog"
 .include "Escaping.datalog"
+.include "Caught.datalog"
