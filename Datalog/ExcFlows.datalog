@@ -11,13 +11,19 @@ CatchVH(v:V,h:H) input                   # Variable v which is the formal parame
 ExceptionType(t:T) input                 # Type t is an exception type
 HT(h:H,t:T) input                        # Allocation site h as Type t
 entryPtM(m:M) input                      # Entry point methods of the assembly.
+WrapsEx(h2:H,h1:H) input                 # Exception object h2 wraps exception object h1
+SharesFld(h1:H,h2:H) input               # Exception objects h1 and h2 have some field pointing to the same object 
+LinkMatch(m1:M,v1:V,t1:T,m2:M,v2:V,t2:T) input
 
 Caught(t:T,h:H) printtuples              # h is an exception object of Type t that is caught somewhere within the application
 Escaping(t:T,h:H) printtuples            # h is an exception object of Type t that is escaping from the application
+REscaping(t1:T,h1:H,t2:T,h2:H) printtuples
 
 
 # Rules
 Escaping(t,h) :- ThrowMH(m,h), HT(h,t), ExceptionType(t), entryPtM(m).
+REscaping(t1,h1,t2,h2) :- WrapsEx(h2,h1), Escaping(t2,h2), LinkMatch(m1,v1,t1,m2,v2,t2), HT(h1,t1).
+REscaping(t1,h1,t2,h2) :- SharesFld(h2,h1), Escaping(t2,h2), LinkMatch(m1,v1,t1,m2,v2,t2), HT(h1,t1).
 Caught(t,h) :- CatchVH(v,h), HT(h,t), ExceptionType(t), !Escaping(t,h).
 
 .include "relH.datalog"
@@ -27,3 +33,6 @@ Caught(t,h) :- CatchVH(v,h), HT(h,t), ExceptionType(t), !Escaping(t,h).
 .include "ExceptionType.datalog"
 .include "HT.datalog"
 .include "entryPtM.datalog"
+.include "WrapsEx.datalog"
+.include "SharesFld.datalog"
+.include "LinkMatch.datalog"
