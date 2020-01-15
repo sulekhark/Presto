@@ -163,6 +163,7 @@
     <Compile Include="ProgramFacts\ProgramRels.cs" />
     <Compile Include="ProgramFacts\Rel.cs" />
     <Compile Include="ProgramFacts\Relations\RelCaught.cs" />
+    <Compile Include="ProgramFacts\Relations\RelEnclosingEH.cs" />
     <Compile Include="ProgramFacts\Relations\RelEscaping.cs" />
     <Compile Include="ProgramFacts\Relations\RelFHO.cs" />
     <Compile Include="ProgramFacts\Relations\RelFinalMTP.cs" />
@@ -217,6 +218,8 @@
     <Compile Include="ProgramFacts\Relations\RelMStatFldWrite.cs" />
     <Compile Include="ProgramFacts\Relations\RelMStructHFH.cs" />
     <Compile Include="ProgramFacts\Relations\RelMV.cs" />
+    <Compile Include="ProgramFacts\Relations\RelNestedEH.cs" />
+    <Compile Include="ProgramFacts\Relations\RelOutermostEH.cs" />
     <Compile Include="ProgramFacts\Relations\RelPI.cs" />
     <Compile Include="ProgramFacts\Relations\RelPrevEH.cs" />
     <Compile Include="ProgramFacts\Relations\RelReachableI.cs" />

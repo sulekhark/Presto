@@ -733,6 +733,7 @@ namespace Daffodil.DatalogAnalysisFW.AnalysisNetConsole
             ProgramRels.relPI.Add(instW, instW);
             ProgramRels.relILoc.Add(instW, (int)invkInst.Offset);
             foreach (EhStruct ehs in ehStack) ProgramRels.relHasMethInvk.Add(ehs.ehW, instW);
+            if (ehStack.Count > 0) ProgramRels.relEnclosingEH.Add(mRefW, ehStack.Peek().ehW, instW);
 
             if (invkInst.HasResult)
             {
@@ -814,6 +815,7 @@ namespace Daffodil.DatalogAnalysisFW.AnalysisNetConsole
                 ProgramRels.relPI.Add(instW, instW);
                 ProgramRels.relILoc.Add(instW, (int)invkInst.Offset);
                 foreach (EhStruct ehs in ehStack) ProgramRels.relHasMethInvk.Add(ehs.ehW, instW);
+                if (ehStack.Count > 0) ProgramRels.relEnclosingEH.Add(mRefW, ehStack.Peek().ehW, instW);
 
                 if (invkInst.HasResult)
                 {
@@ -891,6 +893,7 @@ namespace Daffodil.DatalogAnalysisFW.AnalysisNetConsole
             VariableWrapper varW = WrapperProvider.getVarW(throwVar);
             ProgramRels.relThrowPV.Add(mRefW, instW, varW);
             foreach (EhStruct ehs in ehStack) ProgramRels.relHasThrow.Add(ehs.ehW, instW);
+            if (ehStack.Count > 0) ProgramRels.relEnclosingEH.Add(mRefW, ehStack.Peek().ehW, instW);
             return;
         }
 
@@ -911,6 +914,8 @@ namespace Daffodil.DatalogAnalysisFW.AnalysisNetConsole
             EhStruct ehs = new EhStruct();
             ehs.ehInfo = currEhInfo;
             ehs.ehW = currEhW;
+            if (ehStack.Count == 0) ProgramRels.relOutermostEH.Add(mRefW, currEhW);
+            if (ehStack.Count > 0) ProgramRels.relNestedEH.Add(mRefW, ehStack.Peek().ehW, currEhW);
             ehStack.Push(ehs);
             prevEhW = currEhW;
             return;
