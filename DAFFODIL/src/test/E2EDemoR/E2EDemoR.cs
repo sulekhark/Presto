@@ -2,13 +2,6 @@
 
 namespace E2EDemoR
 {
-    class MyException : Exception
-    {
-        public Exception innerEx;
-
-        public MyException(Exception e) { innerEx = e; }
-    }
-
     class E2EDemoR
     {
         static bool flag = false;
