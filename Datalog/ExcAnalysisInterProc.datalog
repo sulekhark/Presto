@@ -60,6 +60,7 @@ EscapeMTP(m:M,t:T,p:P) input             # Exception of type t if thrown at Prog
 NestedEH(m:M,eh1:EH,eh2:EH) input        # In method m, exception handler eh1 nests exception handler eh2.
 OutermostEH(m:M,eh:EH) input             # In method m, exception handler eh is not nested within any other exception handler.
 EnclosingEH(m:M,eh:EH,p:P) input         # In method m, exception handler eh immediately encloses program point p that could potentially throw.
+NoEnclose(m:M,p:P) input
 
 # Below six relations are "input" points-to relations
 VH(v:V,h:H)  input                       # Variable v may point to AllocSite h
@@ -100,7 +101,6 @@ ThrowMH(m:M,h:H) printtuples             # The exception object h escapes Method
 CatchVH(v:V,h:H) printtuples             # Variable v which is the formal parameter of some catch handler, points-to exception object h.
 
 FeasibleMTP(m:M,t:T,p:P) printtuples
-NoEnclose(m:M,p:P) printtuples
 FeasibleEH(m:M,eh:EH) printtuples
 
 
@@ -195,7 +195,6 @@ CallAt(m,p,mcallee) :- MI(m,i), IM(i,mcallee), PI(p,i).
 ThrowMH(m,h) :- ThrowPV(m,p,v), VHO(v,h), HT(h,t), FeasibleMTP(m,t,p).
 ThrowMH(m,h) :- CallAt(m,p,mcallee), ThrowMH(mcallee,h), HT(h,t), FeasibleMTP(m,t,p).
 FeasibleMTP(m,t,p) :- EscapeMTP(m,t,p), NoEnclose(m,p).
-NoEnclose(m,p) :- ThrowPV(m,p,v), !EnclosingEH(m,eh,p), MEH(m,eh).
 FeasibleMTP(m,t,p) :- EscapeMTP(m,t,p), EnclosingEH(m,eh,p), FeasibleEH(m,eh).
 FeasibleEH(m,eh) :- CatchVH(v,h), VarEH(eh,v), OutermostEH(m,eh).
 FeasibleEH(m,eh) :- CatchVH(v,h), VarEH(eh,v), NestedEH(m,eh1,eh), FeasibleEH(m,eh1).
@@ -249,3 +248,4 @@ VHO(v,h) :- CatchVH(v,h).
 .include "NestedEH.datalog"
 .include "OutermostEH.datalog"
 .include "EnclosingEH.datalog"
+.include "NoEnclose.datalog"
