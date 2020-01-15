@@ -55,12 +55,13 @@ structH(h:H) input                       # Heap element h is of type struct
 IM(i:I,m:M) input                        # InvokeStmt i may call Method m
 reachableM(m:M) input                    # Methods reachable from Main method or entry point methods
 FinalEH(eh:EH,t:T,p:P) input             # ExceptionHandler eh catches an exception of Type t thrown at Program point p.
+MEH(m:M,eh:EH) input                     # Method m contains exception handler eh.
 EscapeMTP(m:M,t:T,p:P) input             # Exception of type t if thrown at Program Point p, escapes Method m.
 NestedEH(m:M,eh1:EH,eh2:EH) input        # In method m, exception handler eh1 nests exception handler eh2.
 OutermostEH(m:M,eh:EH) input             # In method m, exception handler eh is not nested within any other exception handler.
 EnclosingEH(m:M,eh:EH,p:P) input         # In method m, exception handler eh immediately encloses program point p that could potentially throw.
 
-# Below six relations are "input" points-to relations 
+# Below six relations are "input" points-to relations
 VH(v:V,h:H)  input                       # Variable v may point to AllocSite h
 VX(v:V,x:X)  input                       # Variable v may point to Address x
 FH(f:F,h:H)  input                       # Static field f may point to AllocSite h
@@ -243,6 +244,7 @@ VHO(v,h) :- CatchVH(v,h).
 .include "HFX.datalog"
 .include "PI.datalog"
 .include "FinalEH.datalog"
+.include "MEH.datalog"
 .include "EscapeMTP.datalog"
 .include "NestedEH.datalog"
 .include "OutermostEH.datalog"
