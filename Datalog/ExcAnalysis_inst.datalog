@@ -35,6 +35,12 @@ InRange(eh:EH,p:P) input                 # An exception raised at Program point 
 IM(i:I,m:M) input                        # Invoke statement i calls method m
 Escaping(t:T,h:H) input
 Caught(t:T,h:H) input
+NestedEH(m:M,eh1:EH,eh2:EH) input        # In method m, exception handler eh1 nests exception handler eh2.
+OutermostEH(m:M,eh:EH) input             # In method m, exception handler eh is not nested within any other exception handler.
+EnclosingEH(m:M,eh:EH,p:P) input         # In method m, exception handler eh immediately encloses program point p that could potentially throw.
+NoEnclose(m:M,p:P) input
+FeasibleMTP(m:M,t:T,p:P) input
+FeasibleEH(m:M,eh:EH) input
 
 
 
@@ -42,12 +48,18 @@ Caught(t:T,h:H) input
 #Instrumented Relations
 ########################
 
+ThrowMH_i1(m:M,h:H,p:P,v:V,t:T) printtuples
 ThrowMH_i2(m:M,h:H,p:P,mcallee:M,t:T) printtuples
 LinkMatch_i1(m1:M,v1:V,t1:T,m2:M,v2:V,t2:T,h:H) printtuples
 LinkMatch_i2(m1:M,v1:V,t1:T,m2:M,v2:V,t2:T,h1:H,h2:H) printtuples
+CatchVH_i1(ehv:V,h:H,m:M,p:P,v:V,t:T,eh:EH) printtuples
 CatchVH_i2(v:V,h:H,m:M,p:P,mcallee:M,t:T,eh:EH) printtuples
 Escaping_i1(t:T,h:H,m:M) printtuples
 REscaping_i1(t1:T,h1:H,t2:T,h2:H,m1:M,v1:V,m2:M,v2:V) printtuples
+FeasibleMTP_i1(m:M,t:T,p:P) printtuples
+FeasibleMTP_i2(m:M,t:T,p:P,eh:EH) printtuples
+FeasibleEH_i1(m:M,eh:EH,v:V,h:H) printtuples
+FeasibleEH_i2(m:M,eh:EH,v:V,h:H,eh1:EH) printtuples
 
 FInject(m:M,n:N,mcallee:M,t:T) printtuples
 LinkInject(m1:M,v1:V,t1:T,m2:M,v2:V,t2:T,m3:M,n:N) printtuples
@@ -64,6 +76,8 @@ PNMap(p:P,n:N) printtuples
 # ARG_COUNT CatchVH 2
 # ARG_COUNT LinkMatch 6
 # ARG_COUNT REscaping 4 
+# ARG_COUNT FeasibleMTP 3
+# ARG_COUNT FeasibleEH 2
 
 
 
@@ -78,13 +92,18 @@ LinkInject(m1,v1,t,m2,v2,t,m3,n) :- LinkMatch_i1(m1,v1,t,m2,v2,t,h), VarEH(eh,v1
 LinkInject(m1,v1,t1,m2,v2,t2,m3,n) :- LinkMatch_i2(m1,v1,t1,m2,v2,t2,h1,h2), VarEH(eh,v1), InRange(eh,p), PI(p,i), IM(i,m3), ILoc(i,n).
 
 # Propagating exception points-to
-ThrowMH_i2(m,h,p,mcallee,t) :- CallAt(m,p,mcallee), ThrowMH(mcallee,h), HT(h,t), EscapeMTP(m,t,p).
+ThrowMH_i1(m,h,p,v,t) :- ThrowPV(m,p,v), VHO(v,h), HT(h,t), FeasibleMTP(m,t,p).
+ThrowMH_i2(m,h,p,mcallee,t) :- CallAt(m,p,mcallee), ThrowMH(mcallee,h), HT(h,t), FeasibleMTP(m,t,p).
 LinkMatch_i1(m1,v1,t,m2,v2,t,h) :- CatchVH(v1,h), LinkedEx(m1,v1,t,m2,v2,t), VHO(v2,h), ExceptionObj(h), HT(h,t).
 LinkMatch_i2(m1,v1,t1,m2,v2,t2,h1,h2) :- CatchVH(v1,h1), LinkedEx(m1,v1,t1,m2,v2,t2), VHO(v2,h2), WrapsEx(h2,h1), HT(h1,t1), HT(h2,t2).
+CatchVH_i1(ehv,h,m,p,v,t,eh) :- ThrowPV(m,p,v), VHO(v,h), HT(h,t), FinalEH(eh,t,p), VarEH(eh,ehv).
 CatchVH_i2(v,h,m,p,mcallee,t,eh) :- CallAt(m,p,mcallee), ThrowMH(mcallee,h), HT(h,t), FinalEH(eh,t,p), VarEH(eh,v).
-Escaping_i1(t,h,m) :- ThrowMH(m,h), HT(h,t), ExceptionType(t), entryPtM(m), !Caught(t,h).
+Escaping_i1(t,h,m) :- ThrowMH(m,h), HT(h,t), ExceptionType(t), entryPtM(m).
 REscaping_i1(t1,h1,t2,h2,m1,v1,m2,v2) :- WrapsEx(h2,h1), Escaping(t2,h2), LinkMatch(m1,v1,t1,m2,v2,t2), HT(h1,t1).
-
+FeasibleMTP_i1(m,t,p) :- EscapeMTP(m,t,p), NoEnclose(m,p).
+FeasibleMTP_i2(m,t,p,eh) :- EscapeMTP(m,t,p), EnclosingEH(m,eh,p), FeasibleEH(m,eh).
+FeasibleEH_i1(m,eh,v,h) :- CatchVH(v,h), VarEH(eh,v), OutermostEH(m,eh).
+FeasibleEH_i2(m,eh,v,h,eh1) :- CatchVH(v,h), VarEH(eh,v), NestedEH(m,eh1,eh), FeasibleEH(m,eh1).
 
 
 .include "relV.datalog"
@@ -111,3 +130,9 @@ REscaping_i1(t1,h1,t2,h2,m1,v1,m2,v2) :- WrapsEx(h2,h1), Escaping(t2,h2), LinkMa
 .include "IM.datalog"
 .include "Escaping.datalog"
 .include "Caught.datalog"
+.include "NestedEH.datalog"
+.include "OutermostEH.datalog"
+.include "EnclosingEH.datalog"
+.include "NoEnclose.datalog"
+.include "FeasibleMTP.datalog"
+.include "FeasibleEH.datalog"

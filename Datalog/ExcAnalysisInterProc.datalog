@@ -99,9 +99,9 @@ DerefRight(l:V,r:V) printtuples
 ThrowMH(m:M,h:H) printtuples             # The exception object h escapes Method m.
 CatchVH(v:V,h:H) printtuples             # Variable v which is the formal parameter of some catch handler, points-to exception object h.
 
-FeasibleMTP(m:M,t:T,p:P)
-NoEnclose(m:M,p:P)
-FeasibleEH(m:M,eh:EH)
+FeasibleMTP(m:M,t:T,p:P) printtuples
+NoEnclose(m:M,p:P) printtuples
+FeasibleEH(m:M,eh:EH) printtuples
 
 
 ###

@@ -21,7 +21,7 @@ REscaping(t1:T,h1:H,t2:T,h2:H) printtuples
 
 
 # Rules
-Escaping(t,h) :- ThrowMH(m,h), HT(h,t), ExceptionType(t), entryPtM(m), !Caught(t,h).
+Escaping(t,h) :- ThrowMH(m,h), HT(h,t), ExceptionType(t), entryPtM(m).
 REscaping(t1,h1,t2,h2) :- WrapsEx(h2,h1), Escaping(t2,h2), LinkMatch(m1,v1,t1,m2,v2,t2), HT(h1,t1).
 REscaping(t1,h1,t2,h2) :- SharesFld(h2,h1), Escaping(t2,h2), LinkMatch(m1,v1,t1,m2,v2,t2), HT(h1,t1).
 Caught(t,h) :- CatchVH(v,h), HT(h,t), ExceptionType(t).
