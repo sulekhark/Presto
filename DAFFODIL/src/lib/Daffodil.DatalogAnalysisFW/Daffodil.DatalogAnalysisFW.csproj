@@ -219,6 +219,7 @@
     <Compile Include="ProgramFacts\Relations\RelMStructHFH.cs" />
     <Compile Include="ProgramFacts\Relations\RelMV.cs" />
     <Compile Include="ProgramFacts\Relations\RelNestedEH.cs" />
+    <Compile Include="ProgramFacts\Relations\RelNoEnclose.cs" />
     <Compile Include="ProgramFacts\Relations\RelOutermostEH.cs" />
     <Compile Include="ProgramFacts\Relations\RelPI.cs" />
     <Compile Include="ProgramFacts\Relations\RelPrevEH.cs" />

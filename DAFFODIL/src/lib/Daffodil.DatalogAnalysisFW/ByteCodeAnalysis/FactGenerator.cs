@@ -734,6 +734,7 @@ namespace Daffodil.DatalogAnalysisFW.AnalysisNetConsole
             ProgramRels.relILoc.Add(instW, (int)invkInst.Offset);
             foreach (EhStruct ehs in ehStack) ProgramRels.relHasMethInvk.Add(ehs.ehW, instW);
             if (ehStack.Count > 0) ProgramRels.relEnclosingEH.Add(mRefW, ehStack.Peek().ehW, instW);
+            if (ehStack.Count == 0) ProgramRels.relNoEnclose.Add(mRefW, instW);
 
             if (invkInst.HasResult)
             {
@@ -816,6 +817,7 @@ namespace Daffodil.DatalogAnalysisFW.AnalysisNetConsole
                 ProgramRels.relILoc.Add(instW, (int)invkInst.Offset);
                 foreach (EhStruct ehs in ehStack) ProgramRels.relHasMethInvk.Add(ehs.ehW, instW);
                 if (ehStack.Count > 0) ProgramRels.relEnclosingEH.Add(mRefW, ehStack.Peek().ehW, instW);
+                if (ehStack.Count == 0) ProgramRels.relNoEnclose.Add(mRefW, instW);
 
                 if (invkInst.HasResult)
                 {
@@ -894,6 +896,7 @@ namespace Daffodil.DatalogAnalysisFW.AnalysisNetConsole
             ProgramRels.relThrowPV.Add(mRefW, instW, varW);
             foreach (EhStruct ehs in ehStack) ProgramRels.relHasThrow.Add(ehs.ehW, instW);
             if (ehStack.Count > 0) ProgramRels.relEnclosingEH.Add(mRefW, ehStack.Peek().ehW, instW);
+            if (ehStack.Count == 0) ProgramRels.relNoEnclose.Add(mRefW, instW);
             return;
         }
 
