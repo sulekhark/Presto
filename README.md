@@ -1,6 +1,6 @@
 # Presto 
 
-Uses DAFFODIL (Datalog Aanlysis Framework for Dotnet IL).
+Uses DAFFODIL (Datalog Analysis Framework for Dotnet IL).
 
 Checkout Presto in some directory, say, <WORK_DIR>
 Add the following to ~/.bashrc:
