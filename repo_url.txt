@@ -1,4 +1,4 @@
-https://github.com/sulekhark/DAFFODIL.git
+https://github.com/sulekhark/Presto.git
 
 BnetTools/libdai: The first checked-in version is from: git@bitbucket.org:sulekha/libdai.git
 The last update to the above repo was on: 2018-09-26
