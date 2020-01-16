@@ -29,7 +29,7 @@ baseQueriesFileName = sys.argv[3]
 oracleQueriesFileName = sys.argv[4]
 
 # wrapperExecutable = './libdai/wrapper'
-wrapperExecutable = '/home/sulekha/DAFFODIL/BnetTools/libdai/wrapper'
+wrapperExecutable = '/home/sulekha/Presto/BnetTools/libdai/wrapper'
 
 logging.basicConfig(level=logging.INFO, \
                     format="[%(asctime)s] %(levelname)s [%(name)s.%(funcName)s:%(lineno)d] %(message)s", \

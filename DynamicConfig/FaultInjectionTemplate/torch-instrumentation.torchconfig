@@ -2,7 +2,7 @@
 <InstrumentationConfiguration>
   <Assemblies>
     <!-- put names of assemblies that you want to instrument-->
-    <Assembly>DAFFODIL_TORCH_ASSEMBLY_NAME</Assembly>
+    <Assembly>PRESTO_TORCH_ASSEMBLY_NAME</Assembly>
   </Assemblies>
 
   <LoggingTorchPoints>
@@ -10,7 +10,7 @@
   </LoggingTorchPoints>
 
   <FaultInjectionTorchPoints>
-    <API>DAFFODIL_TORCH_CALLEE</API>
+    <API>PRESTO_TORCH_CALLEE</API>
   </FaultInjectionTorchPoints>
 
 

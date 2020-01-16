@@ -3,7 +3,7 @@
 configDir=$1
 assemblyListFile=$2
 outputFile="temp_out"
-searchKeyword="DAFFODIL_TORCH_ASSEMBLY_NAME"
+searchKeyword="PRESTO_TORCH_ASSEMBLY_NAME"
 
 instConfigFile=$configDir/torch-instrumentation.torchconfig
 apiLine=`grep $searchKeyword $instConfigFile` 

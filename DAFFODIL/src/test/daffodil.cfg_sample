@@ -1,6 +1,6 @@
-AssemblyPath= C:\Users\torch\work\DAFFODIL\DAFFODIL\src\test\T12\bin\Debug\T12.exe
-DatalogDir= C:\Users\torch\work\DAFFODIL\DAFFODIL\src\test\T12\datalog
-LogDir= C:\Users\torch\work\DAFFODIL\DAFFODIL\src\test\T12\logs
-StubsPath= C:\Users\torch\work\DAFFODIL\DAFFODIL\src\stubs\Daffodil.Stubs\bin\Debug\Daffodil.Stubs.dll
-SaveScopePath= C:\Users\torch\work\DAFFODIL\DAFFODIL\src\test\T12\datalog
+AssemblyPath= C:\Users\torch\work\Presto\DAFFODIL\src\test\T12\bin\Debug\T12.exe
+DatalogDir= C:\Users\torch\work\Presto\DAFFODIL\src\test\T12\datalog
+LogDir= C:\Users\torch\work\Presto\DAFFODIL\src\test\T12\logs
+StubsPath= C:\Users\torch\work\Presto\DAFFODIL\src\stubs\Daffodil.Stubs\bin\Debug\Daffodil.Stubs.dll
+SaveScopePath= C:\Users\torch\work\Presto\DAFFODIL\src\test\T12\datalog
 LoadSavedScope= false 
