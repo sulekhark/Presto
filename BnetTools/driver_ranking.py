@@ -22,8 +22,8 @@ dictFileName = sys.argv[1]
 fgFileName = sys.argv[2]
 baseQueriesFileName = sys.argv[3]
 
-# wrapperExecutable = './libdai/wrapper'
-wrapperExecutable = '/home/sulekha/Presto/BnetTools/libdai/wrapper'
+rootDir = os.environ['PRESTO_HOME']
+wrapperExecutable = rootDir + '/BnetTools/libdai/wrapper'
 
 logging.basicConfig(level=logging.INFO, \
                     format="[%(asctime)s] %(levelname)s [%(name)s.%(funcName)s:%(lineno)d] %(message)s", \

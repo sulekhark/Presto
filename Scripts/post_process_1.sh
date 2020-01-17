@@ -1,5 +1,6 @@
 #!/bin/bash
 
+. $PRESTO_HOME/Configurations/presto_cfg.sh
 dlogTgz=$1
 tar xzf $dlogTgz
 rm -rf bnet
