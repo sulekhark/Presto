@@ -2,7 +2,7 @@
 
 # Given a bnet.out file produced by cons_all2bnet.py, and a ruleProb.txt file mapping each rule to its probability of
 # firing, this script produces a factorGraph.fg file accepted by LibDAI.
-# ./bnet2fg.py edb_prob.txt [ruleProb.txt] < named_bnet.out > factorGraph.fg 2> bnet2fg.log
+# ./bnet2fg.py edb_prob.txt [rule_prob.txt] < named_bnet.out > factorGraph.fg 2> bnet2fg.log
 
 import logging
 import math
@@ -14,8 +14,20 @@ if (len(sys.argv) == 3):
     ruleProbFileName = sys.argv[2]
 else:
     ruleProbFileName = ""
-defaultRuleProbability = 1.0 
-defaultEdbProbability = 0.9
+
+clampRule = os.environ['CLAMP_RULE_PROB_TO_1']
+if clampRule == "true":
+    defaultRuleProbability = 1.0 
+else:
+    defRuleProb = os.environ['DEFAULT_RULE_PROB']
+    defaultRuleProbability = float(defRuleProb)
+ 
+clampEdb = os.environ['CLAMP_EDB_PROB_TO_1']
+if clampEdb == "true":
+    defaultEdbProbability = 1.0 
+else:
+    defEdbProb = os.environ['DEFAULT_EDB_PROB']
+    defaultEdbProbability = float(defEdbProb)
 
 logging.basicConfig(level=logging.INFO, \
                     format="[%(asctime)s] %(levelname)s [%(name)s.%(funcName)s:%(lineno)d] %(message)s", \
