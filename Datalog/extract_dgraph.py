@@ -32,7 +32,8 @@ ruleDictFile = open(ruleDictFileName, 'w')
 baseQueriesFileName = outDirName + os.path.sep + "base_queries.txt"
 baseQueriesFile = open(baseQueriesFileName, 'w')
 
-outputRelFileNames = "Escaping.datalog REscaping.datalog"
+queryTupleFileName = os.environ['QUERY_IDB_SET']
+opRelFileNames = { line.strip() + ".datalog" for line in open(queryTupleFileName) }
 ruleNamePrefix = "R"
 ruleNameCount = 0
 marker = '@'
@@ -231,7 +232,6 @@ for line in open(instrumentedAnalFileName):
 dgraphFile.close()
 ruleDictFile.close()
 
-opRelFileNames = outputRelFileNames.split(' ')
 for opRelFile in opRelFileNames:
     for line in open(opRelFile):
         line = line.strip()
