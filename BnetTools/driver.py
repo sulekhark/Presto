@@ -22,6 +22,7 @@ import subprocess
 import sys
 import time
 import re
+import os
 
 dictFileName = sys.argv[1]
 fgFileName = sys.argv[2]
