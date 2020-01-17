@@ -9,12 +9,18 @@
 import logging
 import re
 import sys
+import os
 
 
 if len(sys.argv) > 1:
     probEdbFileName = sys.argv[1]
 else:
     probEdbFileName = ""
+
+removeEdbTransitive = False
+clampRule = os.environ['CLAMP_RULE_PROB_TO_1']
+if clampRule == "true":
+    removeEdbTransitive = True
 
 logging.basicConfig(level=logging.INFO, \
                     format="[%(asctime)s] %(levelname)s [%(name)s.%(funcName)s:%(lineno)d] %(message)s", \
@@ -56,10 +62,10 @@ def isProbEdb(t):
          return True
    return False
 
-def isNotEdb(t):
-   if t in allInputTuples:
-      return False
-   return True
+def isIdb(t):
+   if t in allConsequents:
+      return True
+   return False
 
 allTuples = { lit2Tuple(literal) for clause in allClauses for literal in clause }
 allConsequents = { clause2Consequent(clause) for clause in allClauses }
@@ -74,15 +80,26 @@ logging.info('Discovered {0} input tuples.'.format(len(allInputTuples)))
 # 2. Simplify clauses
 
 def simplifyClause(clause, conseqs):
-    return tuple([ lit for lit in clause if (isNotEdb(lit2Tuple(lit)) or isProbEdb(lit2Tuple(lit))) ])
+    return tuple([ lit for lit in clause if (isIdb(lit2Tuple(lit)) or isProbEdb(lit2Tuple(lit))) ])
 
-newSimplifiedClauses = set()
-newSimplifiedRuleNames = {} 
+change = True
+currSimplifiedClauses = allClauses
+currSimplifiedRuleNames = allRuleNames
 
-for clause in allClauses:
-    sc = simplifyClause(clause, allConsequents)
-    newSimplifiedClauses.add(sc)
-    newSimplifiedRuleNames[sc] = allRuleNames[clause]
+while change:
+    change = False
+    newSimplifiedClauses = set()
+    newSimplifiedRuleNames = {}
+    for clause in currSimplifiedClauses:
+        sc = simplifyClause(clause, allConsequents)
+        if len(sc) == 1 and removeEdbTransitive:
+            allConsequents = allconsequents - {clause2Consequent(sc)}
+            change = True
+        else:
+            newSimplifiedClauses.add(sc)
+            newSimplifiedRuleNames[sc] = currSimplifiedRuleNames[clause]
+    currSimplifiedClauses = newSimplifiedClauses
+    currSimplifiedRuleNames = newSimplifiedRuleNames
 
 ########################################################################################################################
 # 3. Print output
