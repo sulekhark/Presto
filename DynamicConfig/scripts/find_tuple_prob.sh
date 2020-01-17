@@ -26,6 +26,10 @@ function getLoc
     local pp=$1
     local str=`grep "PNMap($pp," $pnMap`
     ppLoc="$(echo $str | cut -d',' -f2 | cut -d ')' -f1)"
+    if [ "$ppLoc" == "" ] # This could happen because PNMap has locs only for invoke statements.
+    then
+        ppLoc="0"
+    fi
 }
 
 function getMethodName
@@ -63,7 +67,7 @@ do
         then
             mCnt=0
             mExcCnt=0
-            for logfile in `find $dirName -name execution_log`
+            for logfile in `find $dirName -name execution_log 2> /dev/null`
             do
                 mCnt=$((mCnt + 1)) 
                 grep -q $excType $logfile 
@@ -82,7 +86,7 @@ do
         else
             mCnt_tot=0
             mExcCnt_tot=0
-            for logfile in `find $dirName -name torch*`
+            for logfile in `find $dirName -name torch* 2> /dev/null`
             do
                 awk -F';' '{print $8 $15;}' $logfile > $tempFile
                 mCnt=`grep $methName $tempFile | wc -l`
@@ -115,7 +119,7 @@ do
         dirName="$dynLogDir/FaultInjectionSet/LinkedEx/T_${arg1}_${arg2}_${arg3}_${methId}_${arg5}_${excTypeId}"
         mCnt_tot=0
         mExcCnt_tot=0
-        for logfile in `find $dirName -name torch*`
+        for logfile in `find $dirName -name torch* 2> /dev/null`
         do
             awk -F';' '{print $8 " " $15;}' $logfile > $tempFile
             mCnt=`grep $methName $tempFile | wc -l`
