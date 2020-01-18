@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-# ./contextualize.py < named_cons_cr_lf_cr.txt.ee > named_cons_cr_lf_cr_ctxt.txt.ee  
+# ./refine.py < named_cons_cr_lf_cr.txt.ee > named_cons_cr_lf_cr_ctxt.txt.ee  
 
 import logging
 import re

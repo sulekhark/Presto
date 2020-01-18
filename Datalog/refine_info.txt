@@ -1,0 +1,3 @@
+CallAt CONDITIONAL_ON CallAt
+CondCallAt(m1,p1,m2,p2,mcallee) :- CallAt(m2,p2,mcallee), CallAt(m1,p1,m2).
+CondThrowMH(m1,p1,m2,h) :- ThrowMH(m2,h), CallAt(m1,p1,m2).
