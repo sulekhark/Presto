@@ -1,5 +1,6 @@
 #!/bin/bash
 
+. $PRESTO_HOME/Configurations/presto_cfg.sh
 dynlogTgz=$1
 tar xzf $dynlogTgz
 

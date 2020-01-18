@@ -8,6 +8,7 @@ import logging
 import math
 import subprocess
 import sys
+import os
 
 edbProbFileName = sys.argv[1]
 if (len(sys.argv) == 3):

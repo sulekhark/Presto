@@ -13,9 +13,10 @@ datalogDir=../datalog
 pnMap=$datalogDir/PNMap.datalog
 methodMap=$dynCfgDir/id_to_method_map.txt
 excMap=$dynCfgDir/id_to_exctype_map.txt
+enclosingCatch=$datalogDir/EnclosingEH.datalog
 
-minProb=0.1
-maxProb=0.95
+minProb=0.5
+maxProb=0.99
 
 tempFile=temp_file.txt
 rm -rf $outputFile
@@ -47,6 +48,14 @@ function getExcType
     excType="$(echo $str | cut -d':' -f2)"
 }
 
+function checkEnclosingCatch
+{
+    local meth=$1
+    local pp=$2
+    grep "EnclosingEH($meth," $enclosingCatch | grep ",$pp)" > /dev/null 2>&1
+    enclRet=$?
+}
+
 #####################################################################
 
 while read -r tupl
@@ -62,20 +71,29 @@ do
         getMethodName $methId
         getExcType $excTypeId
 
+	checkEnclosingCatch $methId $ppId
         dirName="$dynLogDir/FaultInjectionSet/EscapeMTP/T_${methId}_${ppLoc}_*_${excTypeId}"
         if [[ $methName == *.Main ]]
         then
             mCnt=0
             mExcCnt=0
+            logFound=0
             for logfile in `find $dirName -name execution_log 2> /dev/null`
             do
+                logFound=1
                 mCnt=$((mCnt + 1)) 
                 grep -q $excType $logfile 
                 if [ $? -eq 0 ]; then
                     mExcCnt=$((mExcCnt + 1))
                 fi
             done
-            if [ $mCnt -eq 0 ]
+            if [ $logFound -eq 0 ]
+            then
+                prob=$maxProb
+            elif [ $mCnt -eq 0 -a $enclRet -eq 0 ] # EscapeNTP tuple is enclosed in a catch block
+            then
+                prob=$maxProb
+            elif [ $mCnt -eq 0 ]
             then
                 prob=$minProb
             else
@@ -86,15 +104,23 @@ do
         else
             mCnt_tot=0
             mExcCnt_tot=0
+            logFound=0
             for logfile in `find $dirName -name torch* 2> /dev/null`
             do
+                logFound=1
                 awk -F';' '{print $8 $15;}' $logfile > $tempFile
                 mCnt=`grep $methName $tempFile | wc -l`
                 mExcCnt=`grep $methName $tempFile | grep $excType | wc -l`
                 mCnt_tot=$((mCnt_tot + mCnt))
                 mExcCnt_tot=$((mExcCnt_tot + mExcCnt))
             done
-            if [ $mCnt_tot -eq 0 ]
+            if [ $logFound -eq 0 ]
+            then
+                prob=$maxProb
+            elif [ $mCnt_tot -eq 0 -a $enclRet -eq 0 ] # EscapeNTP tuple is enclosed in a catch block
+            then
+                prob=$maxProb
+            elif [ $mCnt_tot -eq 0 ]
             then
                 prob=$minProb
             else
@@ -119,15 +145,20 @@ do
         dirName="$dynLogDir/FaultInjectionSet/LinkedEx/T_${arg1}_${arg2}_${arg3}_${methId}_${arg5}_${excTypeId}"
         mCnt_tot=0
         mExcCnt_tot=0
+        logFound=0
         for logfile in `find $dirName -name torch* 2> /dev/null`
         do
+            logFound=1
             awk -F';' '{print $8 " " $15;}' $logfile > $tempFile
             mCnt=`grep $methName $tempFile | wc -l`
             mExcCnt=`grep $methName $tempFile | grep $excType | wc -l`
             mCnt_tot=$((mCnt_tot + mCnt))
             mExcCnt_tot=$((mExcCnt_tot + mExcCnt))
         done
-        if [ $mCnt_tot -eq 0 ]
+        if [ $logFound -eq 0 ]
+        then
+            prob=$maxProb
+        elif [ $mCnt_tot -eq 0 ]
         then
             prob=$minProb
         else
