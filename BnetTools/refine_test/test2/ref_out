@@ -1,0 +1,7 @@
+R1_n: NOT CondCallAt(1,102,2,100,3), NOT ThrowMH(3,200), CondThrowMH(1,102,2,200)
+R1_n: NOT CallAt(1,102,2), NOT CondThrowMH(1,102,2,200), ThrowMH(1,200)
+R1: NOT CallAt(1,102,2), NOT ThrowMH(2,200), ThrowMH(1,200)
+R1: NOT CallAt(4,102,2), NOT ThrowMH(2,200), ThrowMH(4,200)
+R1_n: NOT CallAt(4,102,2), NOT CondThrowMH(4,102,2,200), ThrowMH(4,200)
+R1: NOT CallAt(2,101,3), NOT ThrowMH(3,200), ThrowMH(2,200)
+R1_n: NOT CondCallAt(4,102,2,100,3), NOT ThrowMH(3,200), CondThrowMH(4,102,2,200)

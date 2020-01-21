@@ -1,0 +1,13 @@
+Jan 21st, 2020
+--------------
+
+This is a constructed test case
+
+test command:
+python3 ../../refine.py edb_to_refine.txt < ip.txt > t
+To refine all edb tuples:
+python3 ../../refine.py  < ip.txt > t
+
+
+to check: diff with ref_out after sorting both ref_out and t
+Note: ref_out is produced with edb_to_refine.txt

@@ -1,0 +1,13 @@
+Jan 21st, 2020
+--------------
+
+This test case is from demo benchmark: E2EDemoR
+
+test command:
+python3 ../../refine.py edb_to_refine.txt < named_cons_cr_lf_cr.txt.ee > t
+To refine all edb tuples:
+python3 ../../refine.py  < named_cons_cr_lf_cr.txt.ee > t
+
+
+to check: diff with ref_out after sorting both ref_out and t
+Note: ref_out is produced with edb_to_refine.txt
