@@ -14,10 +14,8 @@ python3 ./extract_dgraph.py ExcAnalysis_inst.datalog ../bnet
 
 cd ../bnet
 $PRESTO_HOME/BnetTools/get_coreachable/get_coreachable named_cons_all.txt named_cons_cr.txt base_queries.txt 0 0
-# cp named_cons_all.txt named_cons_coreach.txt
 $PRESTO_HOME/BnetTools/dfs_cycle_elim/dfs_cycle_elim named_cons_cr.txt named_cons_cr_lf.txt rule_prob.txt rule_prob_out.txt
 $PRESTO_HOME/BnetTools/get_coreachable/get_coreachable named_cons_cr_lf.txt named_cons_cr_lf_cr.txt base_queries.txt 0 0
-# cp named_cons_loopfree.txt named_cons_cr_lf_cr.txt
 $PRESTO_HOME/BnetTools/elide_edb_ext.py prob_edb.txt < named_cons_cr_lf_cr.txt > named_cons_cr_lf_cr.txt.ee
 $PRESTO_HOME/BnetTools/get_edb_tuples.py prob_edb_tuples.txt < named_cons_cr_lf_cr.txt.ee
 
