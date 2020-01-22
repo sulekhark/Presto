@@ -189,13 +189,13 @@ newRuleSet = set()
 
 for clause in allClauses:
     tup1 = getTuple(clause, tuple1RelName)
-    if tup1 != None:
+    if tup1 is not None:
         # print(clause)
         consequent = clause2Consequent(clause)
         consumers = []
         for cons in allClauses:
             antecedents = clause2Antecedents(cons)
-            if (getTuple(antecedents, consequent) != None) and (getTuple(antecedents, tuple2RelName) != None):
+            if (getTuple(antecedents, consequent) is not None) and (getTuple(antecedents, tuple2RelName) is not None):
                 consumers.append(cons)
         # print(consumers)
         if len(consumers) > 0:
