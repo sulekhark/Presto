@@ -17,6 +17,7 @@ enclosingCatch=$datalogDir/EnclosingEH.datalog
 
 minProb=0.5
 maxProb=0.99
+midProb=0.95
 
 tempFile=temp_file.txt
 rm -rf $outputFile
@@ -90,9 +91,11 @@ do
             if [ $logFound -eq 0 ]
             then
                 prob=$maxProb
-            elif [ $mCnt -eq 0 -a $enclRet -eq 0 ] # EscapeNTP tuple is enclosed in a catch block
+            # elif [ $mCnt -eq 0 -a $enclRet -eq 0 ] # EscapeNTP tuple is enclosed in a catch block
+            # TEMP FIX BELOW - SRK
+            elif [ $enclRet -eq 0 ] # EscapeNTP tuple is enclosed in a catch block
             then
-                prob=$maxProb
+                prob=$midProb
             elif [ $mCnt -eq 0 ]
             then
                 prob=$minProb
@@ -117,9 +120,11 @@ do
             if [ $logFound -eq 0 ]
             then
                 prob=$maxProb
-            elif [ $mCnt_tot -eq 0 -a $enclRet -eq 0 ] # EscapeNTP tuple is enclosed in a catch block
+            # elif [ $mCnt_tot -eq 0 -a $enclRet -eq 0 ] # EscapeNTP tuple is enclosed in a catch block
+            # TEMP FIX BELOW - SRK
+            elif [ $enclRet -eq 0 ] # EscapeNTP tuple is enclosed in a catch block
             then
-                prob=$maxProb
+                prob=$midProb
             elif [ $mCnt_tot -eq 0 ]
             then
                 prob=$minProb
@@ -189,7 +194,11 @@ do
             mCnt_tot=$((mCnt_tot + mCnt))
             mCalleeCnt_tot=$((mCalleeCnt_tot + mCalleeCnt))
         done 
-        if [ $mCnt_tot -eq 0 ]
+        checkEnclosingCatch $callerId $ppId
+        if [ $mCalleeCnt_tot -eq 0 -a $enclRet -eq 0 ] # EscapeNTP tuple is enclosed in a catch block
+        then
+            prob=$midProb
+        elif [ $mCnt_tot -eq 0 ]
         then
             prob=$minProb
         else 

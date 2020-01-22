@@ -16,7 +16,8 @@ then
     if [ -s set2.txt ]
     then
         find $dynLogDir/Logging -name torch\* > set2_logfiles.txt
-        $PRESTO_HOME/DynamicConfig/scripts/find_conditional_prob_1.py set2_logfiles.txt set2.txt bnet_dict.out.refined >> edb_probabilities.txt.refined
+        $PRESTO_HOME/DynamicConfig/scripts/find_conditional_prob_1.py set2_logfiles.txt set2.txt bnet_dict.out.refined >> set2_probs.txt.refined
+        cat set2_probs.txt.refined >> edb_probabilities.txt.refined
     fi
     if [ -s set3.txt ]
     then

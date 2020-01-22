@@ -15,11 +15,14 @@ logsFileName = sys.argv[1]
 probEdbFileName = sys.argv[2]
 bnetDictFileName = sys.argv[3]
 
-pnMapFileName="../datalog/PNMap.datalog"
-methodMapFileName="../dynconfig/id_to_method_map.txt"
+pnMapFileName = "../datalog/PNMap.datalog"
+methodMapFileName = "../dynconfig/id_to_method_map.txt"
+enclosingCatchFileName = "../datalog/EnclosingEH.datalog"
 
 minProb = 0.5
 maxProb = 0.99
+midProb = 0.95
+
 logging.basicConfig(level=logging.INFO, \
                             format="[%(asctime)s] %(levelname)s [%(name)s.%(funcName)s:%(lineno)d] %(message)s", \
                                                 datefmt="%H:%M:%S")
@@ -93,6 +96,7 @@ for entry in bnetDictEntries:
         parts = entry.split(': ')
         bnetDictMap[parts[1]] = parts[0]
 
+
 pnMap = {}
 pnEntries = [ line.strip() for line in open(pnMapFileName) ]
 for entry in pnEntries:
@@ -108,6 +112,15 @@ for entry in methodEntries:
     parts = entry.split(':')
     parts[1] = parts[1].split('(')[0]  #  SRK Temp fix until method args are fixed.
     methodMap[parts[0]] = parts[1]
+
+
+enclosingCatchMap = {}
+enCEntries = [ line.strip() for line in open(enclosingCatchFileName) ]
+for entry in enCEntries:
+    entry = entry[12:] # remove EnclosingEH(
+    entry = entry[:-2] # remove ).
+    parts = entry.split(',')
+    enclosingCatchMap[parts[2]] = parts[0]
 
 
 ########################################################################################################################
@@ -142,5 +155,10 @@ for entry in probEdbEntries:
             childNdx = node.getChild(callee)
             if (childNdx != -1) and (node.offset[childNdx] == callerLoc):
                 callCnt += 1
-    prob = minProb + ((maxProb - minProb) * callCnt / totalCnt)
+    if (callCnt == 0) and (callerPP in enclosingCatchMap) and (enclosingCatchMap[callerPP] == callerId):
+        prob = midProb
+    elif totalCnt == 0:
+        prob = minProb
+    else:
+        prob = minProb + ((maxProb - minProb) * callCnt / totalCnt)
     print("{0}: {1}".format(bnetNodeId, prob))
