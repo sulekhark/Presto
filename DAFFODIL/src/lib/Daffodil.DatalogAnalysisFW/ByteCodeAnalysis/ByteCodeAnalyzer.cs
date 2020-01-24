@@ -103,13 +103,13 @@ namespace Daffodil.DatalogAnalysisFW.AnalysisNetConsole
             rtaLogSW.WriteLine();
             foreach (IMethodDefinition m in rtaAnalyzer.methods)
             {
-                rtaLogSW.WriteLine(m.GetName());
+                rtaLogSW.WriteLine(m.FullName());
             }
             rtaLogSW.WriteLine();
             rtaLogSW.WriteLine();
             foreach (IMethodDefinition m in rtaAnalyzer.entryPtMethods)
             {
-                rtaLogSW.WriteLine(m.GetName());
+                rtaLogSW.WriteLine(m.FullName());
             }
             rtaLogSW.WriteLine();
             rtaLogSW.WriteLine();

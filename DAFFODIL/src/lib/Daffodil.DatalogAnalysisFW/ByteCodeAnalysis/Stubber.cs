@@ -186,7 +186,7 @@ namespace Daffodil.DatalogAnalysisFW.AnalysisNetConsole
             }
             if (!rtaAnalyzer.visitedMethods.Contains(methToAdd) && !rtaAnalyzer.methods.Contains(methToAdd))
             {
-                rtaAnalyzer.rtaLogSW.WriteLine("SRK_DBG: Adding method: {0}", methToAdd.GetName());
+                rtaAnalyzer.rtaLogSW.WriteLine("SRK_DBG: Adding method: {0}", methToAdd.FullName());
                 rtaAnalyzer.methods.Add(methToAdd);
             }
             return methToAdd;

@@ -182,7 +182,7 @@ namespace Daffodil.DatalogAnalysisFW.AnalysisNetConsole
                         // Add only the Main method as entry point
                         if (Utils.IsMainMethod(methodDefinition))
                         {
-                            rtaAnalyzer.rtaLogSW.WriteLine("Adding main method: {0}", methodDefinition.GetName());
+                            rtaAnalyzer.rtaLogSW.WriteLine("Adding main method: {0}", methodDefinition.FullName());
                             IMethodDefinition addedMeth = Stubber.CheckAndAdd(methodDefinition);
                             // The assumption is that addedMeth is not a template method. Here it is safe because it holds for the main method.
                             if (addedMeth != null) rtaAnalyzer.entryPtMethods.Add(addedMeth);
@@ -195,7 +195,7 @@ namespace Daffodil.DatalogAnalysisFW.AnalysisNetConsole
                         {
                             // Otherwise, add all public methods as entry points
                             IMethodDefinition addedMeth = Stubber.CheckAndAdd(methodDefinition);
-                            rtaAnalyzer.rtaLogSW.WriteLine("Adding method: {0}", methodDefinition.GetName());
+                            rtaAnalyzer.rtaLogSW.WriteLine("Adding method: {0}", methodDefinition.FullName());
                             // The assumption here is that addedMeth is not a template method.
                             // TODO: It may be the case that this assumption does not hold in some cases.
                             if (addedMeth != null) rtaAnalyzer.entryPtMethods.Add(addedMeth);

@@ -1,5 +1,7 @@
 ﻿/******
-Add the following code at the end of DoRTA() in ByteCodeAnalyzer.cs to test:
+Add the following code at the end of DoRTA() in ByteCodeAnalyzer.cs to test.
+Then, you will have to set breakpoints at various points in the code below to test the behavior of SignaturesAreEqual.
+
  foreach (IMethodDefinition meth1 in rtaAnalyzer.methods)
             {
                 foreach (IMethodDefinition meth2 in rtaAnalyzer.methods)
