@@ -16,12 +16,13 @@ then
     if [ -s set2.txt ]
     then
         find $dynLogDir/Logging -name torch\* > set2_logfiles.txt
-        $PRESTO_HOME/DynamicConfig/scripts/find_conditional_prob_1.py set2_logfiles.txt set2.txt bnet_dict.out.refined >> set2_probs.txt.refined
+        $PRESTO_HOME/DynamicConfig/scripts/find_conditional_prob_1.py set2_logfiles.txt set2.txt bnet_dict.out.refined > set2_probs.txt.refined
         cat set2_probs.txt.refined >> edb_probabilities.txt.refined
     fi
     if [ -s set3.txt ]
     then
-        $PRESTO_HOME/DynamicConfig/scripts/find_conditional_prob_2.py set3.txt bnet_dict.out.refined >> edb_probabilities.txt.refined
+        $PRESTO_HOME/DynamicConfig/scripts/find_conditional_prob_2.py set3.txt bnet_dict.out.refined > set3_probs.txt.refined
+        set3_probs.txt.refined >> edb_probabilities.txt.refined
     fi
     $PRESTO_HOME/BnetTools/bnet2fg.py edb_probabilities.txt.refined  < named_bnet.out.refined > factorGraph.fg.refined 2> bnet2fg.log.refined
     $PRESTO_HOME/BnetTools/arcmd $PRESTO_HOME/BnetTools bnet_dict.out.refined factorGraph.fg.refined base_queries.txt 500
