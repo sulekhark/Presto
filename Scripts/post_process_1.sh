@@ -21,10 +21,10 @@ $PRESTO_HOME/BnetTools/get_edb_tuples.py prob_edb_tuples.txt < named_cons_cr_lf_
 
 cp named_cons_cr_lf_cr.txt.ee named_cons_cr_lf_cr.txt.ee.refined
 crntInFile=named_cons_cr_lf_cr.txt.ee.refined
-tempOutFile="tempOutfile"
+tempOutFile="tempOutFile"
 for i in $REFINE_INFO
 do
-    $PRESTO_HOME/BnetTools/refine.py $i < $crntInFile > $tempOutFile
+    $PRESTO_HOME/BnetTools/refine.py $i rule_dict.txt < $crntInFile > $tempOutFile
     mv $tempOutFile $crntInFile
 done
 $PRESTO_HOME/BnetTools/get_edb_tuples.py prob_edb_tuples.txt.refined < named_cons_cr_lf_cr.txt.ee.refined

@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-# ./refine.py refineInfoFileName [edb_to_refine_file_name] < named_cons_cr_lf_cr.txt.ee > named_cons_cr_lf_cr_refined.txt.ee
+# ./refine.py refineInfoFileName ruleDictFileName [edb_to_refine_file_name] < named_cons_cr_lf_cr.txt.ee > named_cons_cr_lf_cr_refined.txt.ee
 
 import logging
 import re
@@ -11,10 +11,13 @@ logging.basicConfig(level=logging.INFO, \
                     datefmt="%H:%M:%S")
 
 refineInfoFileName = sys.argv[1]
-newSuffix = '_n'
+ruleDictFileName = sys.argv[2]
+pSuffix = '_p'
+cSuffix = '_c'
+pcSuffix = '_pc'
 
-if len(sys.argv) > 2:
-    refineEdbFileName = sys.argv[2]
+if len(sys.argv) > 3:
+    refineEdbFileName = sys.argv[3]
 else:
     refineEdbFileName = ""
  
@@ -216,13 +219,13 @@ for clause, consumers in consumingClauses.items():
     ruleName = allRuleNames[clause]
     if clauseInProcessedConsumers:
         clause = processedConsumers[clause].pop(0)
-    newRuleName = ruleName + newSuffix
+        newRuleName = ruleName + pcSuffix
+    else:
+        newRuleName = ruleName + pSuffix
     tuple1 = getTuple(clause, tuple1RelName)
     conseq1 = clause2Consequent(clause)
     clauseL = list(clause)
     for conClause in consumers:
-        conRuleName = allRuleNames[conClause]
-        newConRuleName = conRuleName + newSuffix
         tuple2 = getTuple(conClause, tuple2RelName)
         condTuple1 = generateConditionalTuple(condTuple1RelName, condArgInfoTuple1, getArgs(tuple1), getArgs(tuple2))
         condConseq1 = generateConditionalTuple(condConseq1RelName, condArgInfoConseq1, getArgs(conseq1), getArgs(tuple2))
@@ -234,7 +237,7 @@ for clause, consumers in consumingClauses.items():
             processedProducers[clause].append(newClause)
         else:
             newRuleSet.add(newClause)
-            allRuleNames[newClause] = newRuleName
+        allRuleNames[newClause] = newRuleName
 
         if (conClause in consumingClauses) and (conClause not in processedProducers): # i.e. if conClause is a potential producer
             conClauseL = list(conClause)
@@ -243,20 +246,20 @@ for clause, consumers in consumingClauses.items():
             if conClause not in processedConsumers:
                 processedConsumers[conClause] = []
             processedConsumers[conClause].append(newConClause)
-            allRuleNames[newConClause] = newConRuleName
+            allRuleNames[newConClause] = allRuleNames[conClause] + cSuffix
         elif conClause in processedProducers:
             for cl in processedProducers[conClause]:
                 clL = list(cl)
                 newClL = replaceSingle(clL, conseq1, condConseq1)
                 newCl = tuple(newClL)
                 newRuleSet.add(newCl)
-                allRuleNames[newCl] = newRuleName
+                allRuleNames[newCl] = allRuleNames[conClause] + pcSuffix
         else: # conClause is only a consumer
             conClauseL = list(conClause)
             newConClauseL = replaceSingle(conClauseL, conseq1, condConseq1)
             newConClause = tuple(newConClauseL)
             newRuleSet.add(newConClause)
-            allRuleNames[newConClause] = newRuleName
+            allRuleNames[newConClause] = allRuleNames[conClause] + cSuffix
 
 for clause in newRuleSet:
     print("{0}: {1}".format(allRuleNames[clause], ', '.join(clause)))
