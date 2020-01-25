@@ -160,7 +160,9 @@ def getTemplate(lhs, rhs):
         templateStr = templateStr + convertAntecedent(part) + ', '
     currRuleName = ruleNamePrefix + str(ruleNameCount) + ": " 
     templateStr = currRuleName + templateStr + convertConsequent(lhs)
-    print(templateStr, file=ruleDictFile)
+    ruleDictStr = templateStr
+    ruleDictStr = ruleDictStr.replace(marker, '')
+    print(ruleDictStr, file=ruleDictFile)
     ruleNameCount += 1
     return
 
