@@ -1,21 +1,20 @@
 #!/usr/bin/env python3
 
-# ./refine.py [edb_to_refine_file_name] < named_cons_cr_lf_cr.txt.ee > named_cons_cr_lf_cr_refined.txt.ee  
+# ./refine.py refineInfoFileName [edb_to_refine_file_name] < named_cons_cr_lf_cr.txt.ee > named_cons_cr_lf_cr_refined.txt.ee
 
 import logging
 import re
 import sys
-import os
 
 logging.basicConfig(level=logging.INFO, \
                     format="[%(asctime)s] %(levelname)s [%(name)s.%(funcName)s:%(lineno)d] %(message)s", \
                     datefmt="%H:%M:%S")
 
-refineInfoFileName = os.environ['REFINE_INFO']
+refineInfoFileName = sys.argv[1]
 newSuffix = '_n'
 
-if len(sys.argv) > 1:
-    refineEdbFileName = sys.argv[1]
+if len(sys.argv) > 2:
+    refineEdbFileName = sys.argv[2]
 else:
     refineEdbFileName = ""
  

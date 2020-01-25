@@ -12,5 +12,6 @@ export QUERY_IDB_SET=$PRESTO_HOME/Datalog/query_idb.txt              # <filename
 export ORACLE=dynamic                                                # dynamic | human
 export COMPRESS_BNET=false                                           # true | false
 export REFINE_BNET=true                                              # true | false
-export REFINE_INFO=$PRESTO_HOME/Datalog/refine_info.txt              # <filename> Note: see Presto sample for details.
+export REFINE_INFO="$PRESTO_HOME/Datalog/refine_info_2.txt $PRESTO_HOME/Datalog/refine_info_1.txt"
+                                                                     # <space-separated list of filenames> Note: see Presto sample for details.
 export CYCLE_ELIM_ALGO=dfs_based                                     # aggressive | dfs_based | precise

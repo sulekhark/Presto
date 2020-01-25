@@ -19,7 +19,14 @@ $PRESTO_HOME/BnetTools/get_coreachable/get_coreachable named_cons_cr_lf.txt name
 $PRESTO_HOME/BnetTools/elide_edb_ext.py prob_edb.txt < named_cons_cr_lf_cr.txt > named_cons_cr_lf_cr.txt.ee
 $PRESTO_HOME/BnetTools/get_edb_tuples.py prob_edb_tuples.txt < named_cons_cr_lf_cr.txt.ee
 
-$PRESTO_HOME/BnetTools/refine.py  < named_cons_cr_lf_cr.txt.ee > named_cons_cr_lf_cr.txt.ee.refined
+cp named_cons_cr_lf_cr.txt.ee named_cons_cr_lf_cr.txt.ee.refined
+crntInFile=named_cons_cr_lf_cr.txt.ee.refined
+tempOutFile="tempOutfile"
+for i in $REFINE_INFO
+do
+    $PRESTO_HOME/BnetTools/refine.py $i < $crntInFile > $tempOutFile
+    mv $tempOutFile $crntInFile
+done
 $PRESTO_HOME/BnetTools/get_edb_tuples.py prob_edb_tuples.txt.refined < named_cons_cr_lf_cr.txt.ee.refined
 
 cd ..
