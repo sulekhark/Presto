@@ -44,7 +44,7 @@ def isInstrumented(methName):
     return True
 
 def insertIntoMap(methName, node):
-    # methName = methName.split('(')[0]   # SRK temp hack until method names are fixed
+    methName = methName.split('(')[0]   # SRK temp hack until method names are fixed
     if methName not in method2NodeMap:
         method2NodeMap[methName] = []
     method2NodeMap[methName].append(node)
@@ -110,7 +110,7 @@ methodMap = {}
 methodEntries = [ line.strip() for line in open(methodMapFileName) ]
 for entry in methodEntries:
     parts = entry.split(':')
-    # parts[1] = parts[1].split('(')[0]  #  SRK Temp fix until method args are fixed.
+    parts[1] = parts[1].split('(')[0]  #  SRK Temp fix until method args are fixed.
     methodMap[parts[0]] = parts[1]
 
 

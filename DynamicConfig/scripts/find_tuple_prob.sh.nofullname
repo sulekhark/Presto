@@ -37,16 +37,15 @@ function getLoc
 function getMethodName
 {
     local methId=$1
-    local str=`grep "^$methId:" $methodMap`
-    # methName="$(echo $str | cut -d':' -f2 | cut -d '(' -f1)"
-    methName="$(echo $str | cut -d':' -f2)"
+    local str=`grep "$methId:" $methodMap`
+    methName="$(echo $str | cut -d':' -f2 | cut -d '(' -f1)"
 }
 
 
 function getExcType
 {
     local excId=$1
-    local str=`grep "^$excId:" $excMap`
+    local str=`grep "$excId:" $excMap`
     excType="$(echo $str | cut -d':' -f2)"
 }
 
@@ -73,10 +72,9 @@ do
         getMethodName $methId
         getExcType $excTypeId
 
-
 	checkEnclosingCatch $methId $ppId
         dirName="$dynLogDir/FaultInjectionSet/EscapeMTP/T_${methId}_${ppLoc}_*_${excTypeId}"
-        if [[ $methName == *.Main\(* ]]
+        if [[ $methName == *.Main ]]
         then
             mCnt=0
             mExcCnt=0
@@ -191,8 +189,8 @@ do
         mCalleeCnt_tot=0
         for logfile in `find $dirName -name torch*`
         do
-            mCnt=`awk -F';' -v callerN="$callerName" '$7 == callerN' $logfile | awk -F';' -v callP="$ppLoc" '$11 == callP' | wc -l`
-            mCalleeCnt=`awk -F';' -v callerN="$callerName" '$7 == callerN' $logfile | awk -F';' -v callP="$ppLoc" '$11 == callP' | awk -F';' -v calleeN="$calleeName" '$8 == calleeN' | wc -l`
+            mCnt=`awk -F';' -v callerN="$callerName" '$7 ~ callerN' $logfile | awk -F';' -v callP="$ppLoc" '$11 == callP' | wc -l`
+            mCalleeCnt=`awk -F';' -v callerN="$callerName" '$7 ~ callerN' $logfile | awk -F';' -v callP="$ppLoc" '$11 == callP' | awk -F';' -v calleeN="$calleeName" '$8 ~ calleeN' | wc -l`
             mCnt_tot=$((mCnt_tot + mCnt))
             mCalleeCnt_tot=$((mCalleeCnt_tot + mCalleeCnt))
         done 
