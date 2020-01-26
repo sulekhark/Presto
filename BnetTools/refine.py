@@ -85,6 +85,7 @@ tuple2RelName = refineRelStr.split(' ')[2].strip()
 condTuple1RelName = refineRuleStrA.split(' ',2)[1].split('(')[0].strip()
 condConseq1RelName = refineRuleStrB.split(' ',2)[1].split('(')[0].strip()
 tupsA = refineRuleStrA.split(' ')
+#                                                               -1 to remove comma      -2 to remove .\n
 condArgInfoTuple1 = computeConditionalArgs(getArgs(tupsA[1]), getArgs(tupsA[3][:-1]), getArgs(tupsA[4][:-2]))
 tupsB = refineRuleStrB.split(' ')
 condArgInfoConseq1 = computeConditionalArgs(getArgs(tupsB[1]), getArgs(tupsB[3][:-1]), getArgs(tupsB[4][:-2]))
