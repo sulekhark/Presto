@@ -47,6 +47,7 @@ LinkInject(m1,v1,t1,m2,v2,t2,m3,n) :- LinkedEx(m1,v1,t1,m2,v2,t2), VarEH(eh,v1),
 .include "relV.datalog"
 .include "relH.datalog"
 .include "app_prob_refined_edb_tuples.datalog"
+.include "app_prob_edb_tuples.datalog"
 .include "CallAt.datalog"
 .include "PI.datalog"
 .include "IM.datalog"

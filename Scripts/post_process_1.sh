@@ -41,7 +41,7 @@ sort prob_edb_tuples.txt.refined > prob_edb_tuples.txt.refined.sorted
 comm -12 app_prob_edbs_to_be_refined.txt.sorted prob_edb_tuples.txt.refined.sorted >> app_prob_edb_tuples.txt.refined
 rm -f app_prob_edbs_to_be_refined.txt.sorted prob_edb_tuples.txt.refined.sorted
 cd ../datalog
-$PRESTO_HOME/DynamicConfig/scripts/generate_dyncfg_info.sh ../bnet/app_prob_edb_tuples.txt.refined
+$PRESTO_HOME/DynamicConfig/scripts/generate_dyncfg_info.sh ../bnet/app_prob_edb_tuples.txt.refined ../bnet/app_prob_edb_tuples.txt
 
 cd ..
 rm -rf dynconfig
