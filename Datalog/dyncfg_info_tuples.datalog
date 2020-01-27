@@ -1,0 +1,56 @@
+.include "T.dom"                         # domain of types
+.include "M.dom"                         # domain of methods
+.include "V.dom"                         # domain of variables
+.include "P.dom"                         # domain of program points
+.include "I.dom"                         # domain of invoke statements 
+.include "EH.dom"                        # domain of exception handlers
+.include "H.dom"                         # domain of allocation sites
+.include "N.dom"                         # domain of natural numbers
+
+############
+# Relations
+############
+
+relV(v:V) input
+relH(h:H) input
+EscapeMTP(m:M,t:T,p:P) input
+CondEscapeMTP(m1:M,p1:P,m:M,t:T,p:P) input
+LinkedEx(m1:M,v1:V,t1:T,m2:M,v2:V,t2:T) input
+CallAt(m:M,p:P,mcallee:M) input
+PI(p:P,i:I) input
+IM(i:I,m:M) input
+VarEH(eh:EH,v:V) input
+InRange(eh:EH,p:P) input
+ILoc(i:I,n:N) input
+ThrowMH(m:M,h:H) input
+HT(h:H,t:T) input
+
+
+FInject(m:M,n:N,mcallee:M,t:T) printtuples
+CondFInject(m1:M,n1:N,m:M,n:N,mcallee:M,t:T) printtuples
+LinkInject(m1:M,v1:V,t1:T,m2:M,v2:V,t2:T,m3:M,n:N) printtuples
+PNMap(p:P,n:N) printtuples
+
+###################################
+# Constraints
+# Information for fault injection
+###################################
+
+FInject(m,n,mcallee,t) :- CallAt(m,p,mcallee), ThrowMH(mcallee,h), HT(h,t), EscapeMTP(m,t,p), PNMap(p,n).
+CondFInject(m1,n1,m,n,mcallee,t) :- CallAt(m,p,mcallee), ThrowMH(mcallee,h), HT(h,t), CondEscapeMTP(m1,p1,m,t,p), PNMap(p,n), PNMap(p1,n1).
+PNMap(p,n) :- CallAt(m,p,mcallee), PI(p,i), ILoc(i,n).
+LinkInject(m1,v1,t,m2,v2,t,m3,n) :- LinkedEx(m1,v1,t,m2,v2,t), VarEH(eh,v1), InRange(eh,p), PI(p,i), IM(i,m3), ILoc(i,n).
+LinkInject(m1,v1,t1,m2,v2,t2,m3,n) :- LinkedEx(m1,v1,t1,m2,v2,t2), VarEH(eh,v1), InRange(eh,p), PI(p,i), IM(i,m3), ILoc(i,n).
+
+
+.include "relV.datalog"
+.include "relH.datalog"
+.include "app_prob_refined_edb_tuples.datalog"
+.include "CallAt.datalog"
+.include "PI.datalog"
+.include "IM.datalog"
+.include "VarEH.datalog"
+.include "InRange.datalog"
+.include "ILoc.datalog"
+.include "ThrowMH.datalog"
+.include "HT.datalog"

@@ -16,7 +16,6 @@ relH(h:H) input
 HT(h:H,t:T) input                        # Allocation site h allocates an object of Type t
 VarEH(eh:EH,v:V)  input                  # ExceptionHandler eh has the formal paramter as Variable v
 ThrowPV(m:M,p:P,v:V)  input              # Instruction p of Method m throws Variable v
-PI(p:P,i:I) input                        # Connects program points that are invoke statements to corresponding entries in domI
 FinalEH(eh:EH,t:T,p:P) input             # ExceptionHandler eh catches an exception of Type t thrown at Program point p.
 EscapeMTP(m:M,t:T,p:P) input             # Exception of type t if thrown at Program Point p, escapes Method m.
 VHO(v:V,h:H)  input                      # Variable v may point to AllocSite h
@@ -25,14 +24,11 @@ ThrowMH(m:M,h:H) input                   # The exception object h escapes Method
 CatchVH(v:V,h:H) input                   # Variable v which is the formal parameter of some catch handler, points-to exception object h.
 ExceptionType(t:T) input                 # Type t is an exception type
 entryPtM(m:M) input                      # Entry point methods of the assembly.
-ILoc(i:I,n:N) input
 LinkedEx(m1:M,v1:V,t1:T,m2:M,v2:V,t2:T) input
 LinkMatch(m1:M,v1:V,t1:T,m2:M,v2:V,t2:T) input
 ExceptionObj(h:H) input
 WrapsEx(h1:H,h2:H) input
 SharesFld(h1:H,h2:H) input
-InRange(eh:EH,p:P) input                 # An exception raised at Program point P could potentially be caught by ExceptionHandler eh
-IM(i:I,m:M) input                        # Invoke statement i calls method m
 Escaping(t:T,h:H) input
 Caught(t:T,h:H) input
 NestedEH(m:M,eh1:EH,eh2:EH) input        # In method m, exception handler eh1 nests exception handler eh2.
@@ -41,7 +37,6 @@ EnclosingEH(m:M,eh:EH,p:P) input         # In method m, exception handler eh imm
 NoEnclose(m:M,p:P) input
 FeasibleMTP(m:M,t:T,p:P) input
 FeasibleEH(m:M,eh:EH) input
-
 
 
 ########################
@@ -61,12 +56,6 @@ FeasibleMTP_i2(m:M,t:T,p:P,eh:EH) printtuples
 FeasibleEH_i1(m:M,eh:EH,v:V,h:H) printtuples
 FeasibleEH_i2(m:M,eh:EH,v:V,h:H,eh1:EH) printtuples
 
-FInject(m:M,n:N,mcallee:M,t:T) printtuples
-CondFInject(m1:M,n1:N,m:M,n:N,mcallee:M,t:T) printtuples
-LinkInject(m1:M,v1:V,t1:T,m2:M,v2:V,t2:T,m3:M,n:N) printtuples
-PNMap(p:P,n:N) printtuples
-
-
 
 ##################
 # Argument Counts
@@ -85,13 +74,6 @@ PNMap(p:P,n:N) printtuples
 ############################
 # Instrumented Constraints
 ############################
-
-# Information for fault injection
-FInject(m,n,mcallee,t) :- CallAt(m,p,mcallee), ThrowMH(mcallee,h), HT(h,t), EscapeMTP(m,t,p), PNMap(p,n).
-CondFInject(m1,n1,m,n,mcallee,t) :- FInject(m,n,mcallee,t), CallAt(m1,p1,m), PI(p1,i1), ILoc(i1,n1).
-PNMap(p,n) :- CallAt(m,p,mcallee), PI(p,i), ILoc(i,n).
-LinkInject(m1,v1,t,m2,v2,t,m3,n) :- LinkMatch_i1(m1,v1,t,m2,v2,t,h), VarEH(eh,v1), InRange(eh,p), PI(p,i), IM(i,m3), ILoc(i,n).
-LinkInject(m1,v1,t1,m2,v2,t2,m3,n) :- LinkMatch_i2(m1,v1,t1,m2,v2,t2,h1,h2), VarEH(eh,v1), InRange(eh,p), PI(p,i), IM(i,m3), ILoc(i,n).
 
 # Propagating exception points-to
 ThrowMH_i1(m,h,p,v,t) :- ThrowPV(m,p,v), VHO(v,h), HT(h,t), FeasibleMTP(m,t,p).
@@ -113,7 +95,6 @@ FeasibleEH_i2(m,eh,v,h,eh1) :- CatchVH(v,h), VarEH(eh,v), NestedEH(m,eh1,eh), Fe
 .include "HT.datalog"
 .include "VarEH.datalog"
 .include "ThrowPV.datalog"
-.include "PI.datalog"
 .include "FinalEH.datalog"
 .include "EscapeMTP.datalog"
 .include "VHO.datalog"
@@ -122,14 +103,11 @@ FeasibleEH_i2(m,eh,v,h,eh1) :- CatchVH(v,h), VarEH(eh,v), NestedEH(m,eh1,eh), Fe
 .include "CatchVH.datalog"
 .include "ExceptionType.datalog"
 .include "entryPtM.datalog"
-.include "ILoc.datalog"
 .include "LinkedEx.datalog"
 .include "LinkMatch.datalog"
 .include "ExceptionObj.datalog"
 .include "WrapsEx.datalog"
 .include "SharesFld.datalog"
-.include "InRange.datalog"
-.include "IM.datalog"
 .include "Escaping.datalog"
 .include "Caught.datalog"
 .include "NestedEH.datalog"

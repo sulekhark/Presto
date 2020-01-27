@@ -1,0 +1,39 @@
+.include "T.dom"                         # domain of types
+.include "M.dom"                         # domain of methods
+.include "V.dom"                         # domain of variables
+.include "P.dom"                         # domain of program points
+.include "I.dom"                         # domain of invoke statements 
+.include "EH.dom"                        # domain of exception handlers
+
+############
+# Relations
+############
+
+EscapeMTP(m:M,t:T,p:P) input
+CallAt(m:M,p:P,mcallee:M) input
+LinkedEx(m1:M,v1:V,t1:T,m2:M,v2:V,t2:T) input
+appM(m:M) input
+PI(p:P,i:I) input
+IM(i:I,m:M) input
+VarEH(eh:EH,v:V) input
+InRange(eh:EH,p:P) input
+
+libM(m:M)
+
+LibEscapeMTP(m:M,t:T,p:P) printtuples
+LibCallAt(m:M,p:P,mcallee:M) printtuples
+LibLinkedEx(m1:M,v1:V,t1:T,m2:M,v2:V,t2:T) printtuples
+
+libM(m) :- !appM(m).
+LibEscapeMTP(m,t,p) :- EscapeMTP(m,t,p), libM(m).
+LibEscapeMTP(m,t,p) :- EscapeMTP(m,t,p), PI(p,i), IM(i,m1), libM(m1).
+LibCallAt(m,p,mcallee) :- CallAt(m,p,mcallee), libM(m).
+LibLinkedEx(m1,v1,t1,m2,v2,t2) :- LinkedEx(m1,v1,t1,m2,v2,t2), libM(m2).
+LibLinkedEx(m1,v1,t1,m2,v2,t2) :- LinkedEx(m1,v1,t1,m2,v2,t2), VarEH(eh,v1), InRange(eh,p), PI(p,i), IM(i,m3), libM(m3).
+
+.include "appM.datalog"
+.include "prob_edb_tuples.datalog"
+.include "PI.datalog"
+.include "IM.datalog"
+.include "VarEH.datalog"
+.include "InRange.datalog"
