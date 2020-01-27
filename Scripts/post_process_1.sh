@@ -35,7 +35,11 @@ done
 $PRESTO_HOME/BnetTools/get_edb_tuples.py prob_edb_tuples.txt.refined < named_cons_cr_lf_cr.txt.ee.refined
 
 cat app_prob_edbs_no_refine.txt > app_prob_edb_tuples.txt.refined
-grep "COND" prob_edb_tuples.txt.refined >> app_prob_edb_tuples.txt.refined
+grep "Cond" prob_edb_tuples.txt.refined >> app_prob_edb_tuples.txt.refined
+sort app_prob_edbs_to_be_refined.txt > app_prob_edbs_to_be_refined.txt.sorted
+sort prob_edb_tuples.txt.refined > prob_edb_tuples.txt.refined.sorted
+comm -12 app_prob_edbs_to_be_refined.txt.sorted prob_edb_tuples.txt.refined.sorted >> app_prob_edb_tuples.txt.refined
+rm -f app_prob_edbs_to_be_refined.txt.sorted prob_edb_tuples.txt.refined.sorted
 cd ../datalog
 $PRESTO_HOME/DynamicConfig/scripts/generate_dyncfg_info.sh ../bnet/app_prob_edb_tuples.txt.refined
 
