@@ -8,8 +8,8 @@ faultAllocInfoFile=$3
 tempFileName="temp_out_fi"
 dirFileName="fault_config_dirs.txt"
 
-mkdir EscapeMTP
-cd EscapeMTP
+mkdir FInject
+cd FInject
 $PRESTO_HOME/DynamicConfig/scripts/parse_finject.py $faultInjectInfoFile $tempFileName $dirFileName
 while read -r line
 do
@@ -40,8 +40,9 @@ done < $tempFileName
 rm -f $tempFileName
 cd ..
 
-mkdir LinkedEx
-cd LinkedEx
+
+mkdir LinkInject
+cd LinkInject
 $PRESTO_HOME/DynamicConfig/scripts/parse_linkinject.py $linkInjectInfoFile $tempFileName $dirFileName
 while read -r line
 do
