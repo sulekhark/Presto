@@ -2,7 +2,7 @@
 
 # Will execute in benchmark directory
 DynCfgTgz=$1
-cmdsFile=$2
+cmdsFile="../../$2" # Will execute in bin/Debug
 
 tar xzf $DynCfgTgz 
 rm -rf dynlogs
