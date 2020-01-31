@@ -21,9 +21,9 @@ cd bin/Debug
 $TORCH_HOME/tools/net/torch-instrumenter-internal.exe -i . --ic ../../dynconfig/Logging/torch-instrumentation.torchconfig  --rc ../../dynconfig/Logging/RuntimeConfig
 for cmd in `cat $cmdsFile`
 do
-    cmdName="$(echo $cmd | cut -d':' -f1)"
-    execCmd="$(echo $cmd | cut -d':' -f2)"
-    eval $execCnd > execution_log 2>&1
+    cmdName=`echo $cmd | cut -d':' -f1`
+    execCmd=`echo $cmd | cut -d':' -f2`
+    eval $execCmd > execution_log 2>&1
     $TORCH_HOME/tools/net/TorchLogAnalyzer.exe decompress -i torch-runtime-log4net.torchlog
     mkdir $ldir1/$cmdName
     mv execution_log $ldir1/$cmdName
@@ -43,9 +43,9 @@ do
     mkdir $ldir2
     for cmd in `cat $cmdsFile`
     do
-        cmdName="$(echo $cmd | cut -d':' -f1)"
-        execCmd="$(echo $cmd | cut -d':' -f2)"
-        eval $execCnd > execution_log 2>&1
+        cmdName=`echo $cmd | cut -d':' -f1`
+        execCmd=`echo $cmd | cut -d':' -f2`
+        eval $execCmd > execution_log 2>&1
         $TORCH_HOME/tools/net/TorchLogAnalyzer.exe decompress -i torch-runtime-log4net.torchlog
         mkdir $ldir2/$cmdName
         mv execution_log $ldir2/$cmdName
@@ -66,9 +66,9 @@ do
     mkdir $ldir3
     for cmd in `cat $cmdsFile`
     do
-        cmdName="$(echo $cmd | cut -d':' -f1)"
-        execCmd="$(echo $cmd | cut -d':' -f2)"
-        eval $execCnd > execution_log 2>&1
+        cmdName=`echo $cmd | cut -d':' -f1`
+        execCmd=`echo $cmd | cut -d':' -f2`
+        eval $execCmd > execution_log 2>&1
         $TORCH_HOME/tools/net/TorchLogAnalyzer.exe decompress -i torch-runtime-log4net.torchlog
         mkdir $ldir3/$cmdName
         mv execution_log $ldir3/$cmdName
