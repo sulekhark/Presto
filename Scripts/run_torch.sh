@@ -11,8 +11,8 @@ cd dynlogs
 mkdir Logging
 ldir1="../../dynlogs/Logging"
 mkdir FaultInjectionSet
-mkdir FaultInjectionSet/EscapeMTP
-mkdir FaultInjectionSet/LinkedEx
+mkdir FaultInjectionSet/FInject
+mkdir FaultInjectionSet/LinkInject
 cd ..
 
 cp -r bin/Debug bin/Debug_orig
@@ -38,7 +38,7 @@ do
     cp Debug_orig/* Debug
     cd Debug
 
-    $TORCH_HOME/tools/net/torch-instrumenter-internal.exe -i . --ic ../../dynconfig/FaultInjectionSet/EscapeMTP/$dirName/torch-instrumentation.torchconfig  --rc ../../dynconfig/FaultInjectionSet/EscapeMTP/$dirName/RuntimeConfig
+    $TORCH_HOME/tools/net/torch-instrumenter-internal.exe -i . --ic ../../dynconfig/FaultInjectionSet/FInject/$dirName/torch-instrumentation.torchconfig  --rc ../../dynconfig/FaultInjectionSet/FInject/$dirName/RuntimeConfig
     ldir2="../../dynlogs/FaultInjectionSet/FInject/$dirName"
     mkdir $ldir2
     for cmd in `cat $cmdsFile`
@@ -61,7 +61,7 @@ do
     cp Debug_orig/* Debug
     cd Debug
 
-    $TORCH_HOME/tools/net/torch-instrumenter-internal.exe -i . --ic ../../dynconfig/FaultInjectionSet/LinkedEx/$dirName/torch-instrumentation.torchconfig  --rc ../../dynconfig/FaultInjectionSet/LinkedEx/$dirName/RuntimeConfig
+    $TORCH_HOME/tools/net/torch-instrumenter-internal.exe -i . --ic ../../dynconfig/FaultInjectionSet/LinkInject/$dirName/torch-instrumentation.torchconfig  --rc ../../dynconfig/FaultInjectionSet/LinkInject/$dirName/RuntimeConfig
     ldir3="../../dynlogs/FaultInjectionSet/LinkInject/$dirName"
     mkdir $ldir3
     for cmd in `cat $cmdsFile`
@@ -74,7 +74,7 @@ do
         mv execution_log $ldir3/$cmdName
         mv torch-runtime-log4net.torchlog.decompressed $ldir3/$cmdName
     done
-done < ../../dynconfig/FaultInjectionSet/LinkedEx/fault_config_dirs.txt
+done < ../../dynconfig/FaultInjectionSet/LinkInject/fault_config_dirs.txt
 
 # Restore original state - i.e. before instrumentation
 cd ..
