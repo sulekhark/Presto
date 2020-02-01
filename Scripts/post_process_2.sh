@@ -12,12 +12,12 @@ then
     grep "CallAt" prob_edb_tuples.txt.refined > set1.txt.refined
     grep -v "CallAt" prob_edb_tuples.txt.refined > set2.txt.refined
     rm -f edb_probabilities.txt.refined
-    if [ -s set1.txt ]
+    if [ -s set1.txt.refined ]
     then
         $PRESTO_HOME/DynamicConfig/scripts/find_tuple_prob.py set1.txt.refined bnet_dict.out.refined > set1_probs.txt.refined
         cat set1_probs.txt.refined >> edb_probabilities.txt.refined
     fi
-    if [ -s set2.txt ]
+    if [ -s set2.txt.refined ]
     then
         $PRESTO_HOME/DynamicConfig/scripts/find_tuple_prob.py set2.txt.refined bnet_dict.out.refined > set2_probs.txt.refined
         cat set2_probs.txt.refined >> edb_probabilities.txt.refined
