@@ -20,7 +20,7 @@ then
     if [ -s set2.txt ]
     then
         $PRESTO_HOME/DynamicConfig/scripts/find_tuple_prob.py set2.txt.refined bnet_dict.out.refined > set2_probs.txt.refined
-        set2_probs.txt.refined >> edb_probabilities.txt.refined
+        cat set2_probs.txt.refined >> edb_probabilities.txt.refined
     fi
     $PRESTO_HOME/BnetTools/bnet2fg.py edb_probabilities.txt.refined  < named_bnet.out.refined > factorGraph.fg.refined 2> bnet2fg.log.refined
     $PRESTO_HOME/BnetTools/arcmd $PRESTO_HOME/BnetTools bnet_dict.out.refined factorGraph.fg.refined base_queries.txt 500
@@ -42,7 +42,7 @@ fi
 if [ -s set2.txt ]
 then
     $PRESTO_HOME/DynamicConfig/scripts/find_tuple_prob.py set2.txt bnet_dict.out > set2_probs.txt
-    set2_probs.txt >> edb_probabilities.txt
+    cat set2_probs.txt >> edb_probabilities.txt
 fi
 $PRESTO_HOME/BnetTools/bnet2fg.py edb_probabilities.txt  < named_bnet.out > factorGraph.fg 2> bnet2fg.log
 $PRESTO_HOME/BnetTools/arcmd $PRESTO_HOME/BnetTools bnet_dict.out factorGraph.fg base_queries.txt 500

@@ -23,8 +23,8 @@ methodMapFileName = "../dynconfig/id_to_method_map.txt"
 enclosingCatchFileName = "../datalog/EnclosingEH.datalog"
 excMapFileName = "../dynconfig/id_to_exctype_map.txt"
 loggingDir = "../dynlogs/Logging"
-fInjectDir = "../dynlogs/FaultInjection/FInject"
-linkInjectDir = "../dynlogs/FaultInjection/LinkInject"
+fInjectDir = "../dynlogs/FaultInjectionSet/FInject"
+linkInjectDir = "../dynlogs/FaultInjectionSet/LinkInject"
 logDirPrefix = "T"
 
 minProb = 0.5
@@ -52,6 +52,7 @@ def insertIntoMap(methName, node):
     if methName not in method2NodeMap:
         method2NodeMap[methName] = []
     method2NodeMap[methName].append(node)
+    return
 
 def readLogFiles(logFNList):
     for logFileName in logFNList:
@@ -88,6 +89,7 @@ def readLogFiles(logFNList):
             crntNode = calleeNode
     # for root in logRoots:
         # root.printTree()
+    return
 
 
 ########################################################################################################################
@@ -97,7 +99,8 @@ def getTorchLogs(dirName):
     innerDirNames = [fn for fn in os.listdir(dirName)]
     logs = []
     for innerDir in innerDirNames:
-        tn = [fn for fn in os.listdir(innerDir) if fn.startswith('torch')]
+        idn = os.path.join(dirName, innerDir)
+        tn = [os.path.join(idn, fn) for fn in os.listdir(idn) if fn.startswith('torch')]
         assert len(tn) == 1
         logs.append(tn[0])
     return logs
@@ -105,6 +108,7 @@ def getTorchLogs(dirName):
 
 def getLogDirs(containingDir, dirNameSelector):
     dirNames = fnmatch.filter(os.listdir(containingDir), dirNameSelector)
+    dirNames = [os.path.join(containingDir, dn) for dn in dirNames]
     return dirNames
 
 
@@ -112,9 +116,10 @@ def getLogs(dirName):
     innerDirNames = [fn for fn in os.listdir(dirName)]
     logs = []
     for innerDir in innerDirNames:
-        tn = [fn for fn in os.listdir(innerDir) if fn.startswith('torch')]
+        idn = os.path.join(dirName, innerDir)
+        tn = [os.path.join(idn, fn) for fn in os.listdir(idn) if fn.startswith('torch')]
         assert len(tn) == 1
-        en = [fn for fn in os.listdir(innerDir) if fn.startswith('execution')]
+        en = [os.path.join(idn, fn) for fn in os.listdir(idn) if fn.startswith('execution')]
         assert len(en) == 1
         logs.append(tuple([tn[0], en[0]]))
     return logs
@@ -122,11 +127,12 @@ def getLogs(dirName):
 
 def getCallCount(callerMeth, calleeMeth, callerLoc):
     callCnt = 0
-    calleeNodes = method2NodeMap[calleeMeth]
-    for node in calleeNodes:
-        calleeNdx = node.getIndex()
-        if (callerMeth in node.parent.data) and (callerLoc == node.parent.offset[calleeNdx]):
-            callCnt += 1
+    if calleeMeth in method2NodeMap:
+        calleeNodes = method2NodeMap[calleeMeth]
+        for node in calleeNodes:
+            calleeNdx = node.getIndex()
+            if (callerMeth in node.parent.data) and (callerLoc == node.parent.offset[calleeNdx]):
+                callCnt += 1
     return callCnt
 
 
@@ -145,18 +151,21 @@ def computeProbCallAt(entry):
     calleeId = parts[2]
     callee = methodMap[calleeId]
 
-    totalCnt = len(method2NodeMap[caller])
+    totalCnt = 0
+    if caller in method2NodeMap:
+        totalCnt = len(method2NodeMap[caller])
     callCnt = getCallCount(caller, callee, callerLoc)
 
     if totalCnt == 0:
         prob = maxProb
     elif (callCnt == 0) and (callerPP in enclosingCatchMap) and (enclosingCatchMap[callerPP] == callerId):
         prob = midProb
-    elif (callCnt == 0)
+    elif (callCnt == 0):
         prob = minProb
     else:
         prob = minProb + ((maxProb - minProb) * callCnt / totalCnt)
     print("{0}: {1}".format(bnetNodeId, prob))
+    return
 
 
 ########################################################################################################################
@@ -180,25 +189,27 @@ def computeProbCondCallAt(entry):
 
     totalCnt = 0
     callCnt = 0
-    callerNodes = method2NodeMap[caller]
-    for node in callerNodes:
-        callerNdx = node.getIndex()
-        if (condMeth in node.parent.data) and (condLoc == node.parent.offset[callerNdx]): # if the "condition" applies
-            totalCnt += 1
-            childNdx = node.getChild(callee)
-            if (childNdx != -1) and (node.offset[childNdx] == callerLoc):
-                callCnt += 1
+    if caller in method2NodeMap:
+        callerNodes = method2NodeMap[caller]
+        for node in callerNodes:
+            callerNdx = node.getIndex()
+            if (condMeth in node.parent.data) and (condLoc == node.parent.offset[callerNdx]): # if the "condition" applies
+                totalCnt += 1
+                childNdx = node.getChild(callee)
+                if (childNdx != -1) and (node.offset[childNdx] == callerLoc):
+                    callCnt += 1
     if (totalCnt == 0) and (condPP in enclosingCatchMap) and (enclosingCatchMap[condPP] == condMethId):
         prob = midProb
     elif totalCnt == 0:
         prob = maxProb
     elif (callCnt == 0) and (callerPP in enclosingCatchMap) and (enclosingCatchMap[callerPP] == callerId):
         prob = midProb
-    elif (callCnt == 0)
+    elif (callCnt == 0):
         prob = minProb
     else:
         prob = minProb + ((maxProb - minProb) * callCnt / totalCnt)
     print("{0}: {1}".format(bnetNodeId, prob))
+    return
 
 
 ########################################################################################################################
@@ -206,12 +217,13 @@ def computeProbCondCallAt(entry):
 
 def getExcThrownCount(callerMeth, calleeMeth, callerLoc, excType):
     excCnt = 0
-    calleeNodes = method2NodeMap[calleeMeth]
-    for node in calleeNodes:
-        calleeNdx = node.getIndex()
-        if (callerMeth in node.parent.data) and (callerLoc == node.parent.offset[calleeNdx]):
-            if (node.parent.exception[calleeNdx] == excType):
-                excCnt += 1
+    if calleeMeth in method2NodeMap:
+        calleeNodes = method2NodeMap[calleeMeth]
+        for node in calleeNodes:
+            calleeNdx = node.getIndex()
+            if (callerMeth in node.parent.data) and (callerLoc == node.parent.offset[calleeNdx]):
+                if (node.parent.exception[calleeNdx] == excType):
+                    excCnt += 1
     return excCnt
 
 
@@ -242,44 +254,48 @@ def computeProbEscapeMTP(entry):
     excTypeId = parts[1]
     excType = excMap[excTypeId]
     callerPP = parts[2]
-    callerLoc = pnMap[callerPP]
 
-    if isConditional == True:
-        selector = calleeMethId
-    else:
-        selector = '*'
-    logDirName = logDirPrefix + "_" + callerMethId + "_" + callerPP + "_" + selector + "_" + excTypeId
-    logDirList = getLogDirs(fInjectDir, logDirName)
-    callCountTotal = 0
-    excCountTotal = 0
-    for lDir in logDirList:
-        if isConditional == False:
-            calleeMethId = lDir.split('_')[3]
-            calleeMeth = methodMap[calleeMethId]
-        fInjectLogs = getLogs(lDir)
-        for fiLogPair in fInjectLogs:
-            torchLog = fiLogPair[0]
-            execLog = fiLogPair[1]
-            logRoots.clear()
-            method2NodeMap.clear()
-            readLogFiles([torchLog])
-            callCount = getCallCount(callerMeth, calleeMeth, callerLoc)
-            if callCount > 0:
-                if ".Main(" in callerMeth:
-                    excCount = getExcThrownCountFromOutput(execLog, excType)
-                else:
-                    excCount = getExcThrownCount(callerMeth, calleeMeth, callerLoc, excType)
-                callCountTotal += callCount
-                excCountTotal += excCount
-    if (callCountTotal == 0) and (callerPP in enclosingCatchMap) and (enclosingCatchMap[callerPP] == callerId):
-        prob = midProb
-    elif callCountTotal == 0:
+    if callerPP in pnMap:
+        callerLoc = pnMap[callerPP]
+        if isConditional == True:
+            selector = calleeMethId
+        else:
+            selector = '*'
+        logDirName = logDirPrefix + "_" + callerMethId + "_" + callerPP + "_" + selector + "_" + excTypeId
+        logDirList = getLogDirs(fInjectDir, logDirName)
+        callCountTotal = 0
+        excCountTotal = 0
+        for lDir in logDirList:
+            if isConditional == False:
+                calleeMethId = lDir.split('_')[3]
+                calleeMeth = methodMap[calleeMethId]
+            fInjectLogs = getLogs(lDir)
+            for fiLogPair in fInjectLogs:
+                torchLog = fiLogPair[0]
+                execLog = fiLogPair[1]
+                logRoots.clear()
+                method2NodeMap.clear()
+                readLogFiles([torchLog])
+                callCount = getCallCount(callerMeth, calleeMeth, callerLoc)
+                if callCount > 0:
+                    if ".Main(" in callerMeth:
+                        excCount = getExcThrownCountFromOutput(execLog, excType)
+                    else:
+                        excCount = getExcThrownCount(callerMeth, calleeMeth, callerLoc, excType)
+                    callCountTotal += callCount
+                    excCountTotal += excCount
+        if (callCountTotal == 0) and (callerPP in enclosingCatchMap) and (enclosingCatchMap[callerPP] == callerMethId):
+            prob = midProb
+        elif callCountTotal == 0:
+            prob = maxProb
+        elif callCountTotal > 0 and excCountTotal == 0:
+            prob = minProb
+        else:
+            prob = minProb + ((maxProb - minProb) * excCountTotal / callCountTotal)
+    else: # We cannot get a probability from Torch logs for this tuple
         prob = maxProb
-    elif callCountTotal > 0 and excCountTotal == 0:
-        prob = minProb
-    else:
-        prob = minProb + ((maxProb - minProb) * excCountTotal / callCountTotal)
     print("{0}: {1}".format(bnetNodeId, prob))
+    return
 
 
 ########################################################################################################################
@@ -303,7 +319,7 @@ def computeProbLinkedEx(entry):
     logDirList = getLogDirs(linkInjectDir, logDirName)
     assert len(logDirList) == 1
     logDir = logDirList[0]
-    linkInjectLogs = getLogs(lDir)
+    linkInjectLogs = getLogs(logDir)
 
     callCount = 0
     excCount = 0
@@ -312,12 +328,13 @@ def computeProbLinkedEx(entry):
         logRoots.clear()
         method2NodeMap.clear()
         readLogFiles([torchLog])
-        throwNodes = method2NodeMap[throwMeth]
-        callCount += len(throwNodes)
-        for node in throwNodes:
-            nodeNdx = node.getIndex()
-            if (node.parent.exception[nodeNdx] == excType):
-                excCount += 1
+        if throwMeth in method2NodeMap:
+            throwNodes = method2NodeMap[throwMeth]
+            callCount += len(throwNodes)
+            for node in throwNodes:
+                nodeNdx = node.getIndex()
+                if (node.parent.exception[nodeNdx] == excType):
+                    excCount += 1
     if callCount == 0:
         prob = maxProb
     elif excCount == 0:
@@ -325,6 +342,7 @@ def computeProbLinkedEx(entry):
     else:
         prob = minProb + ((maxProb - minProb) * excCount / callCount)
     print("{0}: {1}".format(bnetNodeId, prob))
+    return
 
 
 ########################################################################################################################
@@ -333,7 +351,7 @@ def computeProbLinkedEx(entry):
 bnetDictMap = {}
 bnetDictEntries = [ line.strip() for line in open(bnetDictFileName) ]
 for entry in bnetDictEntries:
-    if 'CallAt' in entry:
+    if 'NOT' not in entry:  # we need only the bnet map entries for tuples not for rules.
         parts = entry.split(': ')
         bnetDictMap[parts[1]] = parts[0]
 
