@@ -336,7 +336,7 @@ def computeProbLinkedEx(entry):
                 if (node.parent.exception[nodeNdx] == excType):
                     excCount += 1
     if callCount == 0:
-        prob = maxProb
+        prob = minProb
     elif excCount == 0:
         prob = minProb
     else:
