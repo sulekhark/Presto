@@ -2,6 +2,6 @@ ThrowMH
 Escaping
 CatchVH
 LinkMatch
-REscaping
+WEscaping
 FeasibleMTP
 FeasibleEH

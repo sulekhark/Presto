@@ -28,9 +28,8 @@ LinkedEx(m1:M,v1:V,t1:T,m2:M,v2:V,t2:T) input
 LinkMatch(m1:M,v1:V,t1:T,m2:M,v2:V,t2:T) input
 ExceptionObj(h:H) input
 WrapsEx(h1:H,h2:H) input
-SharesFld(h1:H,h2:H) input
 Escaping(t:T,h:H) input
-Caught(t:T,h:H) input
+WEscaping(t2:T,h2:H,t1:T,h1:H) input
 NestedEH(m:M,eh1:EH,eh2:EH) input        # In method m, exception handler eh1 nests exception handler eh2.
 OutermostEH(m:M,eh:EH) input             # In method m, exception handler eh is not nested within any other exception handler.
 EnclosingEH(m:M,eh:EH,p:P) input         # In method m, exception handler eh immediately encloses program point p that could potentially throw.
@@ -50,7 +49,8 @@ LinkMatch_i2(m1:M,v1:V,t1:T,m2:M,v2:V,t2:T,h1:H,h2:H) printtuples
 CatchVH_i1(ehv:V,h:H,m:M,p:P,v:V,t:T,eh:EH) printtuples
 CatchVH_i2(v:V,h:H,m:M,p:P,mcallee:M,t:T,eh:EH) printtuples
 Escaping_i1(t:T,h:H,m:M) printtuples
-REscaping_i1(t1:T,h1:H,t2:T,h2:H,m1:M,v1:V,m2:M,v2:V) printtuples
+WEscaping_i1(t2:T,h2:H,t1:T,h1:H,m2:M,v2:V,m1:M,v1:V) printtuples
+WEscaping_i2(t3:T,h3:H,t2:T,h2:H,m3:M,v3:V,m2:M,v2:V,t1:T,h1:H) printtuples
 FeasibleMTP_i1(m:M,t:T,p:P) printtuples
 FeasibleMTP_i2(m:M,t:T,p:P,eh:EH) printtuples
 FeasibleEH_i1(m:M,eh:EH,v:V,h:H) printtuples
@@ -65,7 +65,7 @@ FeasibleEH_i2(m:M,eh:EH,v:V,h:H,eh1:EH) printtuples
 # ARG_COUNT Escaping 2
 # ARG_COUNT CatchVH 2
 # ARG_COUNT LinkMatch 6
-# ARG_COUNT REscaping 4 
+# ARG_COUNT WEscaping 4 
 # ARG_COUNT FeasibleMTP 3
 # ARG_COUNT FeasibleEH 2
 
@@ -83,7 +83,8 @@ LinkMatch_i2(m1,v1,t1,m2,v2,t2,h1,h2) :- CatchVH(v1,h1), LinkedEx(m1,v1,t1,m2,v2
 CatchVH_i1(ehv,h,m,p,v,t,eh) :- ThrowPV(m,p,v), VHO(v,h), HT(h,t), FinalEH(eh,t,p), VarEH(eh,ehv).
 CatchVH_i2(v,h,m,p,mcallee,t,eh) :- CallAt(m,p,mcallee), ThrowMH(mcallee,h), HT(h,t), FinalEH(eh,t,p), VarEH(eh,v).
 Escaping_i1(t,h,m) :- ThrowMH(m,h), HT(h,t), ExceptionType(t), entryPtM(m).
-REscaping_i1(t1,h1,t2,h2,m1,v1,m2,v2) :- WrapsEx(h2,h1), Escaping(t2,h2), LinkMatch(m1,v1,t1,m2,v2,t2), HT(h1,t1).
+WEscaping_i1(t2,h2,t1,h1,m2,v2,m1,v1) :- WrapsEx(h1,h2), Escaping(t1,h1), LinkMatch(m2,v2,t2,m1,v1,t1), HT(h2,t2).
+WEscaping_i2(t3,h3,t2,h2,m3,v3,m2,v2,t1,h1) :- WrapsEx(h2,h3), WEscaping(t2,h2,t1,h1), LinkMatch(m3,v3,t3,m2,v2,t2), HT(h3,t3).
 FeasibleMTP_i1(m,t,p) :- EscapeMTP(m,t,p), NoEnclose(m,p).
 FeasibleMTP_i2(m,t,p,eh) :- EscapeMTP(m,t,p), EnclosingEH(m,eh,p), FeasibleEH(m,eh).
 FeasibleEH_i1(m,eh,v,h) :- CatchVH(v,h), VarEH(eh,v), OutermostEH(m,eh).
@@ -107,9 +108,8 @@ FeasibleEH_i2(m,eh,v,h,eh1) :- CatchVH(v,h), VarEH(eh,v), NestedEH(m,eh1,eh), Fe
 .include "LinkMatch.datalog"
 .include "ExceptionObj.datalog"
 .include "WrapsEx.datalog"
-.include "SharesFld.datalog"
 .include "Escaping.datalog"
-.include "Caught.datalog"
+.include "WEscaping.datalog"
 .include "NestedEH.datalog"
 .include "OutermostEH.datalog"
 .include "EnclosingEH.datalog"
