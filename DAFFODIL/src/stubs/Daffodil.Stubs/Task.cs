@@ -45,9 +45,12 @@ namespace Daffodil.Stubs
 
         internal AggregateException GetExceptions(bool includeTaskCanceledExceptions)
         {
-            Exception ex = new TaskCanceledException("Task canceled");
-            ex = mdl_exception;
-            return new AggregateException(new Exception[] {ex});
+            // Commenting the line below as it does not get wrapped into AggregateException because of SSA. SRK 2nd Feb 2020
+            // Exception ex = new TaskCanceledException("Task canceled");
+            Exception ex = mdl_exception;
+            // Removed an unnecessary layer of wrapping below. SRK 2nd Feb 2020
+            // return new AggregateException(new Exception[] {ex});
+            return new AggregateException("daffodil_stub aggr wrapper", ex);
         }
 
         // defined just for ease of stubbing
@@ -197,10 +200,11 @@ namespace Daffodil.Stubs
                 throw e;
             }
             // Not modeled any of the scheduler exceptions
-            throw new InvalidOperationException("Task_Start_TaskCompleted");
-            throw new InvalidOperationException("Task_Start_Promise");
-            throw new InvalidOperationException("Task_Start_ContinuationTask");
-            throw new InvalidOperationException("Task_Start_AlreadyStarted");
+            // At present, trying to track only exceptions raised by the application. SRK 2nd Feb 2020
+            // throw new InvalidOperationException("Task_Start_TaskCompleted");
+            // throw new InvalidOperationException("Task_Start_Promise");
+            // throw new InvalidOperationException("Task_Start_ContinuationTask");
+            // throw new InvalidOperationException("Task_Start_AlreadyStarted");
         }
 
         public void Start(TaskScheduler scheduler)
@@ -434,10 +438,11 @@ namespace Daffodil.Stubs
                 throw e;
             }
             // Not modeled any of the scheduler exceptions
-            throw new InvalidOperationException("Task_Start_TaskCompleted");
-            throw new InvalidOperationException("Task_Start_Promise");
-            throw new InvalidOperationException("Task_Start_ContinuationTask");
-            throw new InvalidOperationException("Task_Start_AlreadyStarted");
+            // At present, trying to track only exceptions raised by the application. SRK 2nd Feb 2020
+            // throw new InvalidOperationException("Task_Start_TaskCompleted");
+            // throw new InvalidOperationException("Task_Start_Promise");
+            // throw new InvalidOperationException("Task_Start_ContinuationTask");
+            // throw new InvalidOperationException("Task_Start_AlreadyStarted");
         }
 
 
