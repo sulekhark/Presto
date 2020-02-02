@@ -1,0 +1,15 @@
+<?xml version="1.0"?>
+<FaultInjectionSpecification>
+  <FaultLogPath>c:\tmp\fault-log.txt</FaultLogPath>
+  <FaultRules>
+    <!-- *************************** Rule 1***************************** -->
+  <FaultRule MethodName="T21.MyObj&lt;System.String&gt;.Bar*">
+      <Conditions>
+      <IfCalledBy Caller="T21.Program.Main()" ILOffset="8"/>
+      </Conditions>
+      <Faults>
+        <ThrowExceptionExpressionFault ExceptionExpression="new NullReferenceException('Injected by torch');" />
+      </Faults>
+    </FaultRule>
+  </FaultRules>
+</FaultInjectionSpecification>

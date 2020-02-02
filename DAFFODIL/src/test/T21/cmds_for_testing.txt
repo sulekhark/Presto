@@ -1,0 +1,15 @@
+The following commands can be used to test Torch instrumentation and fault injection.
+The directory testinst contains the configuration files.
+
+
+cd bin
+cp -r Debug Debug_orig
+cd Debug
+$TORCH_HOME/tools/net/torch-instrumenter-internal.exe -i . --ic ../../TestInst/torch-instrumentation.torchconfig  --rc ../../TestInst/RuntimeConfig
+./TorchStackTest.exe
+$TORCH_HOME/tools/net/TorchLogAnalyzer.exe decompress -i torch-runtime-log4net.torchlog 
+
+To do another experiment:
+cd ..
+rm -rf Debug; cp -r Debug_orig Debug; find Debug; cd Debug
+<Modify configuration and repeat above steps>

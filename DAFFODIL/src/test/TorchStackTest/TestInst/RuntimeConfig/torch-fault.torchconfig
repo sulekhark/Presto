@@ -3,26 +3,12 @@
   <FaultLogPath>c:\tmp\fault-log.txt</FaultLogPath>
   <FaultRules>
     <!-- *************************** Rule 1***************************** -->
-    <FaultRule MethodName="*M3*">
+    <FaultRule MethodName="TorchStackTest.Program.M3(System.String)">
       <Conditions>
-        <!--<Never />-->
-        <!--<OnEveryCall />-->
-        <!--<OnFirstCall />-->
-	<!--<OnNthCall N="1" />-->
-        <!--<OnEveryNthCall N="2" />-->
-	<!--<IfCalledBy Caller="E2EDemo.E2EDemo.M1*" ILOffset="31"/>-->
-	<!--<IfStackContains StackSubstring="TorchStackTest.Program.M1()" />-->
-	<IfStackContains StackSubstring="0:TorchStackTest.Program.M2;2:TorchStackTest.Program.M1;" />
-        <!--<OnRandomCall Probability="0.5" />-->
-        <!--<IfArgMatchesExpression ArgIndex="0" Expression="null" />-->
+        <!--<IfCalledBy Caller="TorchStackTest.Program.M2(System.String,refSystem.Int32)" ILOffset="2"/>-->
+	<IfStackContains StackSubstring="0:TorchStackTest.Program.M2(System.String,refSystem.Int32);" />
       </Conditions>
       <Faults>
-        <!--<ReturnNullFault />-->
-	<!--<ReturnExpressionFault Expression="(int)1234" />-->
-        <!--<SkipOriginalWithExpressionFault Assemblies="c:\tmp\myLib1.dll;c:\tmp\myLib2.dll" Expression="new MyObject()" />-->
-        <!--<SwallowExceptionWithExpressionFault Expression="null" />-->
-        <!--<AddLatencyFault LatencyMs="100" />-->
-        <!--<MinLatencyFault LatencyMs="200" />-->
         <ThrowExceptionExpressionFault ExceptionExpression="new Exception('Injected by torch');" />
       </Faults>
     </FaultRule>

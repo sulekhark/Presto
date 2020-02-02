@@ -9,7 +9,7 @@ namespace TorchStackTest
         static void Main(string[] args)
         {
             int y = 0;
-            M2("", y);
+            M2("", ref y);
             string s = "Everything fine.";
             try
             {
@@ -28,12 +28,12 @@ namespace TorchStackTest
         static void M1()
         {
             int y = 0;
-            M2("", y);
+            M2("", ref y);
         }
 
-        static void M2(string x, int y)
+        static void M2(string x, ref int y)
         {
-            M3(null);
+             M3(null);
         }
 
         static void M3(string str)

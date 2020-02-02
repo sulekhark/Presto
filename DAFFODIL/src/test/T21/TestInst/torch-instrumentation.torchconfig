@@ -2,7 +2,7 @@
 <InstrumentationConfiguration>
 <Assemblies>
 <!-- put names of assemblies that you want to instrument-->
-<Assembly>TorchStackTest.exe</Assembly>
+<Assembly>T21.exe</Assembly>
 </Assemblies>
 
 <LoggingTorchPoints>
@@ -10,7 +10,7 @@
 </LoggingTorchPoints>
 
 <FaultInjectionTorchPoints>
-<API>TorchStackTest.Program.M3(System.String)</API>
+<API>T21.MyObj&lt;System.String&gt;.Bar()</API>
 </FaultInjectionTorchPoints>
 
 

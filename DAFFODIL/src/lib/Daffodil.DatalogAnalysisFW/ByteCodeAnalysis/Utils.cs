@@ -72,8 +72,8 @@ namespace Daffodil.DatalogAnalysisFW.AnalysisNetConsole
 
         public static string FullName(this IMethodReference mref)
         {
-            return MemberHelper.GetMethodSignature(mref, NameFormattingOptions.Signature |
-                NameFormattingOptions.TypeParameters | NameFormattingOptions.PreserveSpecialNames);
+            return MemberHelper.GetMethodSignature(mref, NameFormattingOptions.Signature | NameFormattingOptions.OmitWhiteSpaceAfterListDelimiter
+               | NameFormattingOptions.TypeParameters | NameFormattingOptions.PreserveSpecialNames | NameFormattingOptions.ParameterModifiers);
         }
 
         public static bool NameMatch(IMethodReference m1, IMethodReference m2)

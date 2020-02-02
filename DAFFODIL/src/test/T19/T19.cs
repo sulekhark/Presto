@@ -45,9 +45,7 @@ namespace T19
             mainTObj.fooMember = fooInst;
             printString ps1 = new printString(mainTObj.WriteToScreen);
             printString ps2 = new printString(WriteToFile);
-            // sendString(ps1);
-            // sendString(ps2);
-
+           
             printString ps = ps1;
             ps += ps2;
             sendString(ps);

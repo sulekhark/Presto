@@ -10,7 +10,7 @@ namespace Daffodil.FactGeneratorSA
         {
             if (args.Length == 0)
             {
-                ConfigParams.LoadConfig(@"C:\Users\sulek\work\ExcAnalysis\Presto\DAFFODIL\src\test\E2EDemoR\daffodil.cfg");
+                ConfigParams.LoadConfig(@"C:\Users\sulek\work\ExcAnalysis\Presto\DAFFODIL\src\test\E2EDemoF\daffodil.cfg");
                 // ConfigParams.LoadConfig(@"C:\Users\sulek\work\ExcAnalysis\Test\storage-blob-dotnet-getting-started\BlobStorage\daffodil.cfg");
                 // ConfigParams.LoadConfig(@"C:\Users\sulek\work\ExcAnalysis\Test\StorageBug3\StorageBug3\daffodil.cfg");
                 // ConfigParams.LoadConfig(@"C:\Users\sulek\work\ExcAnalysis\FromGithub\bmk1\storage\good\azure-storage-net-data-movement\samples\DataMovementSamples\DataMovementSamples\daffodil.cfg");
