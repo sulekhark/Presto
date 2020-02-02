@@ -4,3 +4,4 @@ System.NullReferenceException:new NullReferenceException('Injected by daffodil-t
 System.FieldAccessException:new FieldAccessException('Injected by daffodil-torch');
 System.Exception:new Exception('Injected by daffodil-torch');
 System.DivideByZeroException:new DivideByZeroException('Injected by daffodil-torch');
+System.AggregateException:new AggregateException('Injected by daffodil-torch');
