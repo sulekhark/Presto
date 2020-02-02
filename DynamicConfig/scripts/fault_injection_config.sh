@@ -21,20 +21,24 @@ do
     callee="$(echo $calleeFull | cut -d'(' -f1)*"
     excType="$(echo $line | cut -d'@' -f5)"
 
+    callerFullM=`echo "$callerFull" | sed 's/</\&lt;/g' | sed 's/>/\&gt;/g'`
+    calleeFullM=`echo "$calleeFull" | sed 's/</\&lt;/g' | sed 's/>/\&gt;/g'`
+    allocInfoM=`echo "$allocInfo" | sed 's/</\&lt;/g' | sed 's/>/\&gt;/g'`
+
     mkdir $dirName
     cp -r $PRESTO_HOME/DynamicConfig/FaultInjectionTemplate/* $dirName
     $PRESTO_HOME/DynamicConfig/scripts/logging_config.sh $dirName ../../assemblies.txt
-    sed "s/PRESTO_TORCH_CALLEE/$calleeFull/g" $dirName/torch-instrumentation.torchconfig > t
+    sed "s/PRESTO_TORCH_CALLEE/$calleeFullM/g" $dirName/torch-instrumentation.torchconfig > t
     mv t $dirName/torch-instrumentation.torchconfig
-    sed "s/PRESTO_TORCH_CALLEE/$calleeFull/g" $dirName/RuntimeConfig/torch-fault.torchconfig > t
+    sed "s/PRESTO_TORCH_CALLEE/$calleeFullM/g" $dirName/RuntimeConfig/torch-fault.torchconfig > t
     mv t $dirName/RuntimeConfig/torch-fault.torchconfig
-    sed "s/PRESTO_TORCH_CALLER/$callerFull/g" $dirName/RuntimeConfig/torch-fault.torchconfig > t
+    sed "s/PRESTO_TORCH_CALLER/$callerFullM/g" $dirName/RuntimeConfig/torch-fault.torchconfig > t
     mv t $dirName/RuntimeConfig/torch-fault.torchconfig
     sed "s/PRESTO_INVOKE_OFFSET/$invkOffset/g" $dirName/RuntimeConfig/torch-fault.torchconfig > t
     mv t $dirName/RuntimeConfig/torch-fault.torchconfig
     allocInfoLine=`grep "$excType" $faultAllocInfoFile`
     allocInfo="$(echo $allocInfoLine | cut -d':' -f2)"
-    sed "s/PRESTO_TORCH_EXCEPTION_EXPRESSION/$allocInfo/g" $dirName/RuntimeConfig/torch-fault.torchconfig > t
+    sed "s/PRESTO_TORCH_EXCEPTION_EXPRESSION/$allocInfoM/g" $dirName/RuntimeConfig/torch-fault.torchconfig > t
     mv t $dirName/RuntimeConfig/torch-fault.torchconfig
 done < $tempFileName
 rm -f $tempFileName
@@ -52,6 +56,8 @@ do
     excType="$(echo $line | cut -d'@' -f3)"
     allocInfoLine=`grep "$excType" $faultAllocInfoFile`
     allocInfo="$(echo $allocInfoLine | cut -d':' -f2)"
+    callerFullM=`echo "$callerFull" | sed 's/</\&lt;/g' | sed 's/>/\&gt;/g'`
+    allocInfoM=`echo "$allocInfo" | sed 's/</\&lt;/g' | sed 's/>/\&gt;/g'`
 
     mkdir $dirName
     cp -r $PRESTO_HOME/DynamicConfig/MultipleFaultsInjectionTemplate/* $dirName 
@@ -67,17 +73,18 @@ do
         invkOffset="$(echo $calleeElem | cut -d':' -f1)"
         calleeFull="$(echo $calleeElem | cut -d':' -f2)"
         callee="$(echo $calleeFull | cut -d'(' -f1)*"
-        sed "s/PRESTO_TORCH_CALLEE/$calleeFull/g" $dirName/RuntimeConfig/calleeFault > t
+        calleeFullM=`echo "$calleeFull" | sed 's/</\&lt;/g' | sed 's/>/\&gt;/g'`
+        sed "s/PRESTO_TORCH_CALLEE/$calleeFullM/g" $dirName/RuntimeConfig/calleeFault > t
         mv t $dirName/RuntimeConfig/calleeFault
-        sed "s/PRESTO_TORCH_CALLER/$callerFull/g" $dirName/RuntimeConfig/calleeFault > t
+        sed "s/PRESTO_TORCH_CALLER/$callerFullM/g" $dirName/RuntimeConfig/calleeFault > t
         mv t $dirName/RuntimeConfig/calleeFault
         sed "s/PRESTO_INVOKE_OFFSET/$invkOffset/g" $dirName/RuntimeConfig/calleeFault > t
         mv t $dirName/RuntimeConfig/calleeFault
-        sed "s/PRESTO_TORCH_EXCEPTION_EXPRESSION/$allocInfo/g" $dirName/RuntimeConfig/calleeFault > t
+        sed "s/PRESTO_TORCH_EXCEPTION_EXPRESSION/$allocInfoM/g" $dirName/RuntimeConfig/calleeFault > t
         mv t $dirName/RuntimeConfig/calleeFault
         cat $dirName/RuntimeConfig/calleeFault >> $dirName/RuntimeConfig/torch-fault.torchconfig
 	rm -f $dirName/RuntimeConfig/calleeFault
-        sed "s/PRESTO_TORCH_CALLEE/$calleeFull/g" $dirName/torch-instrumentation.torchconfig_middle >> $dirName/torch-instrumentation.torchconfig
+        sed "s/PRESTO_TORCH_CALLEE/$calleeFullM/g" $dirName/torch-instrumentation.torchconfig_middle >> $dirName/torch-instrumentation.torchconfig
     done
     cat $dirName/RuntimeConfig/torch-fault.torchconfig_end >> $dirName/RuntimeConfig/torch-fault.torchconfig
     cat $dirName/torch-instrumentation.torchconfig_end >> $dirName/torch-instrumentation.torchconfig
