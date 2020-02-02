@@ -643,7 +643,8 @@ namespace Daffodil.DatalogAnalysisFW.AnalysisNetConsole
             IVariable lhsVar = newObjInst.Result;
             ITypeDefinition objTypeDef = newObjInst.AllocationType.ResolvedType;
             if (Stubber.SuppressF(objTypeDef)) return;
-
+            bool taskObject = false;
+            if (objTypeDef.GetName().StartsWith("Daffodil.Stubs.Task")) taskObject = true;
             VariableWrapper lhsW = WrapperProvider.getVarW(lhsVar);
             TypeRefWrapper objTypeW = WrapperProvider.getTypeRefW(objTypeDef);
             HeapElemWrapper hpW = WrapperProvider.getHeapElemW(newObjInst, methDef, false);
@@ -657,15 +658,23 @@ namespace Daffodil.DatalogAnalysisFW.AnalysisNetConsole
             {
                 if (!fld.IsStatic)
                 {
+                    bool excField = false;
+                    FieldRefWrapper fldW = null;
+                    if (fld.Name.Value.StartsWith("mdl_exception")) excField = true;
                     if (addrTakenInstFlds.Contains(fld))
                     {
-                        FieldRefWrapper fldW = WrapperProvider.getFieldRefW(fld);
+                        fldW = WrapperProvider.getFieldRefW(fld);
                         AddressWrapper allocfldAddrW = WrapperProvider.getAddrW(newObjInst, fld, methDef);
                         ProgramDoms.domX.Add(allocfldAddrW);
                         ProgramRels.relAddrOfHFX.Add(hpW, fldW, allocfldAddrW);
                     }
                     ITypeDefinition fldType = fld.Type.ResolvedType;
                     if (!Stubber.SuppressF(fldType) && fldType.IsValueType && fldType.IsStruct) CreateStruct(hpW, fld);
+                    if (taskObject == true && excField == true)
+                    {
+                        if (fldW == null) fldW = WrapperProvider.getFieldRefW(fld);
+                        ProgramRels.relTaskObjFld.Add(hpW, fldW);
+                    }
                 }
             }
             return;
