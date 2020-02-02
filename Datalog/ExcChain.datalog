@@ -60,8 +60,8 @@ ExceptionObj(h) :- HFHO(h1,f,h), HT(h,t), ExceptionType(t).
 
 TransLink(h1,h2) :- HFHO(h1,f1,h), HFHO(h,f2,h2), !ExceptionObj(h).
 TransLink(h1,h2) :- HFHO(h1,f,h), TransLink(h,h2), !ExceptionObj(h).
-WrapsEx(h1,h2) :- ExceptionObj(h1), ExceptionObj(h2), HFHO(h1,f,h2).
-WrapsEx(h1,h2) :- ExceptionObj(h1), ExceptionObj(h2), TransLink(h1,h2).
+WrapsEx(h1,h2) :- ExceptionObj(h1), ExceptionObj(h2), HFHO(h1,f,h2), h1 != h2.
+WrapsEx(h1,h2) :- ExceptionObj(h1), ExceptionObj(h2), TransLink(h1,h2), h1 != h2.
 SharesFld(h1,h2) :- HFHO(h1,f1,h), HFHO(h2,f2,h), ExceptionObj(h1), ExceptionObj(h2), !ExceptionObj(h).
 SharesFld(h1,h2) :- HFHO(h1,f,h), TransLink(h2,h), ExceptionObj(h1), ExceptionObj(h2), !ExceptionObj(h).
 SharesFld(h1,h2) :- TransLink(h1,h), HFHO(h2,f,h), ExceptionObj(h1), ExceptionObj(h2), !ExceptionObj(h).
