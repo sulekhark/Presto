@@ -644,7 +644,9 @@ namespace Daffodil.DatalogAnalysisFW.AnalysisNetConsole
             ITypeDefinition objTypeDef = newObjInst.AllocationType.ResolvedType;
             if (Stubber.SuppressF(objTypeDef)) return;
             bool taskObject = false;
-            if (objTypeDef.GetName().StartsWith("Daffodil.Stubs.Task")) taskObject = true;
+            if (objTypeDef.ToString().StartsWith("Daffodil.Stubs.Task<")  ||
+                objTypeDef.ToString().Equals("Daffodil.Stubs.Task"))
+                taskObject = true;
             VariableWrapper lhsW = WrapperProvider.getVarW(lhsVar);
             TypeRefWrapper objTypeW = WrapperProvider.getTypeRefW(objTypeDef);
             HeapElemWrapper hpW = WrapperProvider.getHeapElemW(newObjInst, methDef, false);
@@ -654,28 +656,36 @@ namespace Daffodil.DatalogAnalysisFW.AnalysisNetConsole
             // Note that lhsVar is a reference to a struct. Here the struct is allocated on the heap.
             if (objTypeDef.IsStruct) ProgramRels.relStructH.Add(hpW);
 
-            foreach (IFieldDefinition fld in objTypeDef.Fields)
+            IList<ITypeDefinition> workList = new List<ITypeDefinition>();
+            workList.Add(objTypeDef);
+            while (workList.Count > 0)
             {
-                if (!fld.IsStatic)
+                ITypeDefinition currTypeDef = workList[0];
+                workList.RemoveAt(0);
+                foreach (IFieldDefinition fld in currTypeDef.Fields)
                 {
-                    bool excField = false;
-                    FieldRefWrapper fldW = null;
-                    if (fld.Name.Value.StartsWith("mdl_exception")) excField = true;
-                    if (addrTakenInstFlds.Contains(fld))
+                    if (!fld.IsStatic)
                     {
-                        fldW = WrapperProvider.getFieldRefW(fld);
-                        AddressWrapper allocfldAddrW = WrapperProvider.getAddrW(newObjInst, fld, methDef);
-                        ProgramDoms.domX.Add(allocfldAddrW);
-                        ProgramRels.relAddrOfHFX.Add(hpW, fldW, allocfldAddrW);
-                    }
-                    ITypeDefinition fldType = fld.Type.ResolvedType;
-                    if (!Stubber.SuppressF(fldType) && fldType.IsValueType && fldType.IsStruct) CreateStruct(hpW, fld);
-                    if (taskObject == true && excField == true)
-                    {
-                        if (fldW == null) fldW = WrapperProvider.getFieldRefW(fld);
-                        ProgramRels.relTaskObjFld.Add(hpW, fldW);
+                        bool excField = false;
+                        FieldRefWrapper fldW = null;
+                        if (fld.Name.Value.StartsWith("mdl_exception")) excField = true;
+                        if (addrTakenInstFlds.Contains(fld))
+                        {
+                            fldW = WrapperProvider.getFieldRefW(fld);
+                            AddressWrapper allocfldAddrW = WrapperProvider.getAddrW(newObjInst, fld, methDef);
+                            ProgramDoms.domX.Add(allocfldAddrW);
+                            ProgramRels.relAddrOfHFX.Add(hpW, fldW, allocfldAddrW);
+                        }
+                        ITypeDefinition fldType = fld.Type.ResolvedType;
+                        if (!Stubber.SuppressF(fldType) && fldType.IsValueType && fldType.IsStruct) CreateStruct(hpW, fld);
+                        if (taskObject == true && excField == true)
+                        {
+                            if (fldW == null) fldW = WrapperProvider.getFieldRefW(fld);
+                            ProgramRels.relTaskObjFld.Add(hpW, fldW);
+                        }
                     }
                 }
+                foreach (ITypeReference baseTypeRef in currTypeDef.BaseClasses) workList.Add(baseTypeRef.ResolvedType);
             }
             return;
         }
