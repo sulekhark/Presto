@@ -9,8 +9,8 @@ dynLogDir=../dynlogs
 if [ -s named_cons_cr_lf_cr.txt.ee.refined ]
 then
     $PRESTO_HOME/BnetTools/cons_all2bnet.py bnet_dict.out.refined narrowor < named_cons_cr_lf_cr.txt.ee.refined > named_bnet.out.refined
-    grep "CallAt" prob_edb_tuples.txt.refined > set1.txt.refined
-    grep -v "CallAt" prob_edb_tuples.txt.refined > set2.txt.refined
+    grep "CallAt" app_prob_edb_tuples.txt.refined > set1.txt.refined
+    grep -v "CallAt" app_prob_edb_tuples.txt.refined > set2.txt.refined
     rm -f edb_probabilities.txt.refined
     if [ -s set1.txt.refined ]
     then
@@ -31,8 +31,8 @@ fi
 
 
 $PRESTO_HOME/BnetTools/cons_all2bnet.py bnet_dict.out narrowor < named_cons_cr_lf_cr.txt.ee > named_bnet.out
-grep "CallAt" prob_edb_tuples.txt > set1.txt
-grep -v "CallAt" prob_edb_tuples.txt > set2.txt
+grep "CallAt" app_prob_edb_tuples.txt > set1.txt
+grep -v "CallAt" app_prob_edb_tuples.txt > set2.txt
 rm -f edb_probabilities.txt
 if [ -s set1.txt ]
 then
