@@ -21,9 +21,9 @@ do
     callee="$(echo $calleeFull | cut -d'(' -f1)*"
     excType="$(echo $line | cut -d'@' -f5)"
 
-    callerFullM=`echo "$callerFull" | sed 's/</\&lt;/g' | sed 's/>/\&gt;/g'`
-    calleeFullM=`echo "$calleeFull" | sed 's/</\&lt;/g' | sed 's/>/\&gt;/g'`
-    allocInfoM=`echo "$allocInfo" | sed 's/</\&lt;/g' | sed 's/>/\&gt;/g'`
+    callerFullM=`echo "$callerFull" | sed 's/</\\\&lt;/g' | sed 's/>/\\\&gt;/g'`
+    calleeFullM=`echo "$calleeFull" | sed 's/</\\\&lt;/g' | sed 's/>/\\\&gt;/g'`
+    allocInfoM=`echo "$allocInfo" | sed 's/</\\\&lt;/g' | sed 's/>/\\\&gt;/g'`
 
     mkdir $dirName
     cp -r $PRESTO_HOME/DynamicConfig/FaultInjectionTemplate/* $dirName
@@ -56,8 +56,8 @@ do
     excType="$(echo $line | cut -d'@' -f3)"
     allocInfoLine=`grep "$excType" $faultAllocInfoFile`
     allocInfo="$(echo $allocInfoLine | cut -d':' -f2)"
-    callerFullM=`echo "$callerFull" | sed 's/</\&lt;/g' | sed 's/>/\&gt;/g'`
-    allocInfoM=`echo "$allocInfo" | sed 's/</\&lt;/g' | sed 's/>/\&gt;/g'`
+    callerFullM=`echo "$callerFull" | sed 's/</\\\&lt;/g' | sed 's/>/\\\&gt;/g'`
+    allocInfoM=`echo "$allocInfo" | sed 's/</\\\&lt;/g' | sed 's/>/\\\&gt;/g'`
 
     mkdir $dirName
     cp -r $PRESTO_HOME/DynamicConfig/MultipleFaultsInjectionTemplate/* $dirName 
@@ -73,7 +73,7 @@ do
         invkOffset="$(echo $calleeElem | cut -d':' -f1)"
         calleeFull="$(echo $calleeElem | cut -d':' -f2)"
         callee="$(echo $calleeFull | cut -d'(' -f1)*"
-        calleeFullM=`echo "$calleeFull" | sed 's/</\&lt;/g' | sed 's/>/\&gt;/g'`
+        calleeFullM=`echo "$calleeFull" | sed 's/</\\\&lt;/g' | sed 's/>/\\\&gt;/g'`
         sed "s/PRESTO_TORCH_CALLEE/$calleeFullM/g" $dirName/RuntimeConfig/calleeFault > t
         mv t $dirName/RuntimeConfig/calleeFault
         sed "s/PRESTO_TORCH_CALLER/$callerFullM/g" $dirName/RuntimeConfig/calleeFault > t
