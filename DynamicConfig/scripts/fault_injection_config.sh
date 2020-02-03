@@ -23,7 +23,6 @@ do
 
     callerFullM="$(echo "$callerFull" | sed 's/</\\\&lt;/g' | sed 's/>/\\\&gt;/g')"
     calleeFullM="$(echo "$calleeFull" | sed 's/</\\\&lt;/g' | sed 's/>/\\\&gt;/g')"
-    allocInfoM="$(echo "$allocInfo" | sed 's/</\\\&lt;/g' | sed 's/>/\\\&gt;/g')"
 
     mkdir $dirName
     cp -r $PRESTO_HOME/DynamicConfig/FaultInjectionTemplate/* $dirName
@@ -38,6 +37,7 @@ do
     mv t $dirName/RuntimeConfig/torch-fault.torchconfig
     allocInfoLine=`grep "$excType" $faultAllocInfoFile`
     allocInfo="$(echo $allocInfoLine | cut -d':' -f2)"
+    allocInfoM="$(echo "$allocInfo" | sed 's/</\\\&lt;/g' | sed 's/>/\\\&gt;/g')"
     sed "s/PRESTO_TORCH_EXCEPTION_EXPRESSION/$allocInfoM/g" $dirName/RuntimeConfig/torch-fault.torchconfig > t
     mv t $dirName/RuntimeConfig/torch-fault.torchconfig
 done < $tempFileName

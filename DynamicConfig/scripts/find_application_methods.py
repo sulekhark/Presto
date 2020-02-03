@@ -35,6 +35,9 @@ for meth in open(methodFileName):
         if meth.startswith(pre):
             blacklist = True
             break
+        elif "..ctor" in meth:
+            blacklist = True
+            break
     if blacklist == False:
         print("appM({0}).".format(methId), file=dlogFile)
         print("appM({0}:{1}).".format(methId, meth), file=txtFile)
