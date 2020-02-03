@@ -12,6 +12,6 @@ python3 parse_z3_out.py dyncfg_app_tuples.datalog dyncfg_app_tuples.out >> full_
 cat LibEscapeMTP.datalog > lib_prob_edb_tuples.datalog
 cat LibCallAt.datalog >> lib_prob_edb_tuples.datalog
 cat LibLinkedEx.datalog >> lib_prob_edb_tuples.datalog
-sed 's/.$//' lib_prob_edb_tuples.datalog > lib_prob_edb_tuples.datalog.txt
+sed 's/.$//' lib_prob_edb_tuples.datalog | sed 's/Lib//' > lib_prob_edb_tuples.datalog.txt
 # link to below cmd: https://stackoverflow.com/questions/18204904/fast-way-of-finding-lines-in-one-file-that-are-not-in-another
 diff --new-line-format="" --unchanged-line-format="" <(sort $probEdbTuplesFile) <(sort lib_prob_edb_tuples.datalog.txt) > $appProbEdbTuplesFile 
