@@ -90,8 +90,8 @@ CatchVH_i2(v,h,m,p,mcallee,t,eh) :- CallAt(m,p,mcallee), ThrowMH(mcallee,h), HT(
 Escaping_i1(t,h,m) :- ThrowMH(m,h), HT(h,t), ExceptionType(t), entryPtM(m).
 WEscaping_i1(t2,h2,t1,h1,m2,v2,m1,v1) :- WrapsEx(h1,h2), Escaping(t1,h1), LinkMatch(m2,v2,t2,m1,v1,t1), HT(h2,t2).
 WEscaping_i2(t3,h3,t2,h2,m3,v3,m2,v2,t1,h1) :- WrapsEx(h2,h3), WEscaping(t2,h2,t1,h1), LinkMatch(m3,v3,t3,m2,v2,t2), HT(h3,t3).
-WEscaping_i3(t2,h2,t1,h1,h,f) :- WrapsEx(h1,h2), Escaping(t1,h1), HFHO(h,f,h2), TaskObjFld(h,f), HT(t2,h2).
-WEscaping_i4(t3,h3,t2,h2,h,f,t1,h1) :- WrapsEx(h2,h3), WEscaping(t2,h2,t1,h1), HFHO(h,f,h3), TaskObjFld(h,f), HT(t3,h3).
+WEscaping_i3(t2,h2,t1,h1,h,f) :- WrapsEx(h1,h2), Escaping(t1,h1), HFHO(h,f,h2), TaskObjFld(h,f), HT(h2,t2).
+WEscaping_i4(t3,h3,t2,h2,h,f,t1,h1) :- WrapsEx(h2,h3), WEscaping(t2,h2,t1,h1), HFHO(h,f,h3), TaskObjFld(h,f), HT(h3,t3).
 FeasibleMTP_i1(m,t,p) :- EscapeMTP(m,t,p), NoEnclose(m,p).
 FeasibleMTP_i2(m,t,p,eh) :- EscapeMTP(m,t,p), EnclosingEH(m,eh,p), FeasibleEH(m,eh).
 FeasibleEH_i1(m,eh,v,h) :- CatchVH(v,h), VarEH(eh,v), OutermostEH(m,eh).
