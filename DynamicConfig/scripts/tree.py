@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import sys
+import logging
 
 class Node(object):
     def __init__(self, data=None, parent=None):
@@ -48,10 +49,10 @@ class Node(object):
             self.offset.pop(index)
             self.exception.pop(index)
         except IndexError:
-            print('Cannot remove. Child Index not found')
+            logging.info('Cannot remove. Child Index not found')
 
     def printTree(self, level=0):
-        print('    ' * level + repr(self))
+        logging.info('    ' * level + repr(self))
         for child in self.children:
             child.printTree(level+1)
 
@@ -68,28 +69,28 @@ def testTree():
     child1.addChild(child2, "0")
     root.addChild(child2, "0")
 
-    print('\n---TEST PRINT TREE---\n')
+    logging.info('\n---TEST PRINT TREE---\n')
     root.printTree()
     child1.printTree()
 
-    print('\n---TEST METHODS---\n')
+    logging.info('\n---TEST METHODS---\n')
 
-    print('roots children:  {0}'.format(root.children))
-    print('child1 children:  {0}'.format(child1.children))
-    print('root parent:  {0}'.format(root.parent))
-    print('child1 parent:  {0}'.format(child1.parent))
-    print('child2 parent:  {0}'.format(child2.parent))
+    logging.info('roots children:  {0}'.format(root.children))
+    logging.info('child1 children:  {0}'.format(child1.children))
+    logging.info('root parent:  {0}'.format(root.parent))
+    logging.info('child1 parent:  {0}'.format(child1.parent))
+    logging.info('child2 parent:  {0}'.format(child2.parent))
 
-    print('root siblings:  {0}'.format(root.getSiblings()))
-    print('child1 siblings:  {0}'.format(child1.getSiblings()))
+    logging.info('root siblings:  {0}'.format(root.getSiblings()))
+    logging.info('child1 siblings:  {0}'.format(child1.getSiblings()))
 
-    print('child1 index:  {0}'.format(child1.getIndex()))
-    print('child2 index:  {0}'.format(child2.getIndex()))
+    logging.info('child1 index:  {0}'.format(child1.getIndex()))
+    logging.info('child2 index:  {0}'.format(child2.getIndex()))
 
-    print('\n---TEST REMOVE CHILD---\n')
+    logging.info('\n---TEST REMOVE CHILD---\n')
 
-    print('roots children:  {0}'.format(root.children))
+    logging.info('roots children:  {0}'.format(root.children))
     root.remChild(child2.getIndex())
-    print('roots children:  {0}'.format(root.children))
+    logging.info('roots children:  {0}'.format(root.children))
 
 # testTree()

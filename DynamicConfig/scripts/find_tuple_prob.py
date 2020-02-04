@@ -21,6 +21,7 @@ bnetDictFileName = sys.argv[2]
 pnMapFileName = "../datalog/PNMap.datalog"
 methodMapFileName = "../dynconfig/id_to_method_map.txt"
 enclosingCatchFileName = "../datalog/EnclosingEH.datalog"
+delegateCallFileName = "../datalog/DelegateCall.datalog"
 excMapFileName = "../dynconfig/id_to_exctype_map.txt"
 loggingDir = "../dynlogs/Logging"
 fInjectDir = "../dynlogs/FaultInjectionSet/FInject"
@@ -54,6 +55,18 @@ def insertIntoMap(methName, node):
     method2NodeMap[methName].append(node)
     return
 
+def getDelegateCaller(delMeth, crntNode):
+    if delMeth in delegateCallMap:
+        delCallerList = delegateCallMap[delMeth]
+        if len(delCallerList) > 0:
+            for pr in delCallerList:
+                delCaller = pr[0]
+                anc = crntNode.getAncestor(delCaller)
+                if anc is not None:
+                    return tuple([anc, pr[1]])
+    return None
+
+
 def readLogFiles(logFNList):
     for logFileName in logFNList:
         logLines = [line.strip() for line in open(logFileName) ]
@@ -65,6 +78,10 @@ def readLogFiles(logFNList):
             callee = lineParts[7]
             ilOffset = lineParts[10]
             exception = lineParts[14]
+            if "..ctor" in caller:      # Ignore log lines that are calls from constructors
+                continue
+            if ".Invoke(" in callee:    # Ignore calls to Delegate Invoke becuase DAFFODIL is modeling delegate invoke.
+                continue
             if (crntNode is None):
                 node = Node(data=caller)
                 insertIntoMap(caller, node)
@@ -77,6 +94,14 @@ def readLogFiles(logFNList):
                     if ancestor is not None:
                         descend = False
                         crntNode = ancestor
+                    else:
+                        ancPair = getDelegateCaller(caller, crntNode)
+                        if ancPair is not None:
+                            descend = False
+                            node = Node(data=caller)
+                            insertIntoMap(caller, node)
+                            ancPair[0].addChild(node, ancPair[1], "")
+                            crntNode = node
                 if descend:
                     # create the call_tree edge: crntNode.data --> caller
                     node = Node(data=caller)
@@ -87,8 +112,8 @@ def readLogFiles(logFNList):
             insertIntoMap(callee, calleeNode)
             crntNode.addChild(calleeNode, ilOffset, exception)
             crntNode = calleeNode
-    # for root in logRoots:
-        # root.printTree()
+    for root in logRoots:
+        root.printTree()
     return
 
 
@@ -136,6 +161,21 @@ def getCallCount(callerMeth, calleeMeth, callerLoc):
     return callCnt
 
 
+def modifyPropertyName(meth):
+    if "get_" in meth:
+        meth = meth.replace("get_", "")
+        meth = meth.replace("(", ".get(")
+    return meth
+
+
+def modifyCaller(meth):
+    meth = modifyPropertyName(meth)
+
+def modifyCallee(meth):
+    meth = modifyPropertyName(meth)
+
+
+
 ########################################################################################################################
 # Function to compute CallAt probabilities 
 
@@ -151,6 +191,9 @@ def computeProbCallAt(entry):
     calleeId = parts[2]
     callee = methodMap[calleeId]
 
+    caller = modifyCaller(caller)
+    callee = modifyCallee(callee)
+
     totalCnt = 0
     if caller in method2NodeMap:
         totalCnt = len(method2NodeMap[caller])
@@ -164,6 +207,7 @@ def computeProbCallAt(entry):
         prob = minProb
     else:
         prob = minProb + ((maxProb - minProb) * callCnt / totalCnt)
+    logging.info('SRK_DBG: find_tuple_prob.py: tuple:{0}  totalCnt:{1}  callCnt:{2}'.format(entry, totalCnt, callCnt))
     print("{0}: {1}".format(bnetNodeId, prob))
     return
 
@@ -186,6 +230,10 @@ def computeProbCondCallAt(entry):
     callerLoc = pnMap[callerPP]
     calleeId = parts[4]
     callee = methodMap[calleeId]
+
+    condMeth = modifyCaller(condMeth)
+    caller = modifyCaller(caller)
+    callee = modifyCallee(callee)
 
     totalCnt = 0
     callCnt = 0
@@ -246,11 +294,13 @@ def computeProbEscapeMTP(entry):
         cparts = entry.split(',', 1)
         calleeMethId = cparts[0]
         calleeMeth = methodMap[calleeMethId]
+        calleeMeth = modifyCallee(calleeMeth)
         entry = cparts[1]
 
     parts = entry.split(',')
     callerMethId = parts[0]
     callerMeth = methodMap[callerMethId]
+    callerMeth = modifyCaller(callerMeth)
     excTypeId = parts[1]
     excType = excMap[excTypeId]
     callerPP = parts[2]
@@ -269,6 +319,7 @@ def computeProbEscapeMTP(entry):
             if isConditional == False:
                 calleeMethId = lDir.split('_')[3]
                 calleeMeth = methodMap[calleeMethId]
+                calleeMeth = modifyCallee(calleeMeth)
             fInjectLogs = getLogs(lDir)
             for fiLogPair in fInjectLogs:
                 torchLog = fiLogPair[0]
@@ -308,6 +359,7 @@ def computeProbLinkedEx(entry):
     parts = entry.split(',')
     throwMethId = parts[3]
     throwMeth = methodMap[throwMethId]
+    throwMeth = modifyCaller(throwMeth)  # throwMeth is treated like a "caller" for modification because it has to be an app meth.
     excTypeId = parts[5]
     excType = excMap[excTypeId]
     arg0 = parts[0]
@@ -387,6 +439,18 @@ excEntries = [ line.strip() for line in open(excMapFileName) ]
 for entry in excEntries:
     parts = entry.split(':')
     excMap[parts[0]] = parts[1]
+
+
+delegateCallMap = {}
+delCEntries = [ line.strip() for line in open(delegateCallFileName) ]
+for entry in delCEntries:
+    entry = entry[13:] # remove DelegateCall(
+    entry = entry[:-2] # remove ).
+    parts = entry.split(',')
+    delMeth = methodMap[parts[2]]
+    if delMeth not in delegateCallMap:
+        delegateCallMap[delMeth] = []
+    delegateCallMap[delMeth].append(tuple([methodMap[parts[0]], parts[1]]))
 
 
 ########################################################################################################################

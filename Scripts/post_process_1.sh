@@ -12,6 +12,13 @@ cd datalog
 . ./run_dbg_flows.sh
 python3 ./extract_dgraph.py ExcAnalysis_inst.datalog ../bnet
 
+cd ..
+rm -rf dynconfig
+mkdir dynconfig
+cd dynconfig
+$PRESTO_HOME/DynamicConfig/scripts/get_assemblies.sh ../datalog/modules.txt assemblies.txt
+$PRESTO_HOME/DynamicConfig/scripts/generate_maps.sh
+
 cd ../bnet
 $PRESTO_HOME/BnetTools/get_coreachable/get_coreachable named_cons_all.txt named_cons_cr.txt base_queries.txt 0 0
 $PRESTO_HOME/BnetTools/dfs_cycle_elim/dfs_cycle_elim named_cons_cr.txt named_cons_cr_lf.txt rule_prob.txt rule_prob_out.txt
@@ -44,12 +51,7 @@ cd ../datalog
 $PRESTO_HOME/DynamicConfig/scripts/generate_dyncfg_info.sh ../bnet/app_prob_edb_tuples.txt.refined ../bnet/app_prob_edb_tuples.txt
 
 cd ..
-rm -rf dynconfig
-mkdir dynconfig
 cd dynconfig
-$PRESTO_HOME/DynamicConfig/scripts/get_assemblies.sh ../datalog/modules.txt assemblies.txt
-$PRESTO_HOME/DynamicConfig/scripts/generate_maps.sh
-
 mkdir Logging
 cp -r $PRESTO_HOME/DynamicConfig/LoggingTemplate/* Logging
 $PRESTO_HOME/DynamicConfig/scripts/logging_config.sh Logging assemblies.txt
