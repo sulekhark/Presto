@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Threading.Tasks;
 using System.IO;
-
+using System.Collections.Generic;
 
 namespace E2EDemoF
 {
@@ -57,7 +57,7 @@ namespace E2EDemoF
             }
             finally
             {
-                foo.FooDoAsync();
+                foo.DoBar();
                 Console.WriteLine("Done: {0}", s);
             }
             
@@ -98,28 +98,59 @@ namespace E2EDemoF
             if (a == null) throw new NullReferenceException();
         }
 
-        public B FooDoAsync()
+        public B DoBar()
         {
-            Task<B> res = DoAsyncWork();
+            string s = "hello";
+            Task<B> res = DoAsyncWork(s);
             res.Wait();
             return res.Result;
         }
 
-        public async Task<B> DoAsyncWork()
+        public async Task<B> DoAsyncWork(string strParam)
         {
-            B res;
+            B res2 = null;
+            int res1;
             try
             {
-                res = await MyAsyncTask();
+                res1 = await MyTask1(strParam);
+                if (res1 == 0)
+                {
+                    res2 = await MyTask2();
+                }
+                
             }
             catch (Exception e)
             {
                 throw e;
             }
-            return res;
+            return res2;
         }
 
-        public Task<B> MyAsyncTask()
+        public Task<int> MyTask1(string sp)
+        {
+            IList<string> lclList = new List<string>();
+            for (int i = 0; i < 10; i++)
+            {
+                lclList.Add(sp);
+            }
+            Task<int> itsk;
+            int val = 0;
+            itsk = Task.Run(() =>
+            {
+                foreach (string member in lclList) val = Process(val, member);
+                return val;
+            });
+            return itsk;
+        }
+
+        public int Process(int val, string s)
+        {
+            int curr = val;
+            curr += s.Length;
+            if (val > 10) throw new Exception("Value beyond upper limit.");
+            return curr;
+        }
+        public Task<B> MyTask2()
         {
             Task<B> tmo;
             B xxx;
