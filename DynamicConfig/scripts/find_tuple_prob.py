@@ -18,6 +18,7 @@ import os, fnmatch
 probEdbFileName = sys.argv[1]
 bnetDictFileName = sys.argv[2]
 
+mmFileName = "../datalog/MM.datalog"
 pnMapFileName = "../datalog/PNMap.datalog"
 methodMapFileName = "../dynconfig/id_to_method_map.txt"
 enclosingCatchFileName = "../datalog/EnclosingEH.datalog"
@@ -170,6 +171,9 @@ def modifyPropertyName(meth):
 
 def modifyCaller(meth):
     meth = modifyPropertyName(meth)
+    if ".MoveNext(" in meth:
+        return moveNextCallMap[moveNextCallMap[meth]]
+    return meth
 
 def modifyCallee(meth):
     meth = modifyPropertyName(meth)
@@ -451,6 +455,27 @@ for entry in delCEntries:
     if delMeth not in delegateCallMap:
         delegateCallMap[delMeth] = []
     delegateCallMap[delMeth].append(tuple([methodMap[parts[0]], parts[1]]))
+
+
+moveNextCallMap = {}
+mmEntries = [ line.strip() for line in open(mmFileName) ]
+for entry in mmEntries:
+    entry = entry[3:] # remove MM( 
+    entry = entry[:-2] # remove ).
+    parts = entry.split(',')
+    callerMeth = methodMap[parts[0]]
+    calleeMeth = methodMap[parts[1]]
+    if ".MoveNext(" in calleeMeth:
+        moveNextCallMap[calleeMeth] = callerMeth 
+valueSet = set(moveNextCallMap.values())
+for entry in mmEntries:
+    entry = entry[3:] # remove MM( 
+    entry = entry[:-2] # remove ).
+    parts = entry.split(',')
+    callerMeth = methodMap[parts[0]]
+    calleeMeth = methodMap[parts[1]]
+    if calleeMeth in valueSet:
+        moveNextCallMap[calleeMeth] = callerMeth 
 
 
 ########################################################################################################################
