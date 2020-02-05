@@ -13,10 +13,18 @@ CatchVH(v:V,h:H) input                   # Variable v which is the formal parame
 ExceptionType(t:T) input                 # Type t is an exception type
 HT(h:H,t:T) input                        # Allocation site h as Type t
 entryPtM(m:M) input                      # Entry point methods of the assembly.
-WrapsEx(h2:H,h1:H) input                 # Exception object h2 wraps exception object h1
-LinkMatch(m1:M,v1:V,t1:T,m2:M,v2:V,t2:T) input
 MoveNextEH(m:M,eh:EH) input
 VarEH(eh:EH,v:V) input
+LinkedEx(m1:M,v1:V,t1:T,m2:M,v2:V,t2:T) input
+VHO(v:V,h:H)  input                      # Variable v may point to AllocSite h
+FHO(f:F,h:H)  input                      # Static field f may point to AllocSite h
+HFHO(h1:H,f:F,h2:H)  input               # Field f of object allocated at AllocSite h1 may point to AllocSite h2
+ExcOrigin(m:M,v:V,h:H) input
+
+ExceptionObj(h:H) printtuples
+TransLink(h1:H,h2:H)
+WrapsEx(h2:H,h1:H) printtuples           # Exception object h2 wraps exception object h1
+LinkMatch(m1:M,v1:V,t1:T,m2:M,v2:V,t2:T) printtuples
 
 Caught(t:T,h:H) printtuples              # h is an exception object of Type t that is caught somewhere within the application
 Escaping(t:T,h:H) printtuples            # h is an exception object of Type t that is escaping from the application
@@ -24,9 +32,26 @@ WEscaping(t1:T,h1:H,t2:T,h2:H) printtuples
 
 
 # Rules
+
+# Find pairs of exception objects (h1,h2) where h1 wraps (encapsulates) h2.
+# Note: When we transitively compute the above, we don't follow links
+# that are exception objects because we want to find only the "nearest" 
+# exception objects for which either of the above relations hold.
+
+ExceptionObj(h) :- VHO(v,h), HT(h,t), ExceptionType(t).
+ExceptionObj(h) :- FHO(f,h), HT(h,t), ExceptionType(t).
+ExceptionObj(h) :- HFHO(h1,f,h), HT(h,t), ExceptionType(t).
+
+TransLink(h1,h2) :- HFHO(h1,f1,h), HFHO(h,f2,h2), !ExceptionObj(h).
+TransLink(h1,h2) :- HFHO(h1,f,h), TransLink(h,h2), !ExceptionObj(h).
+WrapsEx(h1,h2) :- ExceptionObj(h1), ExceptionObj(h2), HFHO(h1,f,h2), h1 != h2.
+WrapsEx(h1,h2) :- ExceptionObj(h1), ExceptionObj(h2), TransLink(h1,h2), h1 != h2.
+
+LinkMatch(m1,v1,t1,m2,v2,t2) :- CatchVH(v1,h1), LinkedEx(m1,v1,t1,m2,v2,t2), VHO(v2,h2), WrapsEx(h2,h1), HT(h1,t1), HT(h2,t2).
+
 Escaping(t,h) :- ThrowMH(m,h), HT(h,t), ExceptionType(t), entryPtM(m).
-WEscaping(t2,h2,t1,h1) :- WrapsEx(h1,h2), Escaping(t1,h1), LinkMatch(m2,v2,t2,m1,v1,t1), HT(h2,t2).
-WEscaping(t3,h3,t2,h2) :- WrapsEx(h2,h3), WEscaping(t2,h2,t1,h1), LinkMatch(m3,v3,t3,m2,v2,t2), HT(h3,t3).
+WEscaping(t2,h2,t1,h1) :- WrapsEx(h1,h2), Escaping(t1,h1), LinkMatch(m2,v2,t2,m1,v1,t1), ExcOrigin(m1,v1,h1), HT(h2,t2).
+WEscaping(t3,h3,t2,h2) :- WrapsEx(h2,h3), WEscaping(t2,h2,t1,h1), LinkMatch(m3,v3,t3,m2,v2,t2), ExcOrigin(m2,v2,h2), HT(h3,t3).
 # Modeling Windows TPL (Task Parallel Library) behavior.
 WEscaping(t2,h2,t1,h1) :- WrapsEx(h1,h2), Escaping(t1,h1), CatchVH(v2,h2), VarEH(eh2,v2), MoveNextEH(m,eh2), HT(h2,t2).
 WEscaping(t3,h3,t2,h2) :- WrapsEx(h2,h3), WEscaping(t2,h2,t1,h1), CatchVH(v3,h3), VarEH(eh3,v3), MoveNextEH(m,eh3), HT(h3,t3).
@@ -39,7 +64,9 @@ Caught(t,h) :- CatchVH(v,h), HT(h,t), ExceptionType(t).
 .include "ExceptionType.datalog"
 .include "HT.datalog"
 .include "entryPtM.datalog"
-.include "WrapsEx.datalog"
-.include "LinkMatch.datalog"
 .include "MoveNextEH.datalog"
 .include "VarEH.datalog"
+.include "VHO.datalog"
+.include "FHO.datalog"
+.include "HFHO.datalog"
+.include "ExcOrigin.datalog"

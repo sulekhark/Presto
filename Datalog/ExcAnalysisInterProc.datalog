@@ -69,6 +69,8 @@ FH(f:F,h:H)  input                       # Static field f may point to AllocSite
 FX(f:F,x:X)  input                       # Static field f may point to Address x
 HFH(h1:H,f:F,h2:H)  input                # Field f of object allocated at AllocSite h1 may point to AllocSite h2
 HFX(h:H,f:F,x:X)  input                  # Field f of object allocated at AllocSite h may point to Address x
+LinkedEx(m1:M,v1:V,t1:T,m2:M,v2:V,t2:T) input
+ThrowOrigin(m:M,p:P,v:V) input
 
 # Below six relations are the "output" points-to relations which are supersets of the corresponding input relations 
 VHO(v:V,h:H)  printtuples                # Variable v may point to AllocSite h
@@ -102,7 +104,8 @@ CatchVH(v:V,h:H) printtuples             # Variable v which is the formal parame
 
 FeasibleMTP(m:M,t:T,p:P) printtuples
 FeasibleEH(m:M,eh:EH) printtuples
-
+ExcOrigin(m:M,v:V,h:H) printtuples
+ThrowPoint(m:M,p:P,v:V) printtuples
 
 ###
 # Constraints
@@ -192,16 +195,20 @@ StatFldRead(l,f) :- DerefRight(l,r), VXO(r,x), AddrOfFX(f,x).
 
 # Propagating exception points-to
 CallAt(m,p,mcallee) :- MI(m,i), IM(i,mcallee), PI(p,i).
-ThrowMH(m,h) :- ThrowPV(m,p,v), VHO(v,h), HT(h,t), FeasibleMTP(m,t,p).
+
+ThrowPoint(m,p,v) :- ThrowPV(m,p,v), ThrowOrigin(m,p,v).
+ThrowPoint(m,p,v) :- ThrowPV(m,p,v), LinkedEx(m1,v1,t,m,v,t), CatchVH(v1,h), VHO(v,h). 
+ThrowMH(m,h) :- ThrowPoint(m,p,v), VHO(v,h), HT(h,t), FeasibleMTP(m,t,p).
 ThrowMH(m,h) :- CallAt(m,p,mcallee), ThrowMH(mcallee,h), HT(h,t), FeasibleMTP(m,t,p).
 FeasibleMTP(m,t,p) :- EscapeMTP(m,t,p), NoEnclose(m,p).
 FeasibleMTP(m,t,p) :- EscapeMTP(m,t,p), EnclosingEH(m,eh,p), FeasibleEH(m,eh).
 FeasibleEH(m,eh) :- CatchVH(v,h), VarEH(eh,v), OutermostEH(m,eh).
 FeasibleEH(m,eh) :- CatchVH(v,h), VarEH(eh,v), NestedEH(m,eh1,eh), FeasibleEH(m,eh1).
-CatchVH(ehv,h) :- ThrowPV(m,p,v), VHO(v,h), HT(h,t), FinalEH(eh,t,p), VarEH(eh,ehv).
+CatchVH(ehv,h) :- ThrowPoint(m,p,v), VHO(v,h), HT(h,t), FinalEH(eh,t,p), VarEH(eh,ehv).
 CatchVH(v,h) :- CallAt(m,p,mcallee), ThrowMH(mcallee,h), HT(h,t), FinalEH(eh,t,p), VarEH(eh,v).
 VHO(v,h) :- CatchVH(v,h).
 
+ExcOrigin(m,v,h) :- ThrowOrigin(m,p,v), VHO(v,h).
 
 
 .include "relV.datalog"
@@ -249,3 +256,5 @@ VHO(v,h) :- CatchVH(v,h).
 .include "OutermostEH.datalog"
 .include "EnclosingEH.datalog"
 .include "NoEnclose.datalog"
+.include "LinkedEx.datalog"
+.include "ThrowOrigin.datalog"

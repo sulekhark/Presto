@@ -38,6 +38,9 @@ NoEnclose(m:M,p:P) input
 FeasibleMTP(m:M,t:T,p:P) input
 FeasibleEH(m:M,eh:EH) input
 MoveNextEH(m:M,eh:EH) input
+ThrowOrigin(m:M,p:P,v:V) input
+ExcOrigin(m:M,v:V,h:H) input
+ThrowPoint(m:M,p:P,v:V) input
 
 
 ########################
@@ -59,6 +62,8 @@ FeasibleMTP_i1(m:M,t:T,p:P) printtuples
 FeasibleMTP_i2(m:M,t:T,p:P,eh:EH) printtuples
 FeasibleEH_i1(m:M,eh:EH,v:V,h:H) printtuples
 FeasibleEH_i2(m:M,eh:EH,v:V,h:H,eh1:EH) printtuples
+ThrowPoint_i1(m:M,p:P,v:V) printtuples
+ThrowPoint_i2(m:M,p:P,v:V,m1:M,v1:V,t:T,h:H) printtuples
 
 
 ##################
@@ -72,6 +77,7 @@ FeasibleEH_i2(m:M,eh:EH,v:V,h:H,eh1:EH) printtuples
 # ARG_COUNT WEscaping 4 
 # ARG_COUNT FeasibleMTP 3
 # ARG_COUNT FeasibleEH 2
+# ARG_COUNT ThrowPoint 3
 
 
 
@@ -80,15 +86,17 @@ FeasibleEH_i2(m:M,eh:EH,v:V,h:H,eh1:EH) printtuples
 ############################
 
 # Propagating exception points-to
-ThrowMH_i1(m,h,p,v,t) :- ThrowPV(m,p,v), VHO(v,h), HT(h,t), FeasibleMTP(m,t,p).
+ThrowPoint_i1(m,p,v) :- ThrowPV(m,p,v), ThrowOrigin(m,p,v).
+ThrowPoint_i2(m,p,v,m1,v1,t,h) :- ThrowPV(m,p,v), LinkedEx(m1,v1,t,m,v,t), CatchVH(v1,h), VHO(v,h). 
+ThrowMH_i1(m,h,p,v,t) :- ThrowPoint(m,p,v), VHO(v,h), HT(h,t), FeasibleMTP(m,t,p).
 ThrowMH_i2(m,h,p,mcallee,t) :- CallAt(m,p,mcallee), ThrowMH(mcallee,h), HT(h,t), FeasibleMTP(m,t,p).
 LinkMatch_i1(m1,v1,t,m2,v2,t,h) :- CatchVH(v1,h), LinkedEx(m1,v1,t,m2,v2,t), VHO(v2,h), ExceptionObj(h), HT(h,t).
 LinkMatch_i2(m1,v1,t1,m2,v2,t2,h1,h2) :- CatchVH(v1,h1), LinkedEx(m1,v1,t1,m2,v2,t2), VHO(v2,h2), WrapsEx(h2,h1), HT(h1,t1), HT(h2,t2).
-CatchVH_i1(ehv,h,m,p,v,t,eh) :- ThrowPV(m,p,v), VHO(v,h), HT(h,t), FinalEH(eh,t,p), VarEH(eh,ehv).
+CatchVH_i1(ehv,h,m,p,v,t,eh) :- ThrowPoint(m,p,v), VHO(v,h), HT(h,t), FinalEH(eh,t,p), VarEH(eh,ehv).
 CatchVH_i2(v,h,m,p,mcallee,t,eh) :- CallAt(m,p,mcallee), ThrowMH(mcallee,h), HT(h,t), FinalEH(eh,t,p), VarEH(eh,v).
 Escaping_i1(t,h,m) :- ThrowMH(m,h), HT(h,t), ExceptionType(t), entryPtM(m).
-WEscaping_i1(t2,h2,t1,h1,m2,v2,m1,v1) :- WrapsEx(h1,h2), Escaping(t1,h1), LinkMatch(m2,v2,t2,m1,v1,t1), HT(h2,t2).
-WEscaping_i2(t3,h3,t2,h2,m3,v3,m2,v2,t1,h1) :- WrapsEx(h2,h3), WEscaping(t2,h2,t1,h1), LinkMatch(m3,v3,t3,m2,v2,t2), HT(h3,t3).
+WEscaping_i1(t2,h2,t1,h1,m2,v2,m1,v1) :- WrapsEx(h1,h2), Escaping(t1,h1), LinkMatch(m2,v2,t2,m1,v1,t1), ExcOrigin(m1,v1,h1), HT(h2,t2).
+WEscaping_i2(t3,h3,t2,h2,m3,v3,m2,v2,t1,h1) :- WrapsEx(h2,h3), WEscaping(t2,h2,t1,h1), LinkMatch(m3,v3,t3,m2,v2,t2), ExcOrigin(m2,v2,h2), HT(h3,t3).
 WEscaping_i3(t2,h2,t1,h1,v2,eh2,m) :- WrapsEx(h1,h2), Escaping(t1,h1), CatchVH(v2,h2), VarEH(eh2,v2), MoveNextEH(m,eh2), HT(h2,t2).
 WEscaping_i4(t3,h3,t2,h2,v3,eh3,m,t1,h1) :- WrapsEx(h2,h3), WEscaping(t2,h2,t1,h1), CatchVH(v3,h3), VarEH(eh3,v3), MoveNextEH(m,eh3), HT(h3,t3).
 FeasibleMTP_i1(m,t,p) :- EscapeMTP(m,t,p), NoEnclose(m,p).
@@ -123,3 +131,6 @@ FeasibleEH_i2(m,eh,v,h,eh1) :- CatchVH(v,h), VarEH(eh,v), NestedEH(m,eh1,eh), Fe
 .include "FeasibleMTP.datalog"
 .include "FeasibleEH.datalog"
 .include "MoveNextEH.datalog"
+.include "ThrowOrigin.datalog"
+.include "ExcOrigin.datalog"
+.include "ThrowPoint.datalog"
