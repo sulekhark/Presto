@@ -214,6 +214,7 @@
     <Compile Include="ProgramFacts\Relations\RelMmethRet.cs" />
     <Compile Include="ProgramFacts\Relations\RelMMove.cs" />
     <Compile Include="ProgramFacts\Relations\RelMove.cs" />
+    <Compile Include="ProgramFacts\Relations\RelMoveNextEH.cs" />
     <Compile Include="ProgramFacts\Relations\RelMStatFldRead.cs" />
     <Compile Include="ProgramFacts\Relations\RelMStatFldWrite.cs" />
     <Compile Include="ProgramFacts\Relations\RelMStructHFH.cs" />
@@ -235,7 +236,6 @@
     <Compile Include="ProgramFacts\Relations\RelStructRefV.cs" />
     <Compile Include="ProgramFacts\Relations\RelStructV.cs" />
     <Compile Include="ProgramFacts\Relations\RelSub.cs" />
-    <Compile Include="ProgramFacts\Relations\RelTaskObjFld.cs" />
     <Compile Include="ProgramFacts\Relations\RelThisIVH.cs" />
     <Compile Include="ProgramFacts\Relations\RelThisRefV.cs" />
     <Compile Include="ProgramFacts\Relations\RelThrowMH.cs" />

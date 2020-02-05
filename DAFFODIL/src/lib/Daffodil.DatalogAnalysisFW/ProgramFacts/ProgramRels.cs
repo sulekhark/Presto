@@ -95,7 +95,7 @@ namespace Daffodil.DatalogAnalysisFW.ProgramFacts
         public static RelOutermostEH relOutermostEH;
         public static RelEnclosingEH relEnclosingEH;
         public static RelNoEnclose relNoEnclose;
-        public static RelTaskObjFld relTaskObjFld;
+        public static RelMoveNextEH relMoveNextEH;
 
 
         public static Dictionary<string, Rel> nameToRelMap;
@@ -371,8 +371,8 @@ namespace Daffodil.DatalogAnalysisFW.ProgramFacts
             relNoEnclose = new RelNoEnclose();
             nameToRelMap.Add(relNoEnclose.GetName(), relNoEnclose);
 
-            relTaskObjFld = new RelTaskObjFld();
-            nameToRelMap.Add(relTaskObjFld.GetName(), relTaskObjFld);
+            relMoveNextEH = new RelMoveNextEH();
+            nameToRelMap.Add(relMoveNextEH.GetName(), relMoveNextEH);
         }
 
         public static void Save()
@@ -438,7 +438,7 @@ namespace Daffodil.DatalogAnalysisFW.ProgramFacts
             relOutermostEH.Save();
             relNestedEH.Save();
             relNoEnclose.Save();
-            relTaskObjFld.Save();
+            relMoveNextEH.Save();
         }
     }
 }
