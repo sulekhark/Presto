@@ -4,3 +4,4 @@ LogDir= C:\Users\torch\work\Presto\DAFFODIL\src\test\T12\logs
 StubsPath= C:\Users\torch\work\Presto\DAFFODIL\src\stubs\Daffodil.Stubs\bin\Debug\Daffodil.Stubs.dll
 SaveScopePath= C:\Users\torch\work\Presto\DAFFODIL\src\test\T12\datalog
 LoadSavedScope= false 
+SuppressSystemExceptions= true

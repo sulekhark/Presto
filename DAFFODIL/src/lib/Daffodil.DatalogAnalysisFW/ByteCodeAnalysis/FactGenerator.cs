@@ -12,6 +12,7 @@ using Daffodil.DatalogAnalysisFW.AnalysisNetBackend.ThreeAddressCode.Values;
 using Daffodil.DatalogAnalysisFW.AnalysisNetBackend.ThreeAddressCode.Instructions;
 using Daffodil.DatalogAnalysisFW.ProgramFacts;
 using Daffodil.DatalogAnalysisFW.AnalysisNetBackend.ThreeAddressCode;
+using Daffodil.DatalogAnalysisFW.Common;
 
 namespace Daffodil.DatalogAnalysisFW.AnalysisNetConsole
 {
@@ -39,6 +40,7 @@ namespace Daffodil.DatalogAnalysisFW.AnalysisNetConsole
             public ExHandlerWrapper ehW;
         }
         private readonly Stack<EhStruct> ehStack = new Stack<EhStruct>();
+        private ISet<ITypeDefinition> exceptionTypes = new HashSet<ITypeDefinition>();
 
 
         public FactGenerator(StreamWriter sw1, StreamWriter sw2)
@@ -296,8 +298,10 @@ namespace Daffodil.DatalogAnalysisFW.AnalysisNetConsole
                 if (ty.FullName().StartsWith("System.Exception"))
                 {
                     ProgramRels.relExceptionType.Add(tyW);
+                    exceptionTypes.Add(ty.ResolvedType);
                     foreach (ITypeDefinition subTy in cha.GetAllSubtypes(ty))
                     {
+                        exceptionTypes.Add(subTy);
                         TypeRefWrapper subTyW = WrapperProvider.getTypeRefW(subTy);
                         ProgramRels.relExceptionType.Add(subTyW);
                     }
@@ -646,6 +650,10 @@ namespace Daffodil.DatalogAnalysisFW.AnalysisNetConsole
             IVariable lhsVar = newObjInst.Result;
             ITypeDefinition objTypeDef = newObjInst.AllocationType.ResolvedType;
             if (Stubber.SuppressF(objTypeDef)) return;
+            if (ConfigParams.SuppressSystemExceptions)
+            {
+                if (exceptionTypes.Contains(objTypeDef) && methDef.FullName().StartsWith("System.")) return;
+            }
            
             VariableWrapper lhsW = WrapperProvider.getVarW(lhsVar);
             TypeRefWrapper objTypeW = WrapperProvider.getTypeRefW(objTypeDef);

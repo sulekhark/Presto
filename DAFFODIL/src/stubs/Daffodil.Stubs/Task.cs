@@ -148,10 +148,11 @@ namespace Daffodil.Stubs
 
         public static Task<TResult> Run<TResult>(Func<TResult> function)
         {
-            if (function == null)
-            {
-                throw new ArgumentNullException("function");
-            }
+            // At present, trying to track only exceptions raised by the application. SRK 2nd Feb 2020
+            // if (function == null)
+            // {
+                // throw new ArgumentNullException("function");
+            // }
             Task<TResult> task = new Task<TResult>(function);
             task.Start();
             return task;
