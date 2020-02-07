@@ -19,6 +19,7 @@ probEdbFileName = sys.argv[1]
 bnetDictFileName = sys.argv[2]
 
 mmFileName = "../datalog/MM.datalog"
+addrTakenFileName = "../datalog/MAddrTakenFunc.datalog"
 pnMapFileName = "../datalog/PNMap.datalog"
 methodMapFileName = "../dynconfig/id_to_method_map.txt"
 enclosingCatchFileName = "../datalog/EnclosingEH.datalog"
@@ -46,9 +47,6 @@ from tree import Node
 ########################################################################################################################
 # Functions to read in the log files 
 
-def isInstrumented(methName):
-    return True
-
 def insertIntoMap(methName, node):
     # methName = methName.split('(')[0]   # SRK temp hack until method names are fixed
     if methName not in method2NodeMap:
@@ -56,7 +54,8 @@ def insertIntoMap(methName, node):
     method2NodeMap[methName].append(node)
     return
 
-def getDelegateCaller(delMeth, crntNode):
+
+def getDelegateCallerAnc(delMeth, crntNode):
     if delMeth in delegateCallMap:
         delCallerList = delegateCallMap[delMeth]
         if len(delCallerList) > 0:
@@ -64,6 +63,18 @@ def getDelegateCaller(delMeth, crntNode):
                 delCaller = pr[0]
                 anc = crntNode.getAncestor(delCaller)
                 if anc is not None:
+                    return tuple([anc, pr[1]])
+    return None
+
+
+def getDelegateCallerAny(delMeth):
+    if delMeth in delegateCallMap:
+        delCallerList = delegateCallMap[delMeth]
+        if len(delCallerList) > 0:
+            for pr in delCallerList:
+                delCaller = pr[0]
+                if delCaller in method2NodeMap:
+                    anc = method2NodeMap[delCaller]
                     return tuple([anc, pr[1]])
     return None
 
@@ -83,32 +94,42 @@ def readLogFiles(logFNList):
                 continue
             if ".Invoke(" in callee:    # Ignore calls to Delegate Invoke becuase DAFFODIL is modeling delegate invoke.
                 continue
-            if (crntNode is None):
+            if (crntNode is None):   # Starting the call tree
                 node = Node(data=caller)
                 insertIntoMap(caller, node)
                 crntNode = node
                 logRoots.append(node)
-            elif crntNode.data != caller:
-                descend = True 
-                if isInstrumented(crntNode.data):
-                    ancestor = crntNode.getAncestor(caller)
-                    if ancestor is not None:
-                        descend = False
-                        crntNode = ancestor
-                    else:
-                        ancPair = getDelegateCaller(caller, crntNode)
-                        if ancPair is not None:
-                            descend = False
+            elif crntNode.data != caller:  # there is a disconnect
+                detached = True
+                ancestor = crntNode.getAncestor(caller)
+                if ancestor is not None:   # found some ancestor
+                    detached = False
+                    crntNode = ancestor
+                else: # No ancestor - check if there is a delegate caller among the ancestors
+                    ancPair = getDelegateCallerAnc(caller, crntNode)
+                    if ancPair is not None:  # found a delegate caller among ancestors
+                        detached = False
+                        node = Node(data=caller)
+                        insertIntoMap(caller, node)
+                        ancPair[0].addChild(node, ancPair[1], "")
+                        crntNode = node
+                if detached:  # no ancestor and no delagate caller among ancestors
+                    if caller in method2NodeMap:  # found caller among previously processed methods
+                        lst = method2NodeMap[caller]
+                        crntNode = lst[-1]
+                    else: # caller not among previously processed methods - check if there is a delegate caller among them
+                        ancPair = getDelegateCallerAny(caller)
+                        if ancPair is not None:  # found delegate caller among previously processed methods
                             node = Node(data=caller)
                             insertIntoMap(caller, node)
                             ancPair[0].addChild(node, ancPair[1], "")
                             crntNode = node
-                if descend:
-                    # create the call_tree edge: crntNode.data --> caller
-                    node = Node(data=caller)
-                    insertIntoMap(caller, node)
-                    crntNode.addChild(node, "-1", "")
-                    crntNode = node
+                        else:  # no previously processed method or delegate caller among them - create a new root
+                            node = Node(data=caller)
+                            insertIntoMap(caller, node)
+                            crntNode = node
+                            logRoots.append(node)
+
             calleeNode = Node(data=callee)
             insertIntoMap(callee, calleeNode)
             crntNode.addChild(calleeNode, ilOffset, exception)
@@ -171,12 +192,15 @@ def modifyPropertyName(meth):
 
 def modifyCaller(meth):
     meth = modifyPropertyName(meth)
-    if ".MoveNext(" in meth:
+    if ".MoveNext(" in meth:          # async method
         return moveNextCallMap[moveNextCallMap[meth]]
+    elif ("<>c__Display" in meth) and (">b__" in meth):  # anonymous method
+        return anonFuncContainerMap[meth]
     return meth
 
 def modifyCallee(meth):
     meth = modifyPropertyName(meth)
+    return meth
 
 
 
@@ -211,7 +235,7 @@ def computeProbCallAt(entry):
         prob = minProb
     else:
         prob = minProb + ((maxProb - minProb) * callCnt / totalCnt)
-    logging.info('SRK_DBG: find_tuple_prob.py: tuple:{0}  totalCnt:{1}  callCnt:{2}'.format(entry, totalCnt, callCnt))
+    logging.info('SRK_DBG: find_tuple_prob.py: tuple:{0} {1}  totalCnt:{2}  callCnt:{3}'.format(caller, callee, totalCnt, callCnt))
     print("{0}: {1}".format(bnetNodeId, prob))
     return
 
@@ -457,6 +481,7 @@ for entry in delCEntries:
     delegateCallMap[delMeth].append(tuple([methodMap[parts[0]], parts[1]]))
 
 
+asyncMethodSet = set()
 moveNextCallMap = {}
 mmEntries = [ line.strip() for line in open(mmFileName) ]
 for entry in mmEntries:
@@ -476,6 +501,18 @@ for entry in mmEntries:
     calleeMeth = methodMap[parts[1]]
     if calleeMeth in valueSet:
         moveNextCallMap[calleeMeth] = callerMeth 
+        asyncMethodSet.add(callerMeth)
+
+
+anonFuncContainerMap = {}
+atEntries = [ line.strip() for line in open(addrTakenFileName) ]
+for entry in atEntries:
+    entry = entry[15:] # remove MAddrTakenFunc(
+    entry = entry[:-2] # remove ).
+    parts = entry.split(',')
+    atMeth = methodMap[parts[2]]
+    if ("<>c__Display" in atMeth) and (">b__" in atMeth):  # anonymous method
+        anonFuncContainerMap[atMeth] = methodMap[parts[0]]
 
 
 ########################################################################################################################

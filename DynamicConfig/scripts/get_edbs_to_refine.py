@@ -37,7 +37,9 @@ def isRefinable(tup):
         parts = tup.split(',')
         callerId = parts[0]
         caller = methodMap[callerId]
-        if ".MoveNext()" in caller:
+        if ".MoveNext()" in caller:  # async method
+            return False
+        elif ("<>c__Display" in caller) and (">b__" in caller):  # anonymous method
             return False
         else:
             return True
