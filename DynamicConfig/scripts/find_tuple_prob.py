@@ -75,7 +75,7 @@ def getDelegateCallerAny(delMeth):
                 delCaller = pr[0]
                 if delCaller in method2NodeMap:
                     anc = method2NodeMap[delCaller]
-                    return tuple([anc, pr[1]])
+                    return tuple([anc[-1], pr[1]])
     return None
 
 
