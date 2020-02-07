@@ -174,11 +174,11 @@ def getLogs(dirName):
 
 def getCallCount(callerMeth, calleeMeth, callerLoc):
     callCnt = 0
-    if calleeMeth in method2NodeMap:
-        calleeNodes = method2NodeMap[calleeMeth]
-        for node in calleeNodes:
-            calleeNdx = node.getIndex()
-            if (callerMeth in node.parent.data) and (callerLoc == node.parent.offset[calleeNdx]):
+    if callerMeth in method2NodeMap:
+        callerNodes = method2NodeMap[callerMeth]
+        for node in callerNodes:
+            calleeNdx = node.getChildAtOffset(calleeMeth, callerLoc)
+            if (calleeNdx > -1):
                 callCnt += 1
     return callCnt
 
@@ -271,8 +271,8 @@ def computeProbCondCallAt(entry):
             callerNdx = node.getIndex()
             if (condMeth in node.parent.data) and (condLoc == node.parent.offset[callerNdx]): # if the "condition" applies
                 totalCnt += 1
-                childNdx = node.getChild(callee)
-                if (childNdx != -1) and (node.offset[childNdx] == callerLoc):
+                childNdx = node.getChildAtOffset(callee, callerLoc)
+                if childNdx > -1:
                     callCnt += 1
     if (totalCnt == 0) and (condPP in enclosingCatchMap) and (enclosingCatchMap[condPP] == condMethId):
         prob = midProb
@@ -293,12 +293,11 @@ def computeProbCondCallAt(entry):
 
 def getExcThrownCount(callerMeth, calleeMeth, callerLoc, excType):
     excCnt = 0
-    if calleeMeth in method2NodeMap:
-        calleeNodes = method2NodeMap[calleeMeth]
-        for node in calleeNodes:
-            calleeNdx = node.getIndex()
-            if (callerMeth in node.parent.data) and (callerLoc == node.parent.offset[calleeNdx]):
-                if (node.parent.exception[calleeNdx] == excType):
+    if callerMeth in method2NodeMap:
+        callerNodes = method2NodeMap[callerMeth]
+        for node in callerNodes:
+            calleeNdx = node.getChildAtOffset(calleeMeth, callerLoc)
+            if (calleeNdx > -1) and (node.exception[calleeNdx] == excType):
                     excCnt += 1
     return excCnt
 
