@@ -197,7 +197,9 @@ namespace Daffodil.DatalogAnalysisFW.AnalysisNetConsole
             // Feb 4th 2020. SRK. Since MoveNext is compiler generated, the code below relies on that fact MoveNext has a
             // single outermost try-catch block and the catch block does not contain any nested catch blocks.
             // For the above two reasons, prevEHW will be the single outermost catch block in a 'MoveNext' method.
-            if (methDef.Name.Value.Contains("MoveNext")) ProgramRels.relMoveNextEH.Add(mRefW, prevEhW);
+            // Also, not all MoveNext methods will have a catch block (Ex. System.Collections.Generic.List<...>.Enumerator.MoveNext())
+            // Example test case: E2EDemoF
+            if (methDef.Name.Value.Contains("MoveNext") && prevEhW != null) ProgramRels.relMoveNextEH.Add(mRefW, prevEhW);
             ComputeExceptionRanges(cfgList, methDef);
         }
 
