@@ -21,11 +21,12 @@ FHO(f:F,h:H)  input                      # Static field f may point to AllocSite
 HFHO(h1:H,f:F,h2:H)  input               # Field f of object allocated at AllocSite h1 may point to AllocSite h2
 ExcOrigin(m:M,v:V,h:H) input
 
+EscUnion(h:H)
+
 ExceptionObj(h:H) printtuples
 TransLink(h1:H,h2:H)
 WrapsEx(h2:H,h1:H) printtuples           # Exception object h2 wraps exception object h1
 LinkMatch(m1:M,v1:V,t1:T,m2:M,v2:V,t2:T) printtuples
-
 Caught(t:T,h:H) printtuples              # h is an exception object of Type t that is caught somewhere within the application
 Escaping(t:T,h:H) printtuples            # h is an exception object of Type t that is escaping from the application
 WEscaping(t1:T,h1:H,t2:T,h2:H) printtuples
@@ -55,7 +56,10 @@ WEscaping(t3,h3,t2,h2) :- WrapsEx(h2,h3), WEscaping(t2,h2,t1,h1), LinkMatch(m3,v
 # Modeling Windows TPL (Task Parallel Library) behavior.
 WEscaping(t2,h2,t1,h1) :- WrapsEx(h1,h2), Escaping(t1,h1), CatchVH(v2,h2), VarEH(eh2,v2), MoveNextEH(m,eh2), HT(h2,t2).
 WEscaping(t3,h3,t2,h2) :- WrapsEx(h2,h3), WEscaping(t2,h2,t1,h1), CatchVH(v3,h3), VarEH(eh3,v3), MoveNextEH(m,eh3), HT(h3,t3).
-Caught(t,h) :- CatchVH(v,h), HT(h,t), ExceptionType(t).
+
+EscUnion(h) :- Escaping(t,h).
+EscUnion(h) :- WEscaping(t,h,t1,h1).
+Caught(t,h) :- CatchVH(v,h), HT(h,t), ExceptionType(t), !EscUnion(h).
 
 .include "relH.datalog"
 .include "relT.datalog"
