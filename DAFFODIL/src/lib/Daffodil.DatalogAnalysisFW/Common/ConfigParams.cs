@@ -15,6 +15,7 @@ namespace Daffodil.DatalogAnalysisFW.Common
         public static bool LoadSavedScope { get; set; }
         public static string SaveScopePath { get; set; }
         public static bool SuppressSystemExceptions { get; set; }
+        public static string SourceRoot { get; set; }
 
         public static void LoadConfig(string filePath)
         {
@@ -69,6 +70,10 @@ namespace Daffodil.DatalogAnalysisFW.Common
                             else
                                 SuppressSystemExceptions = false;
                         }
+                        else if (line.StartsWith("SourceRoot= "))
+                        {
+                            SourceRoot = line.Split()[1];
+                        }
                     } catch (Exception e)
                     {
                         Console.WriteLine("Got Exception: {0}", e.Message);
@@ -90,6 +95,7 @@ namespace Daffodil.DatalogAnalysisFW.Common
                 sw.WriteLine("SaveScopePath= {0}", SaveScopePath);
                 sw.WriteLine("LoadSavedScope= {0}", LoadSavedScope ? "true" : "false");
                 sw.WriteLine("SuppressSystemExceptions= {0}", SuppressSystemExceptions ? "true" : "false");
+                sw.WriteLine("SourceRoot= {0}", SourceRoot);
             }
         }
     }

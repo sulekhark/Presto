@@ -1,6 +1,7 @@
 ﻿using Daffodil.DatalogAnalysisFW.Common;
 using Daffodil.DatalogAnalysisFW.ProgramFacts;
 using Daffodil.DatalogAnalysisFW.AnalysisNetConsole;
+using System.IO;
 
 namespace Daffodil.FactGeneratorSA
 {
@@ -29,6 +30,10 @@ namespace Daffodil.FactGeneratorSA
             ByteCodeAnalyzer.GenerateEDBFacts(ConfigParams.AssemblyPath);
             ProgramDoms.Save();
             ProgramRels.Save();
+            string fPath = Path.Combine(ConfigParams.DatalogDir, "source_root.txt");
+            StreamWriter sw = new StreamWriter(fPath);
+            sw.WriteLine(ConfigParams.SourceRoot);
+            sw.Close();
         }
     }
 }

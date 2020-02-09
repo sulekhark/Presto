@@ -5,3 +5,4 @@ StubsPath= C:\Users\torch\work\Presto\DAFFODIL\src\stubs\Daffodil.Stubs\bin\Debu
 SaveScopePath= C:\Users\torch\work\Presto\DAFFODIL\src\test\T12\datalog
 LoadSavedScope= false 
 SuppressSystemExceptions= true
+SourceRoot= C:\Users\sulek\work\ExcAnalysis\Presto\DAFFODIL\src\test\T12
