@@ -12,4 +12,5 @@ MAX=$((MIN + 500))
 
 nohup $driverPath/driver_ranking.py $bnetDictFN $factorGraphFN $baseQueriesFN > arcmd.out 2> arcmd.log << EOF 
 AR 1e-6 $MIN $MAX 100 alarm_ranking.txt 
+AQ all_probabilities.txt
 EOF

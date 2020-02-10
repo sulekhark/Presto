@@ -94,6 +94,11 @@ with subprocess.Popen([wrapperExecutable, fgFileName], \
         rankedAlarmList = getRankedAlarms()
         printRankedAlarms(outFile)
 
+    def getAllProbs(allFile):
+        for index in bnetDict.values():
+            response = float(execWrapperCmd('Q {0}'.format(index)))
+            print('{0}: {1}'.format(index, response), file=allFile)
+
 
     logging.info('Awaiting command')
     for command in sys.stdin:
@@ -171,6 +176,11 @@ with subprocess.Popen([wrapperExecutable, fgFileName], \
             assert 0 < histLength and histLength < minIters and minIters < maxIters
             with open(outFileName, 'w') as outFile:
                 runAlarmRanking(tolerance, minIters, maxIters, histLength, outFile)
+
+        elif cmdType == 'AQ':
+            allFileName = components[0]
+            with open(allFileName, 'w') as allFile:
+                getAllProbs(allFile)
 
         else:
             assert cmdType == 'NL', 'Unexpected command {0}!'.format(command)
