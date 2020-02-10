@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-# ./htmlize.py metadata_dir root_idb.txt display_desc.txt bnet_dict.out all_probabilities.txt < constraints.txt
+# ./htmlize.py metadata_dir root_idb.txt root_headers.txt display_desc.txt bnet_dict.out all_probabilities.txt < constraints.txt
 
 import logging
 import re
@@ -13,9 +13,10 @@ logging.basicConfig(level=logging.INFO, \
 
 metadataDir = sys.argv[1]
 rootIdbFileName = sys.argv[2]
-displayDescFileName = sys.argv[3]
-bnetDictFileName = sys.argv[4]
-allProbsFileName = sys.argv[5]
+rootHeadersFileName = sys.argv[3]
+displayDescFileName = sys.argv[4]
+bnetDictFileName = sys.argv[5]
+allProbsFileName = sys.argv[6]
  
 refineInfo = os.environ['REFINE_INFO']
 
@@ -144,6 +145,7 @@ for refineFileName in refineFiles:
                    domSet.add(dn)
                relSignature[relName] = domNames
 
+
 for dn in domSet:
     dnDict = {}
     domMaps[dn] = dnDict 
@@ -153,11 +155,19 @@ for dn in domSet:
         parts = line.split(':',1)
         dnDict[parts[0]] = parts[1]
 
+
 displayDesc = {}
 for line in open(displayDescFileName):
     line = line.strip()
     parts = line.split(':')
     displayDesc[parts[0]] = parts[1]
+
+
+rootHeaders = {}
+for line in open(rootHeadersFileName):
+    line = line.strip()
+    parts = line.split(':')
+    rootHeaders[parts[0]] = parts[1]
 
 
 ########################################################################################################################
@@ -249,7 +259,6 @@ def writeDerivation(consequent):
     hprint("<table border=\"1\" width=\"100%\">")
     writeDerivTableHeader(consequent)
     writeDerivTableBody(consequent)
-    indent -= 1
     hprint("</table>")
     indent -= 1
     hprint("</body>")
@@ -271,6 +280,7 @@ def writeDerivTableHeader(consequent):
     hprint("</tr>")
     indent -= 1
     hprint("</thead>")
+    indent -= 1
     return
 
 
@@ -279,7 +289,7 @@ def writeTupleDesc(tup, linkPresent):
     probStr = "  PROB: " + prob
     relName = tup.split('(')[0]
     if relName in displayDesc:
-        desc = displayDesc[relName] + lineBrk
+        desc = displayDesc[relName]
     else:
         desc = ""
 
@@ -292,7 +302,7 @@ def writeTupleDesc(tup, linkPresent):
     else:
         pre1 = "<a>"
     post1 = "</a>"
-    line1 = pre1 + tup + post1 + probStr + "  " + desc + lineBrk + lineBrk
+    line1 = pre1 + tup + post1 + probStr + "  " + desc + lineBrk
     txt = pre + line1 + domDesc + post
     hprint(txt)
     return
@@ -300,11 +310,14 @@ def writeTupleDesc(tup, linkPresent):
 
 def writeDerivTableBody(consequent):
     global indent
+    indent += 1
     hprint("<tbody>")
     producers = producingClauses[consequent]
     for clause in producers:
         writeRule(clause)
     hprint("</tbody>")
+    indent -= 1
+    return
 
 
 def writeRule(clause):
@@ -356,3 +369,81 @@ for consequent in producingClauses.keys():
 ########################################################################################################################
 # 7. Create the index html page.
 
+def writeIndexPage():
+    global indent
+    global htmlFile
+    htmlFileName = "index.html"
+    htmlFile = open(htmlFileName, 'w')
+    indent = 0
+    hprint("<!DOCTYPE html>")
+    hprint("<html>")
+    indent += 1
+    hprint("<head>")
+    indent += 1
+    hprint("<title>Presto derivation graph</title>")
+    indent -= 1
+    hprint("</head>")
+    hprint("<body>")
+    writeRoots()
+    hprint("</body>")
+    indent -= 1
+    hprint("</html>")
+    htmlFile.close()
+    return
+
+def writeRoots():
+    global indent
+    for root in rootIdbs.keys():
+        writeRootTableHeader(root)
+        emptyLine()
+        writeRootTableBody(root)
+        emptyLine()
+        emptyLine()
+    return
+
+
+def writeRootTableHeader(root):
+    global indent
+    indent += 1
+    hprint("<tr>")
+    indent += 1
+    if root in rootHeaders:
+        desc = rootHeaders[root]
+    else:
+        desc = ""
+    pre = "<td colspan=\"1\"><u><font size=\"5\" color=\"red\">"
+    post = "</font></u></td>"
+    txt = pre + desc + lineBrk + post
+    hprint(txt)
+    indent -= 1
+    hprint("</tr>")
+    indent -= 1
+    return
+
+
+def writeRootTableBody(root):
+    global indent
+    for tup in rootIdbs[root]:
+        indent += 1
+        hprint("<tr>")
+        indent += 1
+        writeTupleDesc(tup, True)
+        indent -= 1
+        hprint("</tr>")
+        indent -= 1
+        emptyLine()
+    return
+
+
+def emptyLine():
+    global indent
+    indent += 1
+    hprint("<tr>")
+    indent += 1
+    hprint("<td><br></td>")
+    indent -= 1
+    hprint("</tr>")
+    indent -= 1
+
+
+writeIndexPage()
