@@ -20,6 +20,8 @@
 # If tuple1 is an antecedent in some rule instance whose consequent is say, conseq1, then
 # tuple2 and conseq1 must be antecedents in some rule instance.
 
+CONDITIONAL_TUPLE:CondCallAt(m1:M,p1:P,m2:M,p2:P,mcallee:M)
+CONDITIONAL_TUPLE:CondThrowMH(m1:M,p1:P,m2:M,h:H)
 CallAt CONDITIONAL_ON CallAt
 RULE_A: CondCallAt(m1,p1,m2,p2,mcallee) :- CallAt(m2,p2,mcallee), CallAt(m1,p1,m2).
 RULE_B: CondThrowMH(m1,p1,m2,h) :- ThrowMH(m2,h), CallAt(m1,p1,m2).

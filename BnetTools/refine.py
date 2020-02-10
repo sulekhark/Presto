@@ -52,7 +52,7 @@ def getArgs(tup):
 
  
 ########################################################################################################################
-# 2. Pre-process configuration settings
+# 1. Pre-process configuration settings
 
 def computeConditionalArgs(argsOut, argsIn1, argsIn2):
     condArgInfo = []
@@ -71,7 +71,7 @@ refineRuleStrA = ''
 refineRuleStrB = ''
 with open(refineInfoFileName, 'r') as refineInfoFile:
     for line in refineInfoFile.readlines():
-        if '#' in line:
+        if line.startswith('#'):
             continue
         elif 'CONDITIONAL_ON' in line:
             refineRelStr = line

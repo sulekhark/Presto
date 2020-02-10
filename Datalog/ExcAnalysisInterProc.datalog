@@ -197,7 +197,7 @@ StatFldRead(l,f) :- DerefRight(l,r), VXO(r,x), AddrOfFX(f,x).
 CallAt(m,p,mcallee) :- MI(m,i), IM(i,mcallee), PI(p,i).
 
 ThrowPoint(m,p,v) :- ThrowPV(m,p,v), ThrowOrigin(m,p,v).
-ThrowPoint(m,p,v) :- ThrowPV(m,p,v), LinkedEx(m1,v1,t,m,v,t), CatchVH(v1,h), VHO(v,h). 
+ThrowPoint(m,p,v) :- ThrowPV(m,p,v), LinkedEx(m1,v1,t,m,v,t), CatchVH(v1,h), VHO(v,h), HT(h,t).
 ThrowMH(m,h) :- ThrowPoint(m,p,v), VHO(v,h), HT(h,t), FeasibleMTP(m,t,p).
 ThrowMH(m,h) :- CallAt(m,p,mcallee), ThrowMH(mcallee,h), HT(h,t), FeasibleMTP(m,t,p).
 FeasibleMTP(m,t,p) :- EscapeMTP(m,t,p), NoEnclose(m,p).

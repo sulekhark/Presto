@@ -20,6 +20,8 @@
 # If tuple1 is an antecedent in some rule instance whose consequent is say, conseq1, then
 # tuple2 and conseq1 must be antecedents in some rule instance.
 
+CONDITIONAL_TUPLE:CondEscapeMTP(m2:M,m1:M,t:T,p:P)
+CONDITIONAL_TUPLE:CondFeasibleMTP(m2:M,m1:M,t:T,p:P)
 EscapeMTP CONDITIONAL_ON CallAt
 RULE_A: CondEscapeMTP(m2,m1,t,p) :- EscapeMTP(m1,t,p), CallAt(m1,p,m2).
 RULE_B: CondFeasibleMTP(m2,m1,t,p) :- FeasibleMTP(m1,t,p), CallAt(m1,p,m2).

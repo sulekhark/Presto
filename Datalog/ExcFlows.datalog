@@ -30,6 +30,7 @@ LinkMatch(m1:M,v1:V,t1:T,m2:M,v2:V,t2:T) printtuples
 Caught(t:T,h:H) printtuples              # h is an exception object of Type t that is caught somewhere within the application
 Escaping(t:T,h:H) printtuples            # h is an exception object of Type t that is escaping from the application
 WEscaping(t1:T,h1:H,t2:T,h2:H) printtuples
+NotEscaping(t:T,h:H) printtuples
 
 
 # Rules
@@ -59,7 +60,8 @@ WEscaping(t3,h3,t2,h2) :- WrapsEx(h2,h3), WEscaping(t2,h2,t1,h1), CatchVH(v3,h3)
 
 EscUnion(h) :- Escaping(t,h).
 EscUnion(h) :- WEscaping(t,h,t1,h1).
-Caught(t,h) :- CatchVH(v,h), HT(h,t), ExceptionType(t), !EscUnion(h).
+NotEscaping(t,h) :- !EscUnion(h), HT(h,t), ExceptionType(t).
+Caught(t,h) :- CatchVH(v,h), NotEscaping(t,h).
 
 .include "relH.datalog"
 .include "relT.datalog"
