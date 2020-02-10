@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-# ./htmlize.py metadata_dir root_idb.txt display_desc.txt < constraints.txt 
+# ./htmlize.py metadata_dir root_idb.txt display_desc.txt bnet_dict.out all_probabilities.txt < constraints.txt
 
 import logging
 import re
@@ -14,17 +14,15 @@ logging.basicConfig(level=logging.INFO, \
 metadataDir = sys.argv[1]
 rootIdbFileName = sys.argv[2]
 displayDescFileName = sys.argv[3]
+bnetDictFileName = sys.argv[4]
+allProbsFileName = sys.argv[5]
  
 refineInfo = os.environ['REFINE_INFO']
 
 inputDefnFileName = metadataDir + "/input_defn.datalog"
 domMapExtn = ".out"
-
-htmlOtherTemplDir = os.environ['PRESTO_HOME'] + "/HtmlTemplates/Other"
-idbAntHtml = htmlOtherTemplDir + "/idb_antecedent.html"
-edbAntHtml = htmlOtherTemplDir + "/edb_antecedent.html"
-derivSingleHtml = htmlOtherTemplDir + "/deriv_single.html"
-derivTupleHtml = htmlOtherTemplDir + "/deriv_tuple.html"
+ts = "  "  # tabspace in output html
+lineBrk = "<br>"
 
 ########################################################################################################################
 # 0. Prelude
@@ -100,7 +98,7 @@ logging.info('Discovered {0} input tuples.'.format(len(allInputTuples)))
 logging.info('Discovered {0} relations.'.format(len(allRelNames)))
 
 ########################################################################################################################
-# 2. Create map: consequent to all producing clauses (only their antecedents) 
+# 2. Create map: consequent to all producing clauses.
 
 producingClauses = {}
 
@@ -111,11 +109,12 @@ for clause in allClauses:
         producingClauses[consequent] = producers
     else:
         producers = producingClauses[consequent]
-    producers.append(clause2Antecedents(clause))
+    producers.append(clause)
 
 
 ########################################################################################################################
 # 3. Record the signatures of all (required) relation names. Create maps for the required DOM entries. 
+#    Read in the display description.
 
 relSignature = {}
 domSet = set()
@@ -154,26 +153,206 @@ for dn in domSet:
         parts = line.split(':',1)
         dnDict[parts[0]] = parts[1]
 
+displayDesc = {}
+for line in open(displayDescFileName):
+    line = line.strip()
+    parts = line.split(':')
+    displayDesc[parts[0]] = parts[1]
+
 
 ########################################################################################################################
-# 4. Helper functions to generate the html pages
+# 4. Read in bnet_dict.out and probabilities of all the bnet nodes.
 
-def getHtlmlFileName(tup):
+bnetDictMap = {}
+for line in open(bnetDictFileName):
+    line = line.strip()
+    parts = line.split(': ')
+    bnetDictMap[parts[1]] = parts[0]
+
+allProbsMap = {}
+for line in open(allProbsFileName):
+    line = line.strip()
+    parts = line.split(': ')
+    allProbsMap[parts[0]] = parts[1]
+
+
+########################################################################################################################
+# 5. Helper functions to generate the html pages
+
+def getHtmlFileName(tup):
     tup = tup.replace('(', '_')
     tup = tup.replace(',', '_')
     tup = tup.replace(')', '')
-    return tup
+    fn = tup + ".html"
+    return fn 
     
 
+def getRuleProb(clause):
+    prob = "NA"
+    cl = ', '.join(clause)
+    if cl in bnetDictMap:
+        bnetId = bnetDictMap[cl]
+        if bnetId in allProbsMap:
+            prob = allProbsMap[bnetId]
+    return prob
+
+
+def getTupleProb(tup):
+    prob = "NA"
+    if tup in bnetDictMap:
+        bnetId = bnetDictMap[tup]
+        if bnetId in allProbsMap:
+            prob = allProbsMap[bnetId]
+    return prob
+
+
+def getTupleDomDesc(tup):
+    relName = tup.split('(')[0]
+    relSig = relSignature[relName]
+    args = getArgs(tup)
+    ndx = 0
+    desc = ""
+    for arg in args:
+        desc = desc + domMaps[relSig[ndx]][arg] + lineBrk
+        ndx += 1
+    return desc
+
+
 ########################################################################################################################
-# 5. Create the html pages.
+# 6. Create the html pages.
 
-for consequent, producers in producingClauses.items():
+htmlFile = None
+indent = 0
+
+def hprint(s):
+    toPrint = indent * ts + s
+    print('{0}'.format(toPrint), file=htmlFile)
+    return
+
+
+def writeDerivation(consequent):
+    global indent
+    global htmlFile
     htmlFileName = getHtmlFileName(consequent)
-    conDesc = getTupleDesc(consequent)
-    for producer in producers:
+    htmlFile = open(htmlFileName, 'w')
+    indent = 0
+    hprint("<!DOCTYPE html>")
+    hprint("<html>")
+    indent += 1
+    hprint("<head>")
+    indent += 1
+    hprint("<title>Presto derivation graph</title>")
+    indent -= 1
+    hprint("</head>")
+    hprint("<body>")
+    indent += 1
+    hprint("<table border=\"1\" width=\"100%\">")
+    writeDerivTableHeader(consequent)
+    writeDerivTableBody(consequent)
+    indent -= 1
+    hprint("</table>")
+    indent -= 1
+    hprint("</body>")
+    indent -= 1
+    hprint("</html>")
+    htmlFile.close()
+    return
 
 
+def writeDerivTableHeader(consequent):
+    global indent
+    indent += 1
+    hprint("<thead>")
+    indent += 1
+    hprint("<tr>")
+    indent += 1
+    writeTupleDesc(consequent, False)
+    indent -= 1
+    hprint("</tr>")
+    indent -= 1
+    hprint("</thead>")
+    return
 
 
+def writeTupleDesc(tup, linkPresent):
+    prob = getTupleProb(tup)
+    probStr = "  PROB: " + prob
+    relName = tup.split('(')[0]
+    if relName in displayDesc:
+        desc = displayDesc[relName] + lineBrk
+    else:
+        desc = ""
+
+    domDesc = getTupleDomDesc(tup)
+    pre = "<td colspan=\"1\">"
+    post = "</td>"
+    if linkPresent:
+        linkName = getHtmlFileName(tup)
+        pre1 = "<a href=" + linkName + ">"
+    else:
+        pre1 = "<a>"
+    post1 = "</a>"
+    line1 = pre1 + tup + post1 + probStr + "  " + desc + lineBrk + lineBrk
+    txt = pre + line1 + domDesc + post
+    hprint(txt)
+    return
+
+
+def writeDerivTableBody(consequent):
+    global indent
+    hprint("<tbody>")
+    producers = producingClauses[consequent]
+    for clause in producers:
+        writeRule(clause)
+    hprint("</tbody>")
+
+
+def writeRule(clause):
+    global indent
+    indent += 1
+    hprint("<tr>")
+    indent += 1
+    hprint("<td>")
+    indent += 1
+    hprint("<table border=\"1\" width=\"100%\">")
+    indent += 1
+    hprint("<tbody>")
+    indent += 1
+    hprint("<tr>")
+    indent += 1
+    writeRuleProb(clause)
+    indent -= 1
+    for ant in clause2Antecedents(clause):
+        indent += 1
+        if ant in allConsequents:
+            writeTupleDesc(ant, True)
+        else:
+            writeTupleDesc(ant, False)
+        indent -= 1
+    hprint("</tr>")
+    indent -= 1
+    hprint("</tbody>")
+    indent -= 1
+    hprint("</table>")
+    indent -= 1
+    hprint("</td>")
+    indent -= 1
+    hprint("</tr>")
+    indent -= 1
+    return
+
+
+def writeRuleProb(clause):
+    prob = getRuleProb(clause)
+    probStr = "PROB:" + lineBrk + prob
+    txt = "<td width=\"5%\"> " + probStr + " </td>"
+    hprint(txt)
+    return
+
+for consequent in producingClauses.keys():
+    writeDerivation(consequent)
+
+
+########################################################################################################################
+# 7. Create the index html page.
 

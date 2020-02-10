@@ -58,6 +58,7 @@ FFile = open(FOut, 'w')
 FEntries = [ line.strip() for line in open(FFileName) ]
 cnt = 0
 for entry in FEntries:
+    entry = entry.replace("  CLASS:", " @")
     txt = "FIELD:" + entry
     print("{0}:{1}".format(cnt, txt), file=FFile)
     cnt = cnt + 1
@@ -68,6 +69,9 @@ MFile = open(MOut, 'w')
 MEntries = [ line.strip() for line in open(MFileName) ]
 cnt = 0
 for entry in MEntries:
+    cpos = entry.find("  CLASS:")
+    if cpos > -1:
+        entry = entry[:cpos]
     txt = "METHOD:" + entry
     print("{0}:{1}".format(cnt, txt), file=MFile)
     cnt = cnt + 1
@@ -88,9 +92,10 @@ for entry in IEntries:
         dafPos = t.find(daffodilPrefix)
         if dafPos > -1:
             t = t[dafPos:]
-            t = "SRCFILE:" + t
         else:
             t = t.replace(srcRootStr, "")
+            t = t.replace("SRCFILE:", "")
+        t = t.replace("SRCLINE", "")
     txt = "INVK AT:" + t 
     print("{0}:{1}".format(cnt, txt), file=IFile)
     cnt = cnt + 1
@@ -111,9 +116,10 @@ for entry in HEntries:
         dafPos = t.find(daffodilPrefix)
         if dafPos > -1:
             t = t[dafPos:]
-            t = "SRCFILE:" + t
         else:
             t = t.replace(srcRootStr, "")
+            t = t.replace("SRCFILE:", "")
+        t = t.replace("SRCLINE", "")
     txt = "ALLOC AT:" + t 
     print("{0}:{1}".format(cnt, txt), file=HFile)
     cnt = cnt + 1
@@ -135,9 +141,10 @@ for entry in PEntries:
         dafPos = t.find(daffodilPrefix)
         if dafPos > -1:
             t = t[dafPos:]
-            t = "SRCFILE:" + t
         else:
             t = t.replace(srcRootStr, "")
+            t = t.replace("SRCFILE:", "")
+        t = t.replace("SRCLINE", "")
     txt = "PGM POINT:" + t 
     print("{0}:{1}".format(cnt, txt), file=PFile)
     PMap[cnt] = txt
@@ -160,9 +167,10 @@ for entry in EHEntries:
         dafPos = t.find(daffodilPrefix)
         if dafPos > -1:
             t = t[dafPos:]
-            t = "SRCFILE:" + t
         else:
             t = t.replace(srcRootStr, "")
+            t = t.replace("SRCFILE:", "")
+        t = t.replace("SRCLINE", "")
     txt = "CATCH BLK:" + t 
     print("{0}:{1}".format(cnt, txt), file=EHFile)
     EHMap[cnt] = txt
