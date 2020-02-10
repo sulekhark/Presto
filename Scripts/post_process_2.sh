@@ -48,5 +48,6 @@ fi
 $PRESTO_HOME/BnetTools/bnet2fg.py edb_probabilities.txt  < named_bnet.out > factorGraph.fg 2> bnet2fg.log
 $PRESTO_HOME/BnetTools/arcmd $PRESTO_HOME/BnetTools bnet_dict.out factorGraph.fg base_queries.txt 500
 
+cd ..
 $PRESTO_HOME/BnetTools/htmlize.sh
 tar czf reports.tgz reports
