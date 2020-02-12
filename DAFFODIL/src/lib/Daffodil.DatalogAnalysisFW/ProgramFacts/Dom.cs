@@ -32,7 +32,9 @@ namespace Daffodil.DatalogAnalysisFW.ProgramFacts
                     for (int i = 0; i < sz; i++)
                     {
                         T val = GetVal(i);
-                        swMap.WriteLine(ToUniqueString(val) + "  " + val.GetDesc());
+                        string printStr = ToUniqueString(val);
+                        printStr = printStr.Replace("\n", "");
+                        swMap.WriteLine(printStr + "  " + val.GetDesc());
                     }
                 }
             }
