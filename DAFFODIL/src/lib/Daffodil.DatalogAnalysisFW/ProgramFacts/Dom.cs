@@ -34,6 +34,7 @@ namespace Daffodil.DatalogAnalysisFW.ProgramFacts
                         T val = GetVal(i);
                         string printStr = ToUniqueString(val);
                         printStr = printStr.Replace("\n", "");
+                        printStr = printStr.Replace("\r", "");
                         swMap.WriteLine(printStr + "  " + val.GetDesc());
                     }
                 }
