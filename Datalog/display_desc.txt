@@ -1,6 +1,19 @@
 Escaping:Escaping exception
 WEscaping:Wrapped in an escaping exception
 Caught:Caught exception
+OnlyWEscaping:Wrapped escape - no direct escape
+Infeasible:Infeasible throw
 ThrowMH:Method throws exception
 CatchVH:Exception caught by handler
-ThrowPoint:Program point that throws
+ThrowPoint:Throw instruction
+LinkMatch:Linked throw and catch
+ThrowPt1:Start of exception flow
+ThrowPt2:Wrap and throw
+ThrowPt3:Unwrap and throw
+ThrowPt4:Rethrow
+FeasibleMTP:Feasible pgm point for throw
+FeasibleEH:Catch handler may execute
+WEscape1:Potential wrapping point
+WEscape2:Potential wrapping point
+WEscape3:Wrapped in an aggregate exception by MoveNext
+WEscape4:Wrapped in an aggregate exception by MoveNext
