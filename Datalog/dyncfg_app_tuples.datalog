@@ -9,6 +9,13 @@
 # Relations
 ############
 
+relT(t:T) input
+relM(m:M) input
+relV(v:V) input
+relP(p:P) input
+relI(i:I) input
+relEH(eh:EH) input
+
 EscapeMTP(m:M,t:T,p:P) input
 CallAt(m:M,p:P,mcallee:M) input
 LinkedEx(m1:M,v1:V,t1:T,m2:M,v2:V,t2:T) input
@@ -32,6 +39,13 @@ LibCallAt(m,p,mcallee) :- CallAt(m,p,mcallee), libM(mcallee).
 LibLinkedEx(m1,v1,t1,m2,v2,t2) :- LinkedEx(m1,v1,t1,m2,v2,t2), libM(m2).
 LibLinkedEx(m1,v1,t1,m2,v2,t2) :- LinkedEx(m1,v1,t1,m2,v2,t2), VarEH(eh,v1), InRange(eh,p), PI(p,i), IM(i,m3), libM(m3).
 
+
+.include "relT.datalog"
+.include "relM.datalog"
+.include "relV.datalog"
+.include "relP.datalog"
+.include "relI.datalog"
+.include "relEH.datalog"
 .include "appM.datalog"
 .include "prob_edb_tuples.datalog"
 .include "PI.datalog"
