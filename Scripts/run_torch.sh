@@ -35,7 +35,7 @@ do
     cd ..
     rm -rf Debug
     mkdir Debug
-    cp Debug_orig/* Debug
+    cp -r Debug_orig/* Debug
     cd Debug
 
     $TORCH_HOME/tools/net/torch-instrumenter-internal.exe -i . --ic ../../dynconfig/FaultInjectionSet/FInject/$dirName/torch-instrumentation.torchconfig  --rc ../../dynconfig/FaultInjectionSet/FInject/$dirName/RuntimeConfig
@@ -58,7 +58,7 @@ do
     cd ..
     rm -rf Debug
     mkdir Debug
-    cp Debug_orig/* Debug
+    cp -r Debug_orig/* Debug
     cd Debug
 
     $TORCH_HOME/tools/net/torch-instrumenter-internal.exe -i . --ic ../../dynconfig/FaultInjectionSet/LinkInject/$dirName/torch-instrumentation.torchconfig  --rc ../../dynconfig/FaultInjectionSet/LinkInject/$dirName/RuntimeConfig
