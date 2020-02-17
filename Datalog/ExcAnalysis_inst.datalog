@@ -137,9 +137,9 @@ Infeasible_i2(t:T,h:H,m:M,p:P,mcallee:M) printtuples
 LinkMatch_i1(m1,v1,t1,m2,v2,t2,h1,h2) :- CatchVH(v1,h1), LinkedEx(m1,v1,t1,m2,v2,t2), VH(v2,h2), WrapsEx(h2,h1), HT(h1,t1), HT(h2,t2).
 
 ThrowPt1_i1(m,p,v) :- ThrowOrigin(m,p,v).
-ThrowPt2_i1(m,p,v,eh,h,h1,ehv) :- ThrowSubsumed(eh,m,p,v), VH(v,h), WrapsEx(h,h1), VarEH(eh,ehv), CatchVH(ehv,h1). # wrap and throw
-ThrowPt3_i1(m,p,v,eh,h,h1,ehv) :- ThrowSubsumed(eh,m,p,v), VH(v,h1), WrapsEx(h,h1), VarEH(eh,ehv), CatchVH(ehv,h). # unwrap and throw
-ThrowPt4_i1(m,p,v,eh,h,ehv) :- ThrowSubsumed(eh,m,p,v), VH(v,h), VarEH(eh,ehv), CatchVH(ehv,h).  # rethrow
+ThrowPt2_i1(m,p,v,eh,h,h1,ehv) :- ThrowSubsumed(eh,m,p,v), VH(v,h), WrapsEx(h,h1), VarEH(eh,ehv), CatchVH(ehv,h1).
+ThrowPt3_i1(m,p,v,eh,h,h1,ehv) :- ThrowSubsumed(eh,m,p,v), VH(v,h1), WrapsEx(h,h1), VarEH(eh,ehv), CatchVH(ehv,h).
+ThrowPt4_i1(m,p,v,eh,h,ehv) :- ThrowSubsumed(eh,m,p,v), VH(v,h), VarEH(eh,ehv), CatchVH(ehv,h).
 ThrowPoint_i1(m,p,v) :- ThrowPt1(m,p,v).
 ThrowPoint_i2(m,p,v) :- ThrowPt2(m,p,v).
 ThrowPoint_i3(m,p,v) :- ThrowPt3(m,p,v).
