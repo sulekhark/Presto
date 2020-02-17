@@ -6,13 +6,24 @@
 .include "V.dom"                         # domain of variables
 .include "Z.dom"                         # domain of integer indexes
 .include "X.dom"                         # domain of addresses for all objects, fields of objects and structs whose address can be taken.
+.include "P.dom"                         # domain of program points
+.include "EH.dom"                        # domain of exception handlers 
 
 ###
 # Relations
 ###
 
-relV(v:V) input
+relT(t:T) input
+relF(f:F) input
+relM(m:M) input
+relI(i:I) input
 relH(h:H) input
+relV(v:V) input
+relZ(z:Z) input
+relX(x:X) input
+relP(p:P) input
+relEH(eh:EH) input
+
 HT(h:H,t:T) input                        # AllocSite h has Type t
 cha(n:M,t:T,m:M) input                   # For receiver object of Type t, virtual/interface/overridable Method n resolves to Method m.
 sub(t1:T,t2:T) input                     # Type t1 is a subtype of Type t2
@@ -60,6 +71,22 @@ staticTM(t:T,m:M) input                  # Type t contains static method m
 staticTF(t:T,f:F) input                  # Type t contains static field f
 clinitTM(t:T,m:M) input                  # Type t contains static initializer method m
 entryPtM(m:M) input                      # Method m is an entrypoint
+
+VarEH(eh:EH,v:V)  input                  # ExceptionHandler eh has the formal paramter as Variable v
+ThrowPV(m:M,p:P,v:V)  input              # Instruction p of Method m throws Variable v
+PI(p:P,i:I) input                        # Connects program points that are invoke statements to corresponding entries in domI
+FinalEH(eh:EH,t:T,p:P) input             # ExceptionHandler eh catches an exception of Type t thrown at Program point p.
+EscapeMTP(m:M,t:T,p:P) input             # Exception of type t if thrown at Program Point p, escapes Method m.
+NestedEH(m:M,eh1:EH,eh2:EH) input        # In method m, exception handler eh1 nests exception handler eh2.
+OutermostEH(m:M,eh:EH) input             # In method m, exception handler eh is not nested within any other exception handler.
+EnclosingEH(m:M,eh:EH,p:P) input         # In method m, exception handler eh immediately encloses program point p that could potentially throw.
+NoEnclose(m:M,p:P) input
+
+CallAt(m:M,p:P,mcallee:M) printtuples
+MThrowsH(m:M,h:H) printtuples            # The exception object h escapes Method m.
+VCatchesH(v:V,h:H) printtuples           # Variable v which is the formal parameter of some catch handler, points-to exception object h.
+FeasMTP(m:M,t:T,p:P) printtuples
+FeasEH(m:M,eh:EH) printtuples
 
 IHM(i:I,h:H,m:M)
 DelegateIH(i:I,h:H)
@@ -228,9 +255,30 @@ rootM(m) :- entryPtM(m).
 rootM(m) :- reachableT(t), clinitTM(t,m).
 MM(m,n) :- IM(i,n), MI(m,i).
 
+# Propagating exception points-to
 
-.include "relV.datalog"
+CallAt(m,p,mcallee) :- MI(m,i), IM(i,mcallee), PI(p,i).
+MThrowsH(m,h) :- ThrowPV(m,p,v), VH(v,h), HT(h,t), FeasMTP(m,t,p).
+MThrowsH(m,h) :- CallAt(m,p,mcallee), MThrowsH(mcallee,h), HT(h,t), FeasMTP(m,t,p).
+FeasMTP(m,t,p) :- EscapeMTP(m,t,p), NoEnclose(m,p).
+FeasMTP(m,t,p) :- EscapeMTP(m,t,p), EnclosingEH(m,eh,p), FeasEH(m,eh).
+FeasEH(m,eh) :- VCatchesH(v,h), VarEH(eh,v), OutermostEH(m,eh).
+FeasEH(m,eh) :- VCatchesH(v,h), VarEH(eh,v), NestedEH(m,eh1,eh), FeasEH(m,eh1).
+VCatchesH(ehv,h) :- ThrowPV(m,p,v), VH(v,h), HT(h,t), FinalEH(eh,t,p), VarEH(eh,ehv).
+VCatchesH(v,h) :- CallAt(m,p,mcallee), MThrowsH(mcallee,h), HT(h,t), FinalEH(eh,t,p), VarEH(eh,v).
+VH(v,h) :- VCatchesH(v,h).
+
+
+.include "relT.datalog"
+.include "relF.datalog"
+.include "relM.datalog"
+.include "relI.datalog"
 .include "relH.datalog"
+.include "relV.datalog"
+.include "relZ.datalog"
+.include "relX.datalog"
+.include "relP.datalog"
+.include "relEH.datalog"
 .include "cha.datalog"
 .include "classT.datalog"
 .include "clinitTM.datalog"
@@ -271,3 +319,12 @@ MM(m,n) :- IM(i,n), MI(m,i).
 .include "StructHFH.datalog"
 .include "structRefV.datalog"
 .include "thisRefV.datalog"
+.include "VarEH.datalog"
+.include "ThrowPV.datalog"
+.include "PI.datalog"
+.include "FinalEH.datalog"
+.include "EscapeMTP.datalog"
+.include "NestedEH.datalog"
+.include "OutermostEH.datalog"
+.include "EnclosingEH.datalog"
+.include "NoEnclose.datalog"

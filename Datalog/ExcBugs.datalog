@@ -1,0 +1,97 @@
+.include "T.dom"                         # domain of types
+.include "M.dom"                         # domain of methods
+.include "H.dom"                         # domain of allocation sites
+.include "V.dom"                         # domain of variables
+.include "F.dom"                         # domain of fields
+.include "P.dom"                         # domain of program points 
+
+
+relT(t:T) input
+relM(m:M) input
+relH(h:H) input
+relV(v:V) input
+relF(f:F) input
+relP(p:P) input
+
+ExceptionType(t:T) input                 # Type t is an exception type
+HT(h:H,t:T) input                        # Allocation site h as Type t
+entryPtM(m:M) input                      # Entry point methods of the assembly.
+VH(v:V,h:H)  input                       # Variable v may point to AllocSite h
+FH(f:F,h:H)  input                       # Static field f may point to AllocSite h
+HFH(h1:H,f:F,h2:H)  input                # Field f of object allocated at AllocSite h1 may point to AllocSite h2
+
+ThrowPV(m:M,p:P,v:V) input
+EscapeMTP(m:M,t:T,p:P) input             # Exception of type t if thrown at Program Point p, escapes Method m.
+CallAt(m:M,p:P,mcallee:M) input
+FeasMTP(m:M,t:T,p:P) input
+MThrowsH(m:M,h:H) input                  # The exception object h escapes Method m.
+VCatchesH(v:V,h:H) input                 # Variable v which is the formal parameter of some catch handler, points-to exception object h.
+
+EscUnion(h:H)
+TransLink(h1:H,h2:H)
+NotEscObj(t:T,h:H)
+InfeasMTP(m:M,t:T,p:P)
+
+ExceptionObj(h:H) printtuples
+WrapsEx(h2:H,h1:H) printtuples           # Exception object h2 wraps exception object h1
+CaughtObj(t:T,h:H) printtuples           # h is an exception object of Type t that is caught somewhere within the application
+EscObj(t:T,h:H) printtuples              # h is an exception object of Type t that is escaping from the application
+WEscObj(t:T,h:H) printtuples
+OnlyWEscObj(t:T,h:H) printtuples
+InfeasObj(t:T,h:H) printtuples
+
+
+# Rules
+
+###########################################
+# Computing escaping, wrapped-escaping,
+# only-wrapped-escaping, caught and
+# infeasible exception objects.
+###########################################
+
+# Find pairs of exception objects (h1,h2) where h1 wraps (encapsulates) h2.
+# Note: When we transitively compute the above, we don't follow links
+# that are exception objects because we want to find only the "nearest" 
+# exception objects for which either of the above relations hold.
+
+ExceptionObj(h) :- VH(v,h), HT(h,t), ExceptionType(t).
+ExceptionObj(h) :- FH(f,h), HT(h,t), ExceptionType(t).
+ExceptionObj(h) :- HFH(h1,f,h), HT(h,t), ExceptionType(t).
+
+TransLink(h1,h2) :- HFH(h1,f1,h), HFH(h,f2,h2), !ExceptionObj(h).
+TransLink(h1,h2) :- HFH(h1,f,h), TransLink(h,h2), !ExceptionObj(h).
+WrapsEx(h1,h2) :- ExceptionObj(h1), ExceptionObj(h2), HFH(h1,f,h2), h1 != h2.
+WrapsEx(h1,h2) :- ExceptionObj(h1), ExceptionObj(h2), TransLink(h1,h2), h1 != h2.
+
+EscObj(t,h) :- MThrowsH(m,h), HT(h,t), ExceptionType(t), entryPtM(m).
+WEscObj(t2,h2) :- WrapsEx(h1,h2), EscObj(t1,h1), HT(h2,t2).
+WEscObj(t3,h3) :- WrapsEx(h2,h3), WEscObj(t2,h2), HT(h3,t3).
+OnlyWEscObj(t2,h2) :- WEscObj(t2,h2), !EscObj(t2,h2).
+EscUnion(h) :- EscObj(t,h).
+EscUnion(h) :- WEscObj(t,h).
+NotEscObj(t,h) :- !EscUnion(h), HT(h,t), ExceptionType(t).
+CaughtObj(t,h) :- VCatchesH(v,h), NotEscObj(t,h).
+InfeasMTP(m,t,p) :- !FeasMTP(m,t,p), EscapeMTP(m,t,p).
+InfeasObj(t,h) :- ThrowPV(m,p,v), VH(v,h), HT(h,t), InfeasMTP(m,t,p).
+InfeasObj(t,h) :- CallAt(m,p,mcallee), MThrowsH(mcallee,h), HT(h,t), InfeasMTP(m,t,p).
+
+
+
+.include "relT.datalog"
+.include "relM.datalog"
+.include "relH.datalog"
+.include "relV.datalog"
+.include "relF.datalog"
+.include "relP.datalog"
+.include "MThrowsH.datalog"
+.include "VCatchesH.datalog"
+.include "ExceptionType.datalog"
+.include "HT.datalog"
+.include "entryPtM.datalog"
+.include "VH.datalog"
+.include "FH.datalog"
+.include "HFH.datalog"
+.include "ThrowPV.datalog"
+.include "EscapeMTP.datalog"
+.include "CallAt.datalog"
+.include "FeasMTP.datalog"
