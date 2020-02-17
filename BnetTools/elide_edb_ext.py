@@ -92,14 +92,20 @@ while change:
     newSimplifiedRuleNames = {}
     for clause in currSimplifiedClauses:
         sc = simplifyClause(clause, allConsequents)
-        if len(sc) == 1 and removeEdbTransitive:
-            allConsequents = allconsequents - {clause2Consequent(sc)}
+        postLen = len(sc)
+        # If, after simplification, the clause len == 1, and removeEdbTransitive is on,
+        # then the clause itself can be deleted.
+        # Only if a clause is deleted, a subsequent pass is required.
+        if (postLen == 1) and removeEdbTransitive:
             change = True
+            # remove sc - i.e. don't add it to newSimplifiedClauses.
         else:
             newSimplifiedClauses.add(sc)
             newSimplifiedRuleNames[sc] = currSimplifiedRuleNames[clause]
-    currSimplifiedClauses = newSimplifiedClauses
-    currSimplifiedRuleNames = newSimplifiedRuleNames
+    if change:
+        allConsequents = { clause2Consequent(clause) for clause in newSimplifiedClauses }
+        currSimplifiedClauses = newSimplifiedClauses
+        currSimplifiedRuleNames = newSimplifiedRuleNames
 
 ########################################################################################################################
 # 3. Print output
