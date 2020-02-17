@@ -51,13 +51,14 @@ ThrowSubsumed(eh:EH,m:M,p:P,v:V) input
 ThrowPoint(m:M,p:P,v:V) input
 ThrowPt1(m:M,p:P,v:V) input
 ThrowPt2(m:M,p:P,v:V) input
+ThrowPt3(m:M,p:P,v:V) input
+ThrowPt4(m:M,p:P,v:V) input
 ThrowRemaining(m:M,p:P,v:V) input
 WEscape1(t:T,h:H) input
 WEscape2(t:T,h:H) input
 WEscape3(t:T,h:H) input
 WEscape4(t:T,h:H) input
 WEscapeRemaining(t:T,h:H) input
-ExcOrigin(m:M,v:V,h:H) input
 NotEscaping(t:T,h:H) input
 InfeasibleMTP(m:M,t:T,p:P) input
 
@@ -72,9 +73,13 @@ NoDirectEsc(t:T,h:H)
 LinkMatch_i1(m1:M,v1:V,t1:T,m2:M,v2:V,t2:T,h1:H,h2:H) printtuples
 ThrowPt1_i1(m:M,p:P,v:V) printtuples
 ThrowPt2_i1(m:M,p:P,v:V,eh:EH,h:H,h1:H,ehv:V) printtuples
+ThrowPt3_i1(m:M,p:P,v:V,eh:EH,h:H,h1:H,ehv:V) printtuples
+ThrowPt4_i1(m:M,p:P,v:V,eh:EH,h:H,ehv:V) printtuples
 ThrowPoint_i1(m:M,p:P,v:V) printtuples
 ThrowPoint_i2(m:M,p:P,v:V) printtuples
 ThrowPoint_i3(m:M,p:P,v:V) printtuples
+ThrowPoint_i4(m:M,p:P,v:V) printtuples
+ThrowPoint_i5(m:M,p:P,v:V) printtuples
 ThrowMH_i1(m:M,h:H,p:P,v:V,t:T) printtuples
 ThrowMH_i2(m:M,h:H,p:P,mcallee:M,t:T) printtuples
 CatchVH_i1(ehv:V,h:H,m:M,p:P,v:V,t:T,eh:EH) printtuples
@@ -106,6 +111,8 @@ Infeasible_i2(t:T,h:H,m:M,p:P,mcallee:M) printtuples
 # ARG_COUNT LinkMatch 6
 # ARG_COUNT ThrowPt1 3
 # ARG_COUNT ThrowPt2 3
+# ARG_COUNT ThrowPt3 3
+# ARG_COUNT ThrowPt4 3
 # ARG_COUNT ThrowPoint 3
 # ARG_COUNT ThrowMH 2
 # ARG_COUNT CatchVH 2
@@ -130,10 +137,15 @@ Infeasible_i2(t:T,h:H,m:M,p:P,mcallee:M) printtuples
 LinkMatch_i1(m1,v1,t1,m2,v2,t2,h1,h2) :- CatchVH(v1,h1), LinkedEx(m1,v1,t1,m2,v2,t2), VH(v2,h2), WrapsEx(h2,h1), HT(h1,t1), HT(h2,t2).
 
 ThrowPt1_i1(m,p,v) :- ThrowOrigin(m,p,v).
-ThrowPt2_i1(m,p,v,eh,h,h1,ehv) :- ThrowSubsumed(eh,m,p,v), VH(v,h), WrapsEx(h,h1), VarEH(eh,ehv), CatchVH(ehv,h1).  
+ThrowPt2_i1(m,p,v,eh,h,h1,ehv) :- ThrowSubsumed(eh,m,p,v), VH(v,h), WrapsEx(h,h1), VarEH(eh,ehv), CatchVH(ehv,h1). # wrap and throw
+ThrowPt3_i1(m,p,v,eh,h,h1,ehv) :- ThrowSubsumed(eh,m,p,v), VH(v,h1), WrapsEx(h,h1), VarEH(eh,ehv), CatchVH(ehv,h). # unwrap and throw
+ThrowPt4_i1(m,p,v,eh,h,ehv) :- ThrowSubsumed(eh,m,p,v), VH(v,h), VarEH(eh,ehv), CatchVH(ehv,h).  # rethrow
 ThrowPoint_i1(m,p,v) :- ThrowPt1(m,p,v).
 ThrowPoint_i2(m,p,v) :- ThrowPt2(m,p,v).
-ThrowPoint_i3(m,p,v) :- ThrowRemaining(m,p,v).
+ThrowPoint_i3(m,p,v) :- ThrowPt3(m,p,v).
+ThrowPoint_i4(m,p,v) :- ThrowPt4(m,p,v).
+ThrowPoint_i5(m,p,v) :- ThrowRemaining(m,p,v).
+
 ThrowMH_i1(m,h,p,v,t) :- ThrowPoint(m,p,v), VH(v,h), HT(h,t), FeasibleMTP(m,t,p).
 ThrowMH_i2(m,h,p,mcallee,t) :- CallAt(m,p,mcallee), ThrowMH(mcallee,h), HT(h,t), FeasibleMTP(m,t,p).
 CatchVH_i1(ehv,h,m,p,v,t,eh) :- ThrowPoint(m,p,v), VH(v,h), HT(h,t), FinalEH(eh,t,p), VarEH(eh,ehv).
@@ -144,8 +156,8 @@ FeasibleEH_i1(m,eh,v,h) :- CatchVH(v,h), VarEH(eh,v), OutermostEH(m,eh).
 FeasibleEH_i2(m,eh,v,h,eh1) :- CatchVH(v,h), VarEH(eh,v), NestedEH(m,eh1,eh), FeasibleEH(m,eh1).
 
 Escaping_i1(t,h,m) :- ThrowMH(m,h), HT(h,t), ExceptionType(t), entryPtM(m).
-WEscape1_i1(t2,h2,t1,h1,m2,v2,m1,v1) :- WrapsEx(h1,h2), Escaping(t1,h1), LinkMatch(m2,v2,t2,m1,v1,t1), ExcOrigin(m1,v1,h1), HT(h2,t2).
-WEscape2_i1(t3,h3,t2,h2,m3,v3,m2,v2) :- WrapsEx(h2,h3), WEscaping(t2,h2), LinkMatch(m3,v3,t3,m2,v2,t2), ExcOrigin(m2,v2,h2), HT(h3,t3).
+WEscape1_i1(t2,h2,t1,h1,m2,v2,m1,v1) :- WrapsEx(h1,h2), Escaping(t1,h1), LinkMatch(m2,v2,t2,m1,v1,t1), VH(v1,h1), VH(v2,h2), HT(h2,t2).
+WEscape2_i1(t3,h3,t2,h2,m3,v3,m2,v2) :- WrapsEx(h2,h3), WEscaping(t2,h2), LinkMatch(m3,v3,t3,m2,v2,t2), VH(v2,h2), VH(v3,h3), HT(h3,t3).
 WEscape3_i1(t2,h2,t1,h1,v2,eh2,m) :- WrapsEx(h1,h2), Escaping(t1,h1), CatchVH(v2,h2), VarEH(eh2,v2), MoveNextEH(m,eh2), HT(h2,t2).
 WEscape4_i1(t3,h3,t2,h2,v3,eh3,m) :- WrapsEx(h2,h3), WEscaping(t2,h2), CatchVH(v3,h3), VarEH(eh3,v3), MoveNextEH(m,eh3), HT(h3,t3).
 WEscaping_i1(t,h) :- WEscape1(t,h). 
@@ -154,7 +166,7 @@ WEscaping_i3(t,h) :- WEscape3(t,h).
 WEscaping_i4(t,h) :- WEscape4(t,h). 
 WEscaping_i5(t,h) :- WEscapeRemaining(t,h). 
 
-NoDirectEsc(t,h) :- !Escaping(t,h).
+NoDirectEsc(t,h) :- !Escaping(t,h), ExceptionObj(h), ExceptionType(t).
 OnlyWEscaping_i1(t2,h2) :- WEscaping(t2,h2), NoDirectEsc(t2,h2).
 Caught_i1(t,h,v) :- CatchVH(v,h), NotEscaping(t,h).
 Infeasible_i1(t,h,m,p,v) :- ThrowPoint(m,p,v), VH(v,h), HT(h,t), InfeasibleMTP(m,t,p).
@@ -199,12 +211,13 @@ Infeasible_i2(t,h,m,p,mcallee) :- CallAt(m,p,mcallee), ThrowMH(mcallee,h), HT(h,
 .include "ThrowPoint.datalog"
 .include "ThrowPt1.datalog"
 .include "ThrowPt2.datalog"
+.include "ThrowPt3.datalog"
+.include "ThrowPt4.datalog"
 .include "ThrowRemaining.datalog"
 .include "WEscape1.datalog"
 .include "WEscape2.datalog"
 .include "WEscape3.datalog"
 .include "WEscape4.datalog"
 .include "WEscapeRemaining.datalog"
-.include "ExcOrigin.datalog"
 .include "NotEscaping.datalog"
 .include "InfeasibleMTP.datalog"

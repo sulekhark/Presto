@@ -45,13 +45,14 @@ ThrowRemaining(m:M,p:P,v:V) input
 WEscapeRemaining(t:T,h:H) input
 
 EscUnion(h:H)
-ExcOrigin(m:M,v:V,h:H) printtuples
 NotEscaping(t:T,h:H) printtuples
 InfeasibleMTP(m:M,t:T,p:P) printtuples
 LinkMatch(m1:M,v1:V,t1:T,m2:M,v2:V,t2:T) printtuples
 
 ThrowPt1(m:M,p:P,v:V) printtuples
 ThrowPt2(m:M,p:P,v:V) printtuples
+ThrowPt3(m:M,p:P,v:V) printtuples
+ThrowPt4(m:M,p:P,v:V) printtuples
 ThrowPoint(m:M,p:P,v:V) printtuples
 ThrowMH(m:M,h:H) printtuples             # The exception object h escapes Method m.
 CatchVH(v:V,h:H) printtuples             # Variable v which is the formal parameter of some catch handler, points-to exception object h.
@@ -74,12 +75,15 @@ Infeasible(t:T,h:H) printtuples
 ###########################################
 
 LinkMatch(m1,v1,t1,m2,v2,t2) :- CatchVH(v1,h1), LinkedEx(m1,v1,t1,m2,v2,t2), VH(v2,h2), WrapsEx(h2,h1), HT(h1,t1), HT(h2,t2).
-ExcOrigin(m,v,h) :- ThrowPV(m,p,v), VH(v,h).
 
 ThrowPt1(m,p,v) :- ThrowOrigin(m,p,v).
-ThrowPt2(m,p,v) :- ThrowSubsumed(eh,m,p,v), VH(v,h), WrapsEx(h,h1), VarEH(eh,ehv), CatchVH(ehv,h1).  
+ThrowPt2(m,p,v) :- ThrowSubsumed(eh,m,p,v), VH(v,h), WrapsEx(h,h1), VarEH(eh,ehv), CatchVH(ehv,h1). # wrap and throw
+ThrowPt3(m,p,v) :- ThrowSubsumed(eh,m,p,v), VH(v,h1), WrapsEx(h,h1), VarEH(eh,ehv), CatchVH(ehv,h). # unwrap and throw
+ThrowPt4(m,p,v) :- ThrowSubsumed(eh,m,p,v), VH(v,h), VarEH(eh,ehv), CatchVH(ehv,h).  # rethrow
 ThrowPoint(m,p,v) :- ThrowPt1(m,p,v).
 ThrowPoint(m,p,v) :- ThrowPt2(m,p,v).
+ThrowPoint(m,p,v) :- ThrowPt3(m,p,v).
+ThrowPoint(m,p,v) :- ThrowPt4(m,p,v).
 ThrowPoint(m,p,v) :- ThrowRemaining(m,p,v).
 ThrowMH(m,h) :- ThrowPoint(m,p,v), VH(v,h), HT(h,t), FeasibleMTP(m,t,p).
 ThrowMH(m,h) :- CallAt(m,p,mcallee), ThrowMH(mcallee,h), HT(h,t), FeasibleMTP(m,t,p).
@@ -90,8 +94,8 @@ FeasibleEH(m,eh) :- CatchVH(v,h), VarEH(eh,v), NestedEH(m,eh1,eh), FeasibleEH(m,
 CatchVH(ehv,h) :- ThrowPoint(m,p,v), VH(v,h), HT(h,t), FinalEH(eh,t,p), VarEH(eh,ehv).
 CatchVH(v,h) :- CallAt(m,p,mcallee), ThrowMH(mcallee,h), HT(h,t), FinalEH(eh,t,p), VarEH(eh,v).
 
-WEscape1(t2,h2) :- WrapsEx(h1,h2), Escaping(t1,h1), LinkMatch(m2,v2,t2,m1,v1,t1), ExcOrigin(m1,v1,h1), HT(h2,t2).
-WEscape2(t3,h3) :- WrapsEx(h2,h3), WEscaping(t2,h2), LinkMatch(m3,v3,t3,m2,v2,t2), ExcOrigin(m2,v2,h2), HT(h3,t3).
+WEscape1(t2,h2) :- WrapsEx(h1,h2), Escaping(t1,h1), LinkMatch(m2,v2,t2,m1,v1,t1), VH(v1,h1), VH(v2,h2), HT(h2,t2).
+WEscape2(t3,h3) :- WrapsEx(h2,h3), WEscaping(t2,h2), LinkMatch(m3,v3,t3,m2,v2,t2), VH(v2,h2), VH(v3,h3), HT(h3,t3).
 WEscape3(t2,h2) :- WrapsEx(h1,h2), Escaping(t1,h1), CatchVH(v2,h2), VarEH(eh2,v2), MoveNextEH(m,eh2), HT(h2,t2).
 WEscape4(t3,h3) :- WrapsEx(h2,h3), WEscaping(t2,h2), CatchVH(v3,h3), VarEH(eh3,v3), MoveNextEH(m,eh3), HT(h3,t3).
 Escaping(t,h) :- ThrowMH(m,h), HT(h,t), ExceptionType(t), entryPtM(m).
