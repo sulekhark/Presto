@@ -50,8 +50,8 @@ NotEscaping(t:T,h:H) printtuples
 InfeasibleMTP(m:M,t:T,p:P) printtuples
 LinkMatch(m1:M,v1:V,t1:T,m2:M,v2:V,t2:T) printtuples
 
-ThrowPoint1(m:M,p:P,v:V) printtuples
-ThrowPoint2(m:M,p:P,v:V) printtuples
+ThrowPt1(m:M,p:P,v:V) printtuples
+ThrowPt2(m:M,p:P,v:V) printtuples
 ThrowPoint(m:M,p:P,v:V) printtuples
 ThrowMH(m:M,h:H) printtuples             # The exception object h escapes Method m.
 CatchVH(v:V,h:H) printtuples             # Variable v which is the formal parameter of some catch handler, points-to exception object h.
@@ -76,10 +76,10 @@ Infeasible(t:T,h:H) printtuples
 LinkMatch(m1,v1,t1,m2,v2,t2) :- CatchVH(v1,h1), LinkedEx(m1,v1,t1,m2,v2,t2), VH(v2,h2), WrapsEx(h2,h1), HT(h1,t1), HT(h2,t2).
 ExcOrigin(m,v,h) :- ThrowPV(m,p,v), VH(v,h).
 
-ThrowPoint1(m,p,v) :- ThrowOrigin(m,p,v).
-ThrowPoint2(m,p,v) :- ThrowSubsumed(eh,m,p,v), VH(v,h), WrapsEx(h,h1), VarEH(eh,ehv), CatchVH(ehv,h1).  
-ThrowPoint(m,p,v) :- ThrowPoint1(m,p,v).
-ThrowPoint(m,p,v) :- ThrowPoint2(m,p,v).
+ThrowPt1(m,p,v) :- ThrowOrigin(m,p,v).
+ThrowPt2(m,p,v) :- ThrowSubsumed(eh,m,p,v), VH(v,h), WrapsEx(h,h1), VarEH(eh,ehv), CatchVH(ehv,h1).  
+ThrowPoint(m,p,v) :- ThrowPt1(m,p,v).
+ThrowPoint(m,p,v) :- ThrowPt2(m,p,v).
 ThrowPoint(m,p,v) :- ThrowRemaining(m,p,v).
 ThrowMH(m,h) :- ThrowPoint(m,p,v), VH(v,h), HT(h,t), FeasibleMTP(m,t,p).
 ThrowMH(m,h) :- CallAt(m,p,mcallee), ThrowMH(mcallee,h), HT(h,t), FeasibleMTP(m,t,p).

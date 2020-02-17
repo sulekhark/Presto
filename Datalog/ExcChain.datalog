@@ -50,8 +50,8 @@ ThrowSub(m:M,v:V)
 
 ExcOrigin(m:M,v:V,h:H)
 LinkMatch(m1:M,v1:V,t1:T,m2:M,v2:V,t2:T)
-ThrowPoint1(m:M,p:P,v:V)
-ThrowPoint2(m:M,p:P,v:V)
+ThrowPt1(m:M,p:P,v:V)
+ThrowPt2(m:M,p:P,v:V)
 ThrowUnion(m:M,p:P,v:V)
 WEscape1(t:T,h:H)
 WEscape2(t:T,h:H)
@@ -107,10 +107,10 @@ ThrowOrigin(m,p,v) :- ThrowPV(m,p,v), !ThrowSub(m,v).
 LinkMatch(m1,v1,t1,m2,v2,t2) :- VCatchesH(v1,h1), LinkedEx(m1,v1,t1,m2,v2,t2), VH(v2,h2), WrapsEx(h2,h1), HT(h1,t1), HT(h2,t2).
 ExcOrigin(m,v,h) :- ThrowPV(m,p,v), VH(v,h).
 
-ThrowPoint1(m,p,v) :- ThrowOrigin(m,p,v).
-ThrowPoint2(m,p,v) :- ThrowSubsumed(eh,m,p,v), VH(v,h), WrapsEx(h,h1), VarEH(eh,ehv), VCatchesH(ehv,h1).  
-ThrowUnion(m,p,v) :- ThrowPoint1(m,p,v).
-ThrowUnion(m,p,v) :- ThrowPoint2(m,p,v).
+ThrowPt1(m,p,v) :- ThrowOrigin(m,p,v).
+ThrowPt2(m,p,v) :- ThrowSubsumed(eh,m,p,v), VH(v,h), WrapsEx(h,h1), VarEH(eh,ehv), VCatchesH(ehv,h1).  
+ThrowUnion(m,p,v) :- ThrowPt1(m,p,v).
+ThrowUnion(m,p,v) :- ThrowPt2(m,p,v).
 ThrowRemaining(m,p,v) :- !ThrowUnion(m,p,v), ThrowPV(m,p,v).
 
 WEscape1(t2,h2) :- WrapsEx(h1,h2), EscObj(t1,h1), LinkMatch(m2,v2,t2,m1,v1,t1), ExcOrigin(m1,v1,h1), HT(h2,t2).

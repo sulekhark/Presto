@@ -49,8 +49,8 @@ MoveNextEH(m:M,eh:EH) input
 ThrowOrigin(m:M,p:P,v:V) input
 ThrowSubsumed(eh:EH,m:M,p:P,v:V) input
 ThrowPoint(m:M,p:P,v:V) input
-ThrowPoint1(m:M,p:P,v:V) input
-ThrowPoint2(m:M,p:P,v:V) input
+ThrowPt1(m:M,p:P,v:V) input
+ThrowPt2(m:M,p:P,v:V) input
 ThrowRemaining(m:M,p:P,v:V) input
 WEscape1(t:T,h:H) input
 WEscape2(t:T,h:H) input
@@ -70,8 +70,8 @@ NoDirectEsc(t:T,h:H)
 ########################
 
 LinkMatch_i1(m1:M,v1:V,t1:T,m2:M,v2:V,t2:T,h1:H,h2:H) printtuples
-ThrowPoint1_i1(m:M,p:P,v:V) printtuples
-ThrowPoint2_i1(m:M,p:P,v:V,eh:EH,h:H,h1:H,ehv:V) printtuples
+ThrowPt1_i1(m:M,p:P,v:V) printtuples
+ThrowPt2_i1(m:M,p:P,v:V,eh:EH,h:H,h1:H,ehv:V) printtuples
 ThrowPoint_i1(m:M,p:P,v:V) printtuples
 ThrowPoint_i2(m:M,p:P,v:V) printtuples
 ThrowPoint_i3(m:M,p:P,v:V) printtuples
@@ -104,8 +104,8 @@ Infeasible_i2(t:T,h:H,m:M,p:P,mcallee:M) printtuples
 ##################
 
 # ARG_COUNT LinkMatch 6
-# ARG_COUNT ThrowPoint1 3
-# ARG_COUNT ThrowPoint2 3
+# ARG_COUNT ThrowPt1 3
+# ARG_COUNT ThrowPt2 3
 # ARG_COUNT ThrowPoint 3
 # ARG_COUNT ThrowMH 2
 # ARG_COUNT CatchVH 2
@@ -129,10 +129,10 @@ Infeasible_i2(t:T,h:H,m:M,p:P,mcallee:M) printtuples
 
 LinkMatch_i1(m1,v1,t1,m2,v2,t2,h1,h2) :- CatchVH(v1,h1), LinkedEx(m1,v1,t1,m2,v2,t2), VH(v2,h2), WrapsEx(h2,h1), HT(h1,t1), HT(h2,t2).
 
-ThrowPoint1_i1(m,p,v) :- ThrowOrigin(m,p,v).
-ThrowPoint2_i1(m,p,v,eh,h,h1,ehv) :- ThrowSubsumed(eh,m,p,v), VH(v,h), WrapsEx(h,h1), VarEH(eh,ehv), CatchVH(ehv,h1).  
-ThrowPoint_i1(m,p,v) :- ThrowPoint1(m,p,v).
-ThrowPoint_i2(m,p,v) :- ThrowPoint2(m,p,v).
+ThrowPt1_i1(m,p,v) :- ThrowOrigin(m,p,v).
+ThrowPt2_i1(m,p,v,eh,h,h1,ehv) :- ThrowSubsumed(eh,m,p,v), VH(v,h), WrapsEx(h,h1), VarEH(eh,ehv), CatchVH(ehv,h1).  
+ThrowPoint_i1(m,p,v) :- ThrowPt1(m,p,v).
+ThrowPoint_i2(m,p,v) :- ThrowPt2(m,p,v).
 ThrowPoint_i3(m,p,v) :- ThrowRemaining(m,p,v).
 ThrowMH_i1(m,h,p,v,t) :- ThrowPoint(m,p,v), VH(v,h), HT(h,t), FeasibleMTP(m,t,p).
 ThrowMH_i2(m,h,p,mcallee,t) :- CallAt(m,p,mcallee), ThrowMH(mcallee,h), HT(h,t), FeasibleMTP(m,t,p).
@@ -197,8 +197,8 @@ Infeasible_i2(t,h,m,p,mcallee) :- CallAt(m,p,mcallee), ThrowMH(mcallee,h), HT(h,
 .include "ThrowOrigin.datalog"
 .include "ThrowSubsumed.datalog"
 .include "ThrowPoint.datalog"
-.include "ThrowPoint1.datalog"
-.include "ThrowPoint2.datalog"
+.include "ThrowPt1.datalog"
+.include "ThrowPt2.datalog"
 .include "ThrowRemaining.datalog"
 .include "WEscape1.datalog"
 .include "WEscape2.datalog"
