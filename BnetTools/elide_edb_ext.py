@@ -4,7 +4,7 @@
 # stdout. This rewrite already implicitly happens within bnet2fg.py, and it is helpful to have it explicitly as a
 # script.
 
-# ./scripts/bnet/summarization/elide_edb_ext.py [prob_edb_file] < named_cons_all.txt > named_cons_all.txt.elided
+# ./scripts/bnet/summarization/elide_edb_ext.py [prob_edb_file root_idb_file] < named_cons_all.txt > named_cons_all.txt.elided
 
 import logging
 import re
@@ -14,10 +14,11 @@ import os
 
 if len(sys.argv) > 1:
     probEdbFileName = sys.argv[1]
+    rootIdbFileName = sys.argv[2]
 else:
     probEdbFileName = ""
+    rootIdbFileName = ""
 
-queryIdbFileName = os.environ['QUERY_IDB_SET']
 removeEdbTransitive = False
 clampRule = os.environ['CLAMP_RULE_PROB_TO_1']
 if clampRule == "true":
@@ -46,10 +47,10 @@ if not probEdbFileName == "":
 else:
     probEdbTuples = set()
 
-if not queryIdbFileName == "":
-    queryIdbTuples = { line.strip() for line in open(queryIdbFileName) if len(line.strip()) > 0 }
+if not rootIdbFileName == "":
+    rootIdbTuples = { line.strip() for line in open(rootIdbFileName) if len(line.strip()) > 0 }
 else:
-    queryIdbTuples = set()
+    rootIdbTuples = set()
 
 def lit2Tuple(literal):
     return literal if not literal.startswith('NOT ') else literal[len('NOT '):]
@@ -68,9 +69,9 @@ def isProbEdb(t):
          return True
    return False
 
-def isQueryIdb(t):
-   for queryIdbTup in queryIdbTuples:
-      if t.startswith(queryIdbTup):
+def isRootIdb(t):
+   for rootIdbTup in rootIdbTuples:
+      if t.startswith(rootIdbTup):
          return True
    return False
 
@@ -110,7 +111,7 @@ while change:
         # Only if a clause is deleted, a subsequent pass is required.
         if (postLen == 1) and removeEdbTransitive:
             conseq = clause2Consequent(sc)
-            if isQueryIdb(conseq):
+            if isRootIdb(conseq):
                 newSimplifiedClauses.add(sc)
                 newSimplifiedRuleNames[sc] = currSimplifiedRuleNames[clause]
             else:

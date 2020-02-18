@@ -42,7 +42,7 @@ then
     touch temp1
     $PRESTO_HOME/BnetTools/dfs_cycle_elim/dfs_cycle_elim named_cons_cr.txt named_cons_cr_lf.txt temp1 temp2 
     $PRESTO_HOME/BnetTools/get_coreachable/get_coreachable named_cons_cr_lf.txt named_cons_cr_lf_cr.txt new_queries.txt 0 0
-    $PRESTO_HOME/BnetTools/elide_edb_ext.py ../../bnet/prob_edb.txt < named_cons_cr_lf_cr.txt > named_cons_cr_lf_cr.txt.ee
+    $PRESTO_HOME/BnetTools/elide_edb_ext.py ../../bnet/prob_edb.txt ../../datalog/root_idb.txt < named_cons_cr_lf_cr.txt > named_cons_cr_lf_cr.txt.ee
     rm -f temp1 temp2
     cat named_cons_cr_lf_cr.txt.ee >> constraints.txt
     cat named_cons_cr_lf_cr.txt.ee >> constraints.txt.refined
