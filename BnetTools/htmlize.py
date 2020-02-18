@@ -216,6 +216,15 @@ def getTupleProb(tup):
     return prob
 
 
+def getTupleProbFloat(tup):
+    prob = "0.0"
+    if tup in bnetDictMap:
+        bnetId = bnetDictMap[tup]
+        if bnetId in allProbsMap:
+            prob = allProbsMap[bnetId]
+    return float(prob)
+
+
 def getTupleDomDesc(tup):
     relName = tup.split('(')[0]
     relSig = relSignature[relName]
@@ -423,7 +432,8 @@ def writeRootTableHeader(root):
 
 def writeRootTableBody(root):
     global indent
-    for tup in rootIdbs[root]:
+    slst = sorted(rootIdbs[root], key=lambda tup: getTupleProbFloat(tup), reverse=True)
+    for tup in slst:
         indent += 1
         hprint("<tr>")
         indent += 1
