@@ -17,6 +17,7 @@ if len(sys.argv) > 1:
 else:
     probEdbFileName = ""
 
+queryIdbFileName = os.environ['QUERY_IDB_SET']
 removeEdbTransitive = False
 clampRule = os.environ['CLAMP_RULE_PROB_TO_1']
 if clampRule == "true":
@@ -45,6 +46,11 @@ if not probEdbFileName == "":
 else:
     probEdbTuples = set()
 
+if not queryIdbFileName == "":
+    queryIdbTuples = { line.strip() for line in open(queryIdbFileName) if len(line.strip()) > 0 }
+else:
+    queryIdbTuples = set()
+
 def lit2Tuple(literal):
     return literal if not literal.startswith('NOT ') else literal[len('NOT '):]
 
@@ -59,6 +65,12 @@ def clause2Consequent(clause):
 def isProbEdb(t):
    for probEdbTup in probEdbTuples:
       if t.startswith(probEdbTup):
+         return True
+   return False
+
+def isQueryIdb(t):
+   for queryIdbTup in queryIdbTuples:
+      if t.startswith(queryIdbTup):
          return True
    return False
 
@@ -97,8 +109,14 @@ while change:
         # then the clause itself can be deleted.
         # Only if a clause is deleted, a subsequent pass is required.
         if (postLen == 1) and removeEdbTransitive:
-            change = True
-            # remove sc - i.e. don't add it to newSimplifiedClauses.
+            conseq = clause2Consequent(sc)
+            if isQueryIdb(conseq):
+                newSimplifiedClauses.add(sc)
+                newSimplifiedRuleNames[sc] = currSimplifiedRuleNames[clause]
+            else:
+                # remove sc - i.e. don't add it to newSimplifiedClauses.
+                # Only when an entire clause is removed, another iteration of the outermost while loop is required.
+                change = True
         else:
             newSimplifiedClauses.add(sc)
             newSimplifiedRuleNames[sc] = currSimplifiedRuleNames[clause]
