@@ -1,3 +1,5 @@
+// Copyright (c) Sulekha Kulkarni.  All Rights Reserved.  Licensed under the MIT License.  See License.txt in the project root for license information.
+
 ﻿/******
 Add the following code at the end of DoRTA() in ByteCodeAnalyzer.cs to test.
 Then, you will have to set breakpoints at various points in the code below to test the behavior of SignaturesAreEqual.
