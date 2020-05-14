@@ -1,4 +1,6 @@
-﻿using Daffodil.DatalogAnalysisFW.AnalysisNetBackend.ThreeAddressCode.Values;
+// Copyright (c) Sulekha Kulkarni.  All Rights Reserved.  Licensed under the MIT License.  See License.txt in the project root for license information.
+
+using Daffodil.DatalogAnalysisFW.AnalysisNetBackend.ThreeAddressCode.Values;
 using Daffodil.DatalogAnalysisFW.AnalysisNetConsole;
 using Daffodil.DatalogAnalysisFW.ProgramFacts;
 

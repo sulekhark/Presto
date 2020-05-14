@@ -1,4 +1,6 @@
-﻿using Daffodil.DatalogAnalysisFW.ProgramFacts;
+// Copyright (c) Sulekha Kulkarni.  All Rights Reserved.  Licensed under the MIT License.  See License.txt in the project root for license information.
+
+using Daffodil.DatalogAnalysisFW.ProgramFacts;
 
 namespace Daffodil.DatalogAnalysisFW.AnalysisNetBackend.Wrappers
 {

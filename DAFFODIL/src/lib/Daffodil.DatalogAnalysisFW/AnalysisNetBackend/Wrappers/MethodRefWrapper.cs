@@ -1,4 +1,6 @@
-﻿using Microsoft.Cci;
+// Copyright (c) Sulekha Kulkarni.  All Rights Reserved.  Licensed under the MIT License.  See License.txt in the project root for license information.
+
+using Microsoft.Cci;
 using Daffodil.DatalogAnalysisFW.AnalysisNetConsole;
 using Daffodil.DatalogAnalysisFW.ProgramFacts;
 
