@@ -1,3 +1,5 @@
+// Copyright (c) Sulekha Kulkarni.  All Rights Reserved.  Licensed under the MIT License.  See License.txt in the project root for license information.
+
 ﻿using System.Collections;
 using System.Collections.Generic;
 
@@ -11,6 +13,8 @@ namespace Daffodil.DatalogAnalysisFW.Utils
          * Provides constant-time operations for adding a given object, testing membership of a given object,
          * getting the index of a given object, and getting the object at a given index.
          * Provides O(1) access to the object at a given index by maintaining a list.
+         * (NOTE: the documentation in https://docs.microsoft.com/en-us/dotnet/api/system.collections.generic.list-1.item?view=netframework-4.7.2 
+         * says that "Retrieving the value of this property is an O(1) operation; setting the property is also an O(1) operation." )
          * Provides O(1) membership testing and access to the index of a given object by maintaining a dictionary.
          *
          * @param <T> The type of objects in the set.
