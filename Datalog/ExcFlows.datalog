@@ -25,6 +25,7 @@ VH(v:V,h:H)  input                       # Variable v may point to AllocSite h
 FH(f:F,h:H)  input                       # Static field f may point to AllocSite h
 HFH(h1:H,f:F,h2:H)  input                # Field f of object allocated at AllocSite h1 may point to AllocSite h2
 
+MEH(m:M,eh:EH) input                     # Method m contains exception handler eh.
 VarEH(eh:EH,v:V)  input                  # ExceptionHandler eh has the formal paramter as Variable v
 ThrowPV(m:M,p:P,v:V)  input              # Instruction p of Method m throws Variable v
 FinalEH(eh:EH,t:T,p:P) input             # ExceptionHandler eh catches an exception of Type t thrown at Program point p.
@@ -41,7 +42,7 @@ LinkedEx(m1:M,v1:V,t1:T,m2:M,v2:V,t2:T) input
 ThrowOrigin(m:M,p:P,v:V) input
 ThrowRemaining(m:M,p:P,v:V) input
 
-ThrowSubsumed(eh:EH,m:M,p:P,v:V)
+ThrowSubsumed(eh:EH,m:M,p:P,v:V) printtuples
 EscUnion(h:H)
 NotEscaping(t:T,h:H) printtuples
 InfeasibleMTP(m:M,t:T,p:P) printtuples
@@ -112,6 +113,7 @@ Infeasible(t,h) :- CallAt(m,p,mcallee), ThrowMH(mcallee,h), HT(h,t), InfeasibleM
 .include "ExceptionType.datalog"
 .include "HT.datalog"
 .include "entryPtM.datalog"
+.include "MEH.datalog"
 .include "VarEH.datalog"
 .include "VH.datalog"
 .include "FH.datalog"

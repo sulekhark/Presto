@@ -23,6 +23,7 @@ relN(n:N) input
 relF(f:F) input
 
 HT(h:H,t:T) input                        # Allocation site h allocates an object of Type t
+MEH(m:M,eh:EH) input                     # Method m contains exception handler eh.
 VarEH(eh:EH,v:V)  input                  # ExceptionHandler eh has the formal paramter as Variable v
 ThrowPV(m:M,p:P,v:V)  input              # Instruction p of Method m throws Variable v
 FinalEH(eh:EH,t:T,p:P) input             # ExceptionHandler eh catches an exception of Type t thrown at Program point p.
@@ -82,8 +83,8 @@ FeasibleMTP_i2(m:M,t:T,p:P,eh:EH) printtuples
 FeasibleEH_i1(m:M,eh:EH,v:V,h:H) printtuples
 FeasibleEH_i2(m:M,eh:EH,v:V,h:H,eh1:EH) printtuples
 Escaping_i1(t:T,h:H,m:M) printtuples
-WEscaping_i1(t:T,h:H) printtuples
-WEscaping_i2(t:T,h:H) printtuples
+WEscaping_i1(t:T,h:H,t1:T,h1:H) printtuples
+WEscaping_i2(t:T,h:H,t1:T,h1:H) printtuples
 OnlyWEscaping_i1(t2:T,h2:H) printtuples
 Caught_i1(t:T,h:H,v:V) printtuples
 Infeasible_i1(t:T,h:H,m:M,p:P,v:V) printtuples
@@ -138,8 +139,8 @@ FeasibleEH_i1(m,eh,v,h) :- CatchVH(v,h), VarEH(eh,v), OutermostEH(m,eh).
 FeasibleEH_i2(m,eh,v,h,eh1) :- CatchVH(v,h), VarEH(eh,v), NestedEH(m,eh1,eh), FeasibleEH(m,eh1).
 
 Escaping_i1(t,h,m) :- ThrowMH(m,h), HT(h,t), ExceptionType(t), entryPtM(m).
-WEscaping_i1(t2,h2,t1,h1,m2,v2,m1,v1) :- WrapsEx(h1,h2), Escaping(t1,h1).
-WEscaping_i1(t3,h3,t2,h2,m3,v3,m2,v2) :- WrapsEx(h2,h3), WEscaping(t2,h2).
+WEscaping_i1(t2,h2,t1,h1) :- WrapsEx(h1,h2), Escaping(t1,h1), HT(h2,t2).
+WEscaping_i2(t3,h3,t2,h2) :- WrapsEx(h2,h3), WEscaping(t2,h2), HT(h3,t3).
 
 NoDirectEsc(t,h) :- !Escaping(t,h), ExceptionObj(h), ExceptionType(t).
 OnlyWEscaping_i1(t2,h2) :- WEscaping(t2,h2), NoDirectEsc(t2,h2).
@@ -158,6 +159,7 @@ Infeasible_i2(t,h,m,p,mcallee) :- CallAt(m,p,mcallee), ThrowMH(mcallee,h), HT(h,
 .include "relN.datalog"
 .include "relF.datalog"
 .include "HT.datalog"
+.include "MEH.datalog"
 .include "VarEH.datalog"
 .include "ThrowPV.datalog"
 .include "FinalEH.datalog"

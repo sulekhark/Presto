@@ -9,7 +9,6 @@ cp datalog/prob_edb.txt bnet
 
 cd datalog
 . ./run_all.sh
-. ./run_dbg_flows.sh
 python3 ./extract_dgraph.py ExcAnalysis_inst.datalog ../bnet
 
 cd ..
