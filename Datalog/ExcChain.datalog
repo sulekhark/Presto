@@ -16,68 +16,38 @@ relP(p:P) input
 relH(h:H) input
 
 ExceptionType(t:T) input                 # Type t is an exception type
-IM(i:I,m:M) input                        # Invoke statement i may call method m
 sub(t:T,t1:T) input                      # Type t is a subtype of type t1
-
 HasThrow(eh:EH,p:P) input                # Catch block eh contains throw statement p
-HasMethInvk(eh:EH,i:I) input             # Catch block eh contains the invoke statement i 
-MM(m1:M,m2:M) input                      # Method m1 calls method m2
 MEH(m:M,eh:EH) input                     # Method m contains exception handler eh (exception handler and catch block: both are the same)
 ThrowPV(m:M,p:P,v:V) input               # Instruction p of method m throws variable v
 VarEH(eh:EH,v:V) input                   # Variable v is the variable of the catch block eh
-EscapeMTP(m:M,t:T,p:P) input             # Exception of type t if thrown at Program Point p, escapes Method m.
 VT(v:V,t:T) input                        # Variable v has type t.
-NoEnclose(m:M,p:P) input
-
-MoveNextEH(m:M,eh:EH) input
 HT(h:H,t:T) input
 VCatchesH(v:V,h:H) input
 VH(v:V,h:H) input
 WrapsEx(h2:H,h1:H) input
-WEscObj(t:T,h:H) input
-EscObj(t:T,h:H) input
 
-HasMeth(eh:EH,m:M)
-EscapingThrow(m:M,p:P,v:V)
 ThrowEH(eh:EH,m:M,v:V)
-TransCall(m1:M,m2:M)
 MVarEH(m:M,eh:EH,v:V)
 TransSub(t1:T,t2:T)
 ValidExType(v:V,t1:T)
-TransM(m:M)
-NoEncloseM(m:M)
 ThrowSub(m:M,v:V)
-
-LinkMatch(m1:M,v1:V,t1:T,m2:M,v2:V,t2:T)
 ThrowPt1(m:M,p:P,v:V)
 ThrowPt2(m:M,p:P,v:V)
 ThrowPt3(m:M,p:P,v:V)
 ThrowPt4(m:M,p:P,v:V)
 ThrowUnion(m:M,p:P,v:V)
-WEscape1(t:T,h:H)
-WEscape2(t:T,h:H)
-WEscape3(t:T,h:H)
-WEscape4(t:T,h:H)
-WEscapeUnion(t:T,h:H)
+ThrowSubsumed(eh:EH,m:M,p:P,v:V)
 
-WEscapeRemaining(t:T,h:H) printtuples
 ThrowRemaining(m:M,p:P,v:V) printtuples
-ThrowSubsumed(eh:EH,m:M,p:P,v:V) printtuples
 ThrowOrigin(m:M,p:P,v:V) printtuples
 LinkedEx(m1:M,v1:V,t1:T,m2:M,v2:V,t2:T) printtuples
 
 
 # Rules
 
-# Find "throw" statements within the (interprocedural) scope of a catch block
-
-HasMeth(eh,m) :- HasMethInvk(eh,i), IM(i,m).
-EscapingThrow(m,p,v) :- ThrowPV(m,p,v), EscapeMTP(m,t,p).
+# Find "throw" statements within the lexical scope of a catch block
 ThrowEH(eh,m,v) :- HasThrow(eh,p), MEH(m,eh), ThrowPV(m,p,v).
-TransCall(m1,m2) :- HasMeth(eh,m1), MM(m1,m2).
-TransCall(m1,m3) :- TransCall(m1,m2), MM(m2,m3).
-ThrowEH(eh,m,v) :- HasMeth(eh,m), EscapingThrow(m,p,v). 
-ThrowEH(eh,m,v) :- HasMeth(eh,m1), TransCall(m1,m), EscapingThrow(m,p,v). 
 
 # Find links between a catch variable and a subsumed-throw variable such that 
 # they have types t1 and t2 respectively, and it is potentially possible for
@@ -88,24 +58,16 @@ MVarEH(m,eh,v) :- MEH(m,eh), VarEH(eh,v).
 TransSub(t1,t2) :- sub(t1,t2), ExceptionType(t2), ExceptionType(t1).
 TransSub(t1,t2) :- sub(t1,t), TransSub(t,t2), ExceptionType(t1).
 ValidExType(v,t1) :- VT(v,t), TransSub(t1,t).
-LinkedEx(m1,v1,t1,m2,v2,t2) :- MVarEH(m1,eh,v1), ThrowEH(eh,m2,v2), ValidExType(v1,t1), ValidExType(v2,t2).
-
-TransM(m) :- HasMeth(eh,m).
-TransM(m) :- TransCall(m1,m).
-NoEncloseM(m) :- !TransM(m).
-ThrowOrigin(m,p,v) :- ThrowPV(m,p,v), NoEnclose(m,p), NoEncloseM(m).
+LinkedEx(m,v1,t1,m,v2,t2) :- MVarEH(m,eh,v1), ThrowEH(eh,m,v2), ValidExType(v1,t1), ValidExType(v2,t2).
 
 ThrowSubsumed(eh,m,p,v) :- LinkedEx(m1,v1,t1,m,v,t), ThrowPV(m,p,v), VarEH(eh,v1).
 ThrowSub(m,v) :- ThrowSubsumed(eh,m,p,v).
 ThrowOrigin(m,p,v) :- ThrowPV(m,p,v), !ThrowSub(m,v).
 
 ######################################################################################
-# We need to compute the following:
-# 1)ThrowRemaining - the throw statements for which we have no further explanation.
-# 2)WEscapeRemaining - the wrapped escaping objects for which we have no further explanation.
+# We need to compute this:
+# ThrowRemaining - the throw statements for which we have no further explanation.
 ######################################################################################
-
-LinkMatch(m1,v1,t1,m2,v2,t2) :- VCatchesH(v1,h1), LinkedEx(m1,v1,t1,m2,v2,t2), VH(v2,h2), WrapsEx(h2,h1), HT(h1,t1), HT(h2,t2).
 
 ThrowPt1(m,p,v) :- ThrowOrigin(m,p,v).
 ThrowPt2(m,p,v) :- ThrowSubsumed(eh,m,p,v), VH(v,h), WrapsEx(h,h1), VarEH(eh,ehv), VCatchesH(ehv,h1). # wrap and throw
@@ -117,17 +79,6 @@ ThrowUnion(m,p,v) :- ThrowPt3(m,p,v).
 ThrowUnion(m,p,v) :- ThrowPt4(m,p,v).
 ThrowRemaining(m,p,v) :- !ThrowUnion(m,p,v), ThrowPV(m,p,v).
 
-WEscape1(t2,h2) :- WrapsEx(h1,h2), EscObj(t1,h1), LinkMatch(m2,v2,t2,m1,v1,t1), VH(v1,h1), VH(v2,h2), HT(h2,t2).
-WEscape2(t3,h3) :- WrapsEx(h2,h3), WEscObj(t2,h2), LinkMatch(m3,v3,t3,m2,v2,t2), VH(v2,h2), VH(v3,h3), HT(h3,t3).
-WEscape3(t2,h2) :- WrapsEx(h1,h2), EscObj(t1,h1), VCatchesH(v2,h2), VarEH(eh2,v2), MoveNextEH(m,eh2), HT(h2,t2).
-WEscape4(t3,h3) :- WrapsEx(h2,h3), WEscObj(t2,h2), VCatchesH(v3,h3), VarEH(eh3,v3), MoveNextEH(m,eh3), HT(h3,t3).
-WEscapeUnion(t,h) :- WEscape1(t,h).
-WEscapeUnion(t,h) :- WEscape2(t,h).
-WEscapeUnion(t,h) :- WEscape3(t,h).
-WEscapeUnion(t,h) :- WEscape4(t,h).
-WEscapeRemaining(t,h) :- !WEscapeUnion(t,h), WEscObj(t,h).
-
-
 
 .include "relT.datalog"
 .include "relM.datalog"
@@ -137,21 +88,13 @@ WEscapeRemaining(t,h) :- !WEscapeUnion(t,h), WEscObj(t,h).
 .include "relP.datalog"
 .include "relH.datalog"
 .include "ExceptionType.datalog"
-.include "IM.datalog"
 .include "HasThrow.datalog"
-.include "HasMethInvk.datalog"
-.include "MM.datalog"
 .include "MEH.datalog"
 .include "ThrowPV.datalog"
 .include "VarEH.datalog"
-.include "EscapeMTP.datalog"
 .include "VT.datalog"
 .include "sub.datalog"
-.include "NoEnclose.datalog"
-.include "MoveNextEH.datalog"
 .include "HT.datalog"
 .include "VCatchesH.datalog"
 .include "VH.datalog"
 .include "WrapsEx.datalog"
-.include "WEscObj.datalog"
-.include "EscObj.datalog"
