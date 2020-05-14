@@ -24,6 +24,14 @@ class Node(object):
         return -1
 
 
+    def getChildAtOffset(self, childData, childOffset):
+        for n, child in enumerate(self.children):
+            if childData in child.data:
+                if childOffset == self.offset[n]:
+                    return n
+        return -1
+
+
     def getAncestor(self, data):
         ancestor = self
         while ancestor.parent is not None:
