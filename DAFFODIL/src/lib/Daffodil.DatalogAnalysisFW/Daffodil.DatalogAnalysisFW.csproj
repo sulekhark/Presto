@@ -33,48 +33,48 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Microsoft.Cci.Analysis.ControlAndDataFlowGraph">
-      <HintPath>..\..\..\packages\Microsoft.Cci.Torch.7.0.1\lib\net451\Microsoft.Cci.Analysis.ControlAndDataFlowGraph.dll</HintPath>
+      <HintPath>..\..\..\packages\Microsoft.Cci.7.0.1\lib\net451\Microsoft.Cci.Analysis.ControlAndDataFlowGraph.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.Cci.CodeModelToIL">
-      <HintPath>..\..\..\packages\Microsoft.Cci.Torch.7.0.1\lib\net451\Microsoft.Cci.CodeModelToIL.dll</HintPath>
+      <HintPath>..\..\..\packages\Microsoft.Cci.7.0.1\lib\net451\Microsoft.Cci.CodeModelToIL.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.Cci.ILGenerator">
-      <HintPath>..\..\..\packages\Microsoft.Cci.Torch.7.0.1\lib\net451\Microsoft.Cci.ILGenerator.dll</HintPath>
+      <HintPath>..\..\..\packages\Microsoft.Cci.7.0.1\lib\net451\Microsoft.Cci.ILGenerator.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.Cci.MetadataHelper, Version=0.0.0.2, Culture=neutral, PublicKeyToken=736440c9b414ea16, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\packages\Microsoft.Cci.Torch.7.0.1\lib\net451\Microsoft.Cci.MetadataHelper.dll</HintPath>
+      <HintPath>..\..\..\packages\Microsoft.Cci.7.0.1\lib\net451\Microsoft.Cci.MetadataHelper.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.Cci.MetadataModel, Version=0.0.0.2, Culture=neutral, PublicKeyToken=736440c9b414ea16, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\packages\Microsoft.Cci.Torch.7.0.1\lib\net451\Microsoft.Cci.MetadataModel.dll</HintPath>
+      <HintPath>..\..\..\packages\Microsoft.Cci.7.0.1\lib\net451\Microsoft.Cci.MetadataModel.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.Cci.MutableCodeModel">
-      <HintPath>..\..\..\packages\Microsoft.Cci.Torch.7.0.1\lib\net451\Microsoft.Cci.MutableCodeModel.dll</HintPath>
+      <HintPath>..\..\..\packages\Microsoft.Cci.7.0.1\lib\net451\Microsoft.Cci.MutableCodeModel.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.Cci.MutableMetadataModel">
-      <HintPath>..\..\..\packages\Microsoft.Cci.Torch.7.0.1\lib\net451\Microsoft.Cci.MutableMetadataModel.dll</HintPath>
+      <HintPath>..\..\..\packages\Microsoft.Cci.7.0.1\lib\net451\Microsoft.Cci.MutableMetadataModel.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.Cci.NewILToCodeModel">
-      <HintPath>..\..\..\packages\Microsoft.Cci.Torch.7.0.1\lib\net451\Microsoft.Cci.NewILToCodeModel.dll</HintPath>
+      <HintPath>..\..\..\packages\Microsoft.Cci.7.0.1\lib\net451\Microsoft.Cci.NewILToCodeModel.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.Cci.PdbReader, Version=0.0.0.2, Culture=neutral, PublicKeyToken=736440c9b414ea16, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\packages\Microsoft.Cci.Torch.7.0.1\lib\net451\Microsoft.Cci.PdbReader.dll</HintPath>
+      <HintPath>..\..\..\packages\Microsoft.Cci.7.0.1\lib\net451\Microsoft.Cci.PdbReader.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.Cci.PdbWriter">
-      <HintPath>..\..\..\packages\Microsoft.Cci.Torch.7.0.1\lib\net451\Microsoft.Cci.PdbWriter.dll</HintPath>
+      <HintPath>..\..\..\packages\Microsoft.Cci.7.0.1\lib\net451\Microsoft.Cci.PdbWriter.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.Cci.PeReader, Version=0.0.0.2, Culture=neutral, PublicKeyToken=736440c9b414ea16, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\packages\Microsoft.Cci.Torch.7.0.1\lib\net451\Microsoft.Cci.PeReader.dll</HintPath>
+      <HintPath>..\..\..\packages\Microsoft.Cci.7.0.1\lib\net451\Microsoft.Cci.PeReader.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.Cci.PeWriter">
-      <HintPath>..\..\..\packages\Microsoft.Cci.Torch.7.0.1\lib\net451\Microsoft.Cci.PeWriter.dll</HintPath>
+      <HintPath>..\..\..\packages\Microsoft.Cci.7.0.1\lib\net451\Microsoft.Cci.PeWriter.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.Cci.SourceModel, Version=0.0.0.2, Culture=neutral, PublicKeyToken=736440c9b414ea16, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\packages\Microsoft.Cci.Torch.7.0.1\lib\net451\Microsoft.Cci.SourceModel.dll</HintPath>
+      <HintPath>..\..\..\packages\Microsoft.Cci.7.0.1\lib\net451\Microsoft.Cci.SourceModel.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
