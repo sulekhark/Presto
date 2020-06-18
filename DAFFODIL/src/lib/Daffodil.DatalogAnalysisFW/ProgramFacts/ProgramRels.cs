@@ -66,30 +66,19 @@ namespace Daffodil.DatalogAnalysisFW.ProgramFacts
         public static RelPrevEH relPrevEH;
         public static RelTypeEH relTypeEH;
         public static RelFinalEH relFinalEH;
-        public static RelThrowMH relThrowMH;
-        public static RelCatchVH relCatchVH;
         public static RelPI relPI;
         public static RelCallAt relCallAt;
         public static RelMEH relMEH;
         public static RelExceptionType relExceptionType;
         public static RelEscapeMTP relEscapeMTP;
         public static RelFinalMTP relFinalMTP;
-        public static RelEscaping relEscaping;
-        public static RelCaught relCaught;
         public static RelMStructHFH relMStructHFH;
         public static RelStructRefV relStructRefV;
-        public static RelThisIVH relThisIVH;
         public static RelThisRefV relThisRefV;
         public static RelTStructFH relTStructFH;
         public static RelStructHFH relStructHFH;
         public static RelMV relMV;
         public static RelFT relFT;
-        public static RelVHO relVHO;
-        public static RelFHO relFHO;
-        public static RelHFHO relHFHO;
-        public static RelVXO relVXO;
-        public static RelFXO relFXO;
-        public static RelHFXO relHFXO;
         public static RelILoc relILoc;
         public static RelHasThrow relHasThrow;
         public static RelHasMethInvk relHasMethInvk;
@@ -97,7 +86,6 @@ namespace Daffodil.DatalogAnalysisFW.ProgramFacts
         public static RelOutermostEH relOutermostEH;
         public static RelEnclosingEH relEnclosingEH;
         public static RelNoEnclose relNoEnclose;
-        public static RelMoveNextEH relMoveNextEH;
 
 
         public static Dictionary<string, Rel> nameToRelMap;
@@ -279,12 +267,6 @@ namespace Daffodil.DatalogAnalysisFW.ProgramFacts
             relFinalEH = new RelFinalEH();
             nameToRelMap.Add(relFinalEH.GetName(), relFinalEH);
 
-            relThrowMH = new RelThrowMH();
-            nameToRelMap.Add(relThrowMH.GetName(), relThrowMH);
-
-            relCatchVH = new RelCatchVH();
-            nameToRelMap.Add(relCatchVH.GetName(), relCatchVH);
-
             relPI = new RelPI();
             nameToRelMap.Add(relPI.GetName(), relPI);
 
@@ -303,20 +285,11 @@ namespace Daffodil.DatalogAnalysisFW.ProgramFacts
             relFinalMTP = new RelFinalMTP();
             nameToRelMap.Add(relFinalMTP.GetName(), relFinalMTP);
 
-            relEscaping = new RelEscaping();
-            nameToRelMap.Add(relEscaping.GetName(), relEscaping);
-
-            relCaught = new RelCaught();
-            nameToRelMap.Add(relCaught.GetName(), relCaught);
-
             relMStructHFH = new RelMStructHFH();
             nameToRelMap.Add(relMStructHFH.GetName(), relMStructHFH);
 
             relStructRefV = new RelStructRefV();
             nameToRelMap.Add(relStructRefV.GetName(), relStructRefV);
-
-            relThisIVH = new RelThisIVH();
-            nameToRelMap.Add(relThisIVH.GetName(), relThisIVH);
 
             relThisRefV = new RelThisRefV();
             nameToRelMap.Add(relThisRefV.GetName(), relThisRefV);
@@ -332,25 +305,6 @@ namespace Daffodil.DatalogAnalysisFW.ProgramFacts
 
             relFT = new RelFT();
             nameToRelMap.Add(relFT.GetName(), relFT);
-
-
-            relVHO = new RelVHO();
-            nameToRelMap.Add(relVHO.GetName(), relVHO);
-
-            relFHO = new RelFHO();
-            nameToRelMap.Add(relFHO.GetName(), relFHO);
-
-            relHFHO = new RelHFHO();
-            nameToRelMap.Add(relHFHO.GetName(), relHFHO);
-
-            relVXO = new RelVXO();
-            nameToRelMap.Add(relVXO.GetName(), relVXO);
-
-            relFXO = new RelFXO();
-            nameToRelMap.Add(relFXO.GetName(), relFXO);
-
-            relHFXO = new RelHFXO();
-            nameToRelMap.Add(relHFXO.GetName(), relHFXO);
 
             relILoc = new RelILoc();
             nameToRelMap.Add(relILoc.GetName(), relILoc);
@@ -372,9 +326,6 @@ namespace Daffodil.DatalogAnalysisFW.ProgramFacts
 
             relNoEnclose = new RelNoEnclose();
             nameToRelMap.Add(relNoEnclose.GetName(), relNoEnclose);
-
-            relMoveNextEH = new RelMoveNextEH();
-            nameToRelMap.Add(relMoveNextEH.GetName(), relMoveNextEH);
         }
 
         public static void Save()
@@ -440,7 +391,6 @@ namespace Daffodil.DatalogAnalysisFW.ProgramFacts
             relOutermostEH.Save();
             relNestedEH.Save();
             relNoEnclose.Save();
-            relMoveNextEH.Save();
         }
     }
 }
