@@ -86,6 +86,10 @@ namespace Daffodil.DatalogAnalysisFW.ProgramFacts
         public static RelOutermostEH relOutermostEH;
         public static RelEnclosingEH relEnclosingEH;
         public static RelNoEnclose relNoEnclose;
+        public static RelMethSetsTask relMethSetsTask;
+        public static RelEHUpdatesTask relEHUpdatesTask;
+        public static RelMethAwaitsTask relMethAwaitsTask;
+        public static RelThrowReadsTask relThrowReadsTask;
 
 
         public static Dictionary<string, Rel> nameToRelMap;
@@ -326,6 +330,18 @@ namespace Daffodil.DatalogAnalysisFW.ProgramFacts
 
             relNoEnclose = new RelNoEnclose();
             nameToRelMap.Add(relNoEnclose.GetName(), relNoEnclose);
+
+            relMethSetsTask = new RelMethSetsTask();
+            nameToRelMap.Add(relMethSetsTask.GetName(), relMethSetsTask);
+
+            relEHUpdatesTask = new RelEHUpdatesTask();
+            nameToRelMap.Add(relEHUpdatesTask.GetName(), relEHUpdatesTask);
+
+            relMethAwaitsTask = new RelMethAwaitsTask();
+            nameToRelMap.Add(relMethAwaitsTask.GetName(), relMethAwaitsTask);
+
+            relThrowReadsTask = new RelThrowReadsTask();
+            nameToRelMap.Add(relThrowReadsTask.GetName(), relThrowReadsTask);
         }
 
         public static void Save()
@@ -391,6 +407,10 @@ namespace Daffodil.DatalogAnalysisFW.ProgramFacts
             relOutermostEH.Save();
             relNestedEH.Save();
             relNoEnclose.Save();
+            relMethSetsTask.Save();
+            relEHUpdatesTask.Save();
+            relMethAwaitsTask.Save();
+            relThrowReadsTask.Save();
         }
     }
 }
