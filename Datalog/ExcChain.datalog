@@ -27,17 +27,28 @@ VCatchesH(v:V,h:H) input
 VH(v:V,h:H) input
 WrapsEx(h2:H,h1:H) input
 
+MethSetsTask(m:M,h:H) input
+EHUpdatesTask(eh:EH,h:H) input
+MethAwaitsTask(m:M,h:H) input
+ThrowReadsTask(p:P,h:H) input
+
 ThrowEH(eh:EH,m:M,v:V)
 MVarEH(m:M,eh:EH,v:V)
 TransSub(t1:T,t2:T)
 ValidExType(v:V,t1:T)
-ThrowSub(m:M,v:V)
+CandidateMethPair(m1:M,m2:M,h:H)
+CandidatePair(m1:M,eh:EH,m2:M,p:P)
+ThrowExpl(m:M,v:V)
 ThrowPt1(m:M,p:P,v:V)
 ThrowPt2(m:M,p:P,v:V)
 ThrowPt3(m:M,p:P,v:V)
 ThrowPt4(m:M,p:P,v:V)
+ThrowPt5(m:M,p:P,v:V)
+ThrowPt6(m:M,p:P,v:V)
+ThrowPt7(m:M,p:P,v:V)
 ThrowUnion(m:M,p:P,v:V)
 ThrowSubsumed(eh:EH,m:M,p:P,v:V)
+ThrowAsync(eh:EH,m:M,p:P,v:V)
 
 ThrowRemaining(m:M,p:P,v:V) printtuples
 ThrowOrigin(m:M,p:P,v:V) printtuples
@@ -51,18 +62,38 @@ ThrowEH(eh,m,v) :- HasThrow(eh,p), MEH(m,eh), ThrowPV(m,p,v).
 
 # Find links between a catch variable and a subsumed-throw variable such that 
 # they have types t1 and t2 respectively, and it is potentially possible for
-#   1) them to point to the same exception object, or
-#   2) them to point to exception objects that wrap one within the other.
+#   1) them to may point to the same exception object, or
+#   2) them to may point to exception objects that may wrap one within the other.
 
 MVarEH(m,eh,v) :- MEH(m,eh), VarEH(eh,v).
 TransSub(t1,t2) :- sub(t1,t2), ExceptionType(t2), ExceptionType(t1).
 TransSub(t1,t2) :- sub(t1,t), TransSub(t,t2), ExceptionType(t1).
 ValidExType(v,t1) :- VT(v,t), TransSub(t1,t).
 LinkedEx(m,v1,t1,m,v2,t2) :- MVarEH(m,eh,v1), ThrowEH(eh,m,v2), ValidExType(v1,t1), ValidExType(v2,t2).
+ThrowSubsumed(eh,m,p,v) :- LinkedEx(m,v1,t1,m,v,t), ThrowPV(m,p,v), VarEH(eh,v1).
 
-ThrowSubsumed(eh,m,p,v) :- LinkedEx(m1,v1,t1,m,v,t), ThrowPV(m,p,v), VarEH(eh,v1).
-ThrowSub(m,v) :- ThrowSubsumed(eh,m,p,v).
-ThrowOrigin(m,p,v) :- ThrowPV(m,p,v), !ThrowSub(m,v).
+# Find links between a catch variable and a throw variable such that 
+# they have types t1 and t2 respectively, and it is potentially possible for
+#   1) them to may point to the same exception object, or
+#   2) them to may point to exception objects that may wrap one within the other.
+#   AND
+#   3) the catch variable may point to an exception object that may be written to the "exception" field of a task object, and
+#   4) the throw variable may point to an exception object that may be read from the "exception" field of the same task object, and
+#   5) the catch block and the throw statement are in diffferent methods.
+# In asynchronous programs, a catch variable and a throw variable linked this way pass an exception object via field write/read.
+
+CandidateMethPair(m1,m2,h) :- MethSetsTask(m1,h), MethAwaitsTask(m2,h).
+CandidatePair(m1,eh,m2,p) :- CandidateMethPair(m1,m2,h), EHUpdatesTask(eh,h), MEH(m1,eh), ThrowReadsTask(p,h), ThrowPV(m2,p,v).
+LinkedEx(m1,v1,t1,m2,v2,t2) :- CandidatePair(m1,eh,m2,p), VarEH(eh,v1), ThrowPV(m2,p,v2), ValidExType(v1,t1), ValidExType(v2,t2).
+ThrowAsync(eh,m2,p,v2) :- LinkedEx(m1,v1,t1,m2,v2,t2), ThrowPV(m2,p,v2), VarEH(eh,v1).
+
+# ThrowSubsumed and ThrowAsync contain the throw statements that may have further explanations.
+# ThrowOrigin contains the throw statements that may be the program points in whose vicinity the exception object originates.
+ 
+ThrowExpl(m,v) :- ThrowSubsumed(eh,m,p,v).
+ThrowExpl(m,v) :- ThrowAsync(eh,m,p,v).
+ThrowOrigin(m,p,v) :- ThrowPV(m,p,v), !ThrowExpl(m,v).
+
 
 ######################################################################################
 # We need to compute this:
@@ -73,10 +104,16 @@ ThrowPt1(m,p,v) :- ThrowOrigin(m,p,v).
 ThrowPt2(m,p,v) :- ThrowSubsumed(eh,m,p,v), VH(v,h), WrapsEx(h,h1), VarEH(eh,ehv), VCatchesH(ehv,h1). # wrap and throw
 ThrowPt3(m,p,v) :- ThrowSubsumed(eh,m,p,v), VH(v,h1), WrapsEx(h,h1), VarEH(eh,ehv), VCatchesH(ehv,h). # unwrap and throw
 ThrowPt4(m,p,v) :- ThrowSubsumed(eh,m,p,v), VH(v,h), VarEH(eh,ehv), VCatchesH(ehv,h).  # rethrow
+ThrowPt5(m,p,v) :- ThrowAsync(eh,m,p,v), VH(v,h), WrapsEx(h,h1), VarEH(eh,ehv), VCatchesH(ehv,h1). # wrap and throw
+ThrowPt6(m,p,v) :- ThrowAsync(eh,m,p,v), VH(v,h1), WrapsEx(h,h1), VarEH(eh,ehv), VCatchesH(ehv,h). # unwrap and throw
+ThrowPt7(m,p,v) :- ThrowAsync(eh,m,p,v), VH(v,h), VarEH(eh,ehv), VCatchesH(ehv,h).  # rethrow
 ThrowUnion(m,p,v) :- ThrowPt1(m,p,v).
 ThrowUnion(m,p,v) :- ThrowPt2(m,p,v).
 ThrowUnion(m,p,v) :- ThrowPt3(m,p,v).
 ThrowUnion(m,p,v) :- ThrowPt4(m,p,v).
+ThrowUnion(m,p,v) :- ThrowPt5(m,p,v).
+ThrowUnion(m,p,v) :- ThrowPt6(m,p,v).
+ThrowUnion(m,p,v) :- ThrowPt7(m,p,v).
 ThrowRemaining(m,p,v) :- !ThrowUnion(m,p,v), ThrowPV(m,p,v).
 
 
@@ -98,3 +135,7 @@ ThrowRemaining(m,p,v) :- !ThrowUnion(m,p,v), ThrowPV(m,p,v).
 .include "VCatchesH.datalog"
 .include "VH.datalog"
 .include "WrapsEx.datalog"
+.include "MethSetsTask.datalog"
+.include "EHUpdatesTask.datalog"
+.include "MethAwaitsTask.datalog"
+.include "ThrowReadsTask.datalog"
