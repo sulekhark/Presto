@@ -27,16 +27,19 @@ VCatchesH(v:V,h:H) input
 VH(v:V,h:H) input
 WrapsEx(h2:H,h1:H) input
 
-MethSetsTask(m:M,h:H) input
-EHUpdatesTask(eh:EH,h:H) input
-MethAwaitsTask(m:M,h:H) input
-ThrowReadsTask(p:P,h:H) input
+MethSetsTask(m:M,v:V,eh:EH) input
+MethAwaitsTask(m:M,v:V) input
+ThrowReadsTask(p:P,v:V) input
+TaskFldInBuilder(t:T,f:F) input
 
+MethSetsTaskObj(m:M,h:H,eh:EH)
+MethAwaitsTaskObj(m:M,h:H)
+ThrowReadsTaskObj(p:P,h:H)
 ThrowEH(eh:EH,m:M,v:V)
 MVarEH(m:M,eh:EH,v:V)
 TransSub(t1:T,t2:T)
 ValidExType(v:V,t1:T)
-CandidateMethPair(m1:M,m2:M,h:H)
+CandidateMethPair(m1:M,m2:M,h:H,eh:EH)
 CandidatePair(m1:M,eh:EH,m2:M,p:P)
 ThrowExpl(m:M,v:V)
 ThrowPt1(m:M,p:P,v:V)
@@ -82,8 +85,12 @@ ThrowSubsumed(eh,m,p,v) :- LinkedEx(m,v1,t1,m,v,t), ThrowPV(m,p,v), VarEH(eh,v1)
 #   5) the catch block and the throw statement are in diffferent methods.
 # In asynchronous programs, a catch variable and a throw variable linked this way pass an exception object via field write/read.
 
-CandidateMethPair(m1,m2,h) :- MethSetsTask(m1,h), MethAwaitsTask(m2,h).
-CandidatePair(m1,eh,m2,p) :- CandidateMethPair(m1,m2,h), EHUpdatesTask(eh,h), MEH(m1,eh), ThrowReadsTask(p,h), ThrowPV(m2,p,v).
+MethSetsTaskObj(m,h1,eh) :- MethSetsTask(m,v,eh), VH(v,h), HT(h,t), TaskFldInBuilder(t,f), HFH(h,f,h1).
+MethAwaitsTaskObj(m,h) :- MethAwaitsTask(m,v), VH(v,h).
+ThrowReadsTaskObj(p,h) :- ThrowReadsTask(p,v), VH(v,h).
+
+CandidateMethPair(m1,m2,h,eh) :- MethSetsTaskObj(m1,h,eh), MethAwaitsTaskObj(m2,h).
+CandidatePair(m1,eh,m2,p) :- CandidateMethPair(m1,m,h,eh), ThrowReadsTaskObj(p,h), ThrowPV(m2,p,v).
 LinkedEx(m1,v1,t1,m2,v2,t2) :- CandidatePair(m1,eh,m2,p), VarEH(eh,v1), ThrowPV(m2,p,v2), ValidExType(v1,t1), ValidExType(v2,t2).
 ThrowAsync(eh,m2,p,v2) :- LinkedEx(m1,v1,t1,m2,v2,t2), ThrowPV(m2,p,v2), VarEH(eh,v1).
 
@@ -136,6 +143,6 @@ ThrowRemaining(m,p,v) :- !ThrowUnion(m,p,v), ThrowPV(m,p,v).
 .include "VH.datalog"
 .include "WrapsEx.datalog"
 .include "MethSetsTask.datalog"
-.include "EHUpdatesTask.datalog"
 .include "MethAwaitsTask.datalog"
 .include "ThrowReadsTask.datalog"
+.include "TaskFldInBuilder.datalog"
