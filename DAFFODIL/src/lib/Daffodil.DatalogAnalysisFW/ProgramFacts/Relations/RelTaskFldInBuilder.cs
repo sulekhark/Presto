@@ -10,22 +10,22 @@ using System.Threading.Tasks;
 
 namespace Daffodil.DatalogAnalysisFW.ProgramFacts.Relations
 {
-    public class RelEHUpdatesTask : Rel
+    public class RelTaskFldInBuilder : Rel
     {
-        public RelEHUpdatesTask() : base(2, "EHUpdatesTask")
+        public RelTaskFldInBuilder() : base(2, "TaskFldInBuilder")
         {
             domNames = new string[2];
-            domNames[0] = ProgramDoms.domEH.GetName();
-            domNames[1] = ProgramDoms.domH.GetName();
+            domNames[0] = ProgramDoms.domT.GetName();
+            domNames[1] = ProgramDoms.domF.GetName();
         }
 
-        public bool Add(ExHandlerWrapper ehW, HeapElemWrapper allocW)
+        public bool Add(TypeRefWrapper typeW, FieldRefWrapper fldW)
         {
             int[] iarr = new int[2];
 
-            iarr[0] = ProgramDoms.domEH.IndexOf(ehW);
+            iarr[0] = ProgramDoms.domT.IndexOf(typeW);
             if (iarr[0] == -1) return false;
-            iarr[1] = ProgramDoms.domH.IndexOf(allocW);
+            iarr[1] = ProgramDoms.domF.IndexOf(fldW);
             if (iarr[1] == -1) return false;
             return base.Add(iarr);
         }

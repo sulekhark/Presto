@@ -162,6 +162,7 @@
     <Compile Include="ProgramFacts\ProgramDoms.cs" />
     <Compile Include="ProgramFacts\ProgramRels.cs" />
     <Compile Include="ProgramFacts\Rel.cs" />
+    <Compile Include="ProgramFacts\Relations\RelTaskFldInBuilder.cs" />
     <Compile Include="ProgramFacts\Relations\RelEnclosingEH.cs" />
     <Compile Include="ProgramFacts\Relations\RelFinalMTP.cs" />
     <Compile Include="ProgramFacts\Relations\RelAddrOfFX.cs" />
@@ -199,6 +200,8 @@
     <Compile Include="ProgramFacts\Relations\RelMDerefLeft.cs" />
     <Compile Include="ProgramFacts\Relations\RelMDerefRight.cs" />
     <Compile Include="ProgramFacts\Relations\RelMEH.cs" />
+    <Compile Include="ProgramFacts\Relations\RelMethAwaitsTask.cs" />
+    <Compile Include="ProgramFacts\Relations\RelMethSetsTask.cs" />
     <Compile Include="ProgramFacts\Relations\RelMI.cs" />
     <Compile Include="ProgramFacts\Relations\RelMInstFldRead.cs" />
     <Compile Include="ProgramFacts\Relations\RelMInstFldWrite.cs" />
@@ -230,6 +233,7 @@
     <Compile Include="ProgramFacts\Relations\RelSub.cs" />
     <Compile Include="ProgramFacts\Relations\RelThisRefV.cs" />
     <Compile Include="ProgramFacts\Relations\RelThrowPV.cs" />
+    <Compile Include="ProgramFacts\Relations\RelThrowReadsTask.cs" />
     <Compile Include="ProgramFacts\Relations\RelTM.cs" />
     <Compile Include="ProgramFacts\Relations\RelTStructFH.cs" />
     <Compile Include="ProgramFacts\Relations\RelVarEH.cs" />

@@ -87,7 +87,7 @@ namespace Daffodil.DatalogAnalysisFW.ProgramFacts
         public static RelEnclosingEH relEnclosingEH;
         public static RelNoEnclose relNoEnclose;
         public static RelMethSetsTask relMethSetsTask;
-        public static RelEHUpdatesTask relEHUpdatesTask;
+        public static RelTaskFldInBuilder relTaskFldInBuilder;
         public static RelMethAwaitsTask relMethAwaitsTask;
         public static RelThrowReadsTask relThrowReadsTask;
 
@@ -334,8 +334,8 @@ namespace Daffodil.DatalogAnalysisFW.ProgramFacts
             relMethSetsTask = new RelMethSetsTask();
             nameToRelMap.Add(relMethSetsTask.GetName(), relMethSetsTask);
 
-            relEHUpdatesTask = new RelEHUpdatesTask();
-            nameToRelMap.Add(relEHUpdatesTask.GetName(), relEHUpdatesTask);
+            relTaskFldInBuilder = new RelTaskFldInBuilder();
+            nameToRelMap.Add(relTaskFldInBuilder.GetName(), relTaskFldInBuilder);
 
             relMethAwaitsTask = new RelMethAwaitsTask();
             nameToRelMap.Add(relMethAwaitsTask.GetName(), relMethAwaitsTask);
@@ -408,7 +408,7 @@ namespace Daffodil.DatalogAnalysisFW.ProgramFacts
             relNestedEH.Save();
             relNoEnclose.Save();
             relMethSetsTask.Save();
-            relEHUpdatesTask.Save();
+            relTaskFldInBuilder.Save();
             relMethAwaitsTask.Save();
             relThrowReadsTask.Save();
         }

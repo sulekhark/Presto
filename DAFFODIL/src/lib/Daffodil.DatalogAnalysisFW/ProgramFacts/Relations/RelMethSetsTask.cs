@@ -12,21 +12,24 @@ namespace Daffodil.DatalogAnalysisFW.ProgramFacts.Relations
 {
     public class RelMethSetsTask : Rel
     {
-        public RelMethSetsTask() : base(2, "MethSetsTask")
+        public RelMethSetsTask() : base(3, "MethSetsTask")
         {
-            domNames = new string[2];
+            domNames = new string[3];
             domNames[0] = ProgramDoms.domM.GetName();
-            domNames[1] = ProgramDoms.domH.GetName();
+            domNames[1] = ProgramDoms.domV.GetName();
+            domNames[2] = ProgramDoms.domEH.GetName();
         }
 
-        public bool Add(MethodRefWrapper methW, HeapElemWrapper allocW)
+        public bool Add(MethodRefWrapper methW, VariableWrapper varW, ExHandlerWrapper ehW)
         {
-            int[] iarr = new int[2];
+            int[] iarr = new int[3];
 
             iarr[0] = ProgramDoms.domM.IndexOf(methW);
             if (iarr[0] == -1) return false;
-            iarr[1] = ProgramDoms.domH.IndexOf(allocW);
+            iarr[1] = ProgramDoms.domV.IndexOf(varW);
             if (iarr[1] == -1) return false;
+            iarr[2] = ProgramDoms.domEH.IndexOf(ehW);
+            if (iarr[2] == -1) return false;
             return base.Add(iarr);
         }
     }
