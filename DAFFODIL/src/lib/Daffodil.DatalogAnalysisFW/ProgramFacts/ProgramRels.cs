@@ -86,10 +86,12 @@ namespace Daffodil.DatalogAnalysisFW.ProgramFacts
         public static RelOutermostEH relOutermostEH;
         public static RelEnclosingEH relEnclosingEH;
         public static RelNoEnclose relNoEnclose;
-        public static RelMethSetsTask relMethSetsTask;
         public static RelTaskFldInBuilder relTaskFldInBuilder;
-        public static RelMethAwaitsTask relMethAwaitsTask;
-        public static RelThrowReadsTask relThrowReadsTask;
+        public static RelIsMoveNextMeth relIsMoveNextMeth;
+        public static RelIsBuilderSetExceptionMeth relIsBuilderSetExceptionMeth;
+        public static RelIsTaskResultMeth relIsTaskResultMeth;
+        public static RelIsTaskWaitMeth relIsTaskWaitMeth;
+        public static RelIsTaskGetAwaiterMeth relIsTaskGetAwaiterMeth;
 
 
         public static Dictionary<string, Rel> nameToRelMap;
@@ -331,17 +333,23 @@ namespace Daffodil.DatalogAnalysisFW.ProgramFacts
             relNoEnclose = new RelNoEnclose();
             nameToRelMap.Add(relNoEnclose.GetName(), relNoEnclose);
 
-            relMethSetsTask = new RelMethSetsTask();
-            nameToRelMap.Add(relMethSetsTask.GetName(), relMethSetsTask);
-
             relTaskFldInBuilder = new RelTaskFldInBuilder();
             nameToRelMap.Add(relTaskFldInBuilder.GetName(), relTaskFldInBuilder);
 
-            relMethAwaitsTask = new RelMethAwaitsTask();
-            nameToRelMap.Add(relMethAwaitsTask.GetName(), relMethAwaitsTask);
+            relIsMoveNextMeth = new RelIsMoveNextMeth();
+            nameToRelMap.Add(relIsMoveNextMeth.GetName(), relIsMoveNextMeth);
 
-            relThrowReadsTask = new RelThrowReadsTask();
-            nameToRelMap.Add(relThrowReadsTask.GetName(), relThrowReadsTask);
+            relIsBuilderSetExceptionMeth = new RelIsBuilderSetExceptionMeth();
+            nameToRelMap.Add(relIsBuilderSetExceptionMeth.GetName(), relIsBuilderSetExceptionMeth);
+
+            relIsTaskResultMeth = new RelIsTaskResultMeth();
+            nameToRelMap.Add(relIsTaskResultMeth.GetName(), relIsTaskResultMeth);
+
+            relIsTaskWaitMeth = new RelIsTaskWaitMeth();
+            nameToRelMap.Add(relIsTaskWaitMeth.GetName(), relIsTaskWaitMeth);
+
+            relIsTaskGetAwaiterMeth = new RelIsTaskGetAwaiterMeth();
+            nameToRelMap.Add(relIsTaskGetAwaiterMeth.GetName(), relIsTaskGetAwaiterMeth);
         }
 
         public static void Save()
@@ -407,10 +415,12 @@ namespace Daffodil.DatalogAnalysisFW.ProgramFacts
             relOutermostEH.Save();
             relNestedEH.Save();
             relNoEnclose.Save();
-            relMethSetsTask.Save();
             relTaskFldInBuilder.Save();
-            relMethAwaitsTask.Save();
-            relThrowReadsTask.Save();
+            relIsMoveNextMeth.Save();
+            relIsBuilderSetExceptionMeth.Save();
+            relIsTaskResultMeth.Save();
+            relIsTaskWaitMeth.Save();
+            relIsTaskGetAwaiterMeth.Save();
         }
     }
 }

@@ -196,6 +196,17 @@ namespace Daffodil.DatalogAnalysisFW.AnalysisNetConsole
                     }
                 }
             }
+
+            // June 19th 2020. SRK. Support to link a MoveNext method that sets the exeception field of a Task object and a method that
+            // awaits on the same Task object, and that may read its exception field and throw that exception object pointed to by that field.
+
+            ITypeDefinition clsDef = methDef.ContainingTypeDefinition;
+            if (methDef.Name.Value.Contains("MoveNext") && prevEhW != null) ProgramRels.relIsMoveNextMeth.Add(mRefW);
+            else if (methDef.Name.Value.Contains("SetException") && clsDef.GetName().Contains("AsyncTaskMethodBuilder")) ProgramRels.relIsBuilderSetExceptionMeth.Add(mRefW);
+            else if (methDef.Name.Value.Contains("get_Result") && clsDef.GetName().Contains("Task")) ProgramRels.relIsTaskResultMeth.Add(mRefW);
+            else if (methDef.Name.Value.Contains("Wait") && clsDef.GetName().Contains("Task")) ProgramRels.relIsTaskWaitMeth.Add(mRefW);
+            else if (methDef.Name.Value.Contains("GetAwaiter") && clsDef.GetName().Contains("Task")) ProgramRels.relIsTaskGetAwaiterMeth.Add(mRefW);
+
             ComputeExceptionRanges(cfgList, methDef);
         }
 
@@ -233,16 +244,20 @@ namespace Daffodil.DatalogAnalysisFW.AnalysisNetConsole
             }
             foreach (ITypeDefinition ty in classes)
             {
+                bool builderClass = false;
+
                 TypeRefWrapper tyW = WrapperProvider.getTypeRefW(ty);
                 ProgramDoms.domT.Add(tyW);
                 if (!ty.IsInterface)
                 {
                     ProgramRels.relClassT.Add(tyW);
                 }
+                if (ty.GetName().Contains("AsyncTaskMethodBuilder")) builderClass = true;
                 foreach (IFieldDefinition fld in ty.Fields)
                 {
                     FieldRefWrapper fldW = WrapperProvider.getFieldRefW(fld);
                     ITypeDefinition fldType = fld.Type.ResolvedType;
+                    if (builderClass == true && fld.Name.Value.Contains("m_task")) ProgramRels.relTaskFldInBuilder.Add(tyW, fldW);
                     if ((fldType.IsValueType && !fldType.IsStruct) || Stubber.SuppressF(fldType)) continue;
                     TypeRefWrapper fldTypeRefW = WrapperProvider.getTypeRefW(fldType);
                     ProgramDoms.domT.Add(fldTypeRefW);

@@ -192,6 +192,11 @@
     <Compile Include="ProgramFacts\Relations\RelILoc.cs" />
     <Compile Include="ProgramFacts\Relations\RelIM.cs" />
     <Compile Include="ProgramFacts\Relations\RelInRange.cs" />
+    <Compile Include="ProgramFacts\Relations\RelIsBuilderSetExceptionMeth.cs" />
+    <Compile Include="ProgramFacts\Relations\RelIsMoveNextMeth.cs" />
+    <Compile Include="ProgramFacts\Relations\RelIsTaskGetAwaiterMeth.cs" />
+    <Compile Include="ProgramFacts\Relations\RelIsTaskResultMeth.cs" />
+    <Compile Include="ProgramFacts\Relations\RelIsTaskWaitMeth.cs" />
     <Compile Include="ProgramFacts\Relations\RelMAddrTakenFunc.cs" />
     <Compile Include="ProgramFacts\Relations\RelMAddrTakenInstFld.cs" />
     <Compile Include="ProgramFacts\Relations\RelMAddrTakenLocal.cs" />
@@ -200,8 +205,6 @@
     <Compile Include="ProgramFacts\Relations\RelMDerefLeft.cs" />
     <Compile Include="ProgramFacts\Relations\RelMDerefRight.cs" />
     <Compile Include="ProgramFacts\Relations\RelMEH.cs" />
-    <Compile Include="ProgramFacts\Relations\RelMethAwaitsTask.cs" />
-    <Compile Include="ProgramFacts\Relations\RelMethSetsTask.cs" />
     <Compile Include="ProgramFacts\Relations\RelMI.cs" />
     <Compile Include="ProgramFacts\Relations\RelMInstFldRead.cs" />
     <Compile Include="ProgramFacts\Relations\RelMInstFldWrite.cs" />
@@ -233,7 +236,6 @@
     <Compile Include="ProgramFacts\Relations\RelSub.cs" />
     <Compile Include="ProgramFacts\Relations\RelThisRefV.cs" />
     <Compile Include="ProgramFacts\Relations\RelThrowPV.cs" />
-    <Compile Include="ProgramFacts\Relations\RelThrowReadsTask.cs" />
     <Compile Include="ProgramFacts\Relations\RelTM.cs" />
     <Compile Include="ProgramFacts\Relations\RelTStructFH.cs" />
     <Compile Include="ProgramFacts\Relations\RelVarEH.cs" />

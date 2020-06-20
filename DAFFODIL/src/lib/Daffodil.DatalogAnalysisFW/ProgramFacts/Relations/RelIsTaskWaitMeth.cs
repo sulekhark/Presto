@@ -10,26 +10,20 @@ using System.Threading.Tasks;
 
 namespace Daffodil.DatalogAnalysisFW.ProgramFacts.Relations
 {
-    public class RelMethSetsTask : Rel
+    public class RelIsTaskWaitMeth : Rel
     {
-        public RelMethSetsTask() : base(3, "MethSetsTask")
+        public RelIsTaskWaitMeth() : base(1, "IsTaskWaitMeth")
         {
-            domNames = new string[3];
+            domNames = new string[1];
             domNames[0] = ProgramDoms.domM.GetName();
-            domNames[1] = ProgramDoms.domV.GetName();
-            domNames[2] = ProgramDoms.domEH.GetName();
         }
 
-        public bool Add(MethodRefWrapper methW, VariableWrapper varW, ExHandlerWrapper ehW)
+        public bool Add(MethodRefWrapper methW)
         {
-            int[] iarr = new int[3];
+            int[] iarr = new int[1];
 
             iarr[0] = ProgramDoms.domM.IndexOf(methW);
             if (iarr[0] == -1) return false;
-            iarr[1] = ProgramDoms.domV.IndexOf(varW);
-            if (iarr[1] == -1) return false;
-            iarr[2] = ProgramDoms.domEH.IndexOf(ehW);
-            if (iarr[2] == -1) return false;
             return base.Add(iarr);
         }
     }
