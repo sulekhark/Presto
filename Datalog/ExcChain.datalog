@@ -27,11 +27,17 @@ VCatchesH(v:V,h:H) input
 VH(v:V,h:H) input
 WrapsEx(h2:H,h1:H) input
 
-MethSetsTask(m:M,v:V,eh:EH) input
-MethAwaitsTask(m:M,v:V) input
-ThrowReadsTask(p:P,v:V) input
 TaskFldInBuilder(t:T,f:F) input
+IsMoveNextMeth(m:M) input
+IsBuilderSetExceptionMeth(m:M) input
+IsTaskResultMeth(m:M) input
+IsTaskWaitMeth(m:M) input
+IsTaskGetAwaiterMeth(m:M) input
 
+MethSetsBuilder(m:M,v:V,eh:EH)
+MethSetsBuilderInt(m:M,m1:M,v:V)
+MethAwaitsTask(m:M,v:V)
+ThrowReadsTask(p:P,v:V)
 MethSetsTaskObj(m:M,h:H,eh:EH)
 MethAwaitsTaskObj(m:M,h:H)
 ThrowReadsTaskObj(p:P,h:H)
@@ -85,7 +91,14 @@ ThrowSubsumed(eh,m,p,v) :- LinkedEx(m,v1,t1,m,v,t), ThrowPV(m,p,v), VarEH(eh,v1)
 #   5) the catch block and the throw statement are in diffferent methods.
 # In asynchronous programs, a catch variable and a throw variable linked this way pass an exception object via field write/read.
 
-MethSetsTaskObj(m,h1,eh) :- MethSetsTask(m,v,eh), VH(v,h), HT(h,t), TaskFldInBuilder(t,f), HFH(h,f,h1).
+MethSetsBuilderInt(m,m1,v) :- IsMoveNextMeth(m), IsBuilderSetExceptionMeth(m1), MM(m,m1), MmethArg(m1,0,v).
+MethSetsBuilder(m,v,eh) :- MethSetsBuilderInt(m,m1,v), HasMethInvk(eh,i), MEH(m,eh), IM(i,m1).
+MethAwaitsTask(m,v) :- IsMoveNextMeth(m), IsTaskGetAwaiterMeth(m1), MM(m,m1), MmethArg(m1,0,v).
+MethAwaitsTask(m,v) :- IsTaskWaitMeth(m1), MM(m,m1), MmethArg(m1,0,v).
+ThrowReadsTask(p,v) :- IsTaskWaitMeth(m), MmethArg(m,0,v), ThrowPV(m,p,v1).
+ThrowReadsTask(p,v) :- IsTaskResultMeth(m), MmethArg(m,0,v), ThrowPV(m,p,v1).
+
+MethSetsTaskObj(m,h1,eh) :- MethSetsBuilder(m,v,eh), VH(v,h), HT(h,t), TaskFldInBuilder(t,f), HFH(h,f,h1).
 MethAwaitsTaskObj(m,h) :- MethAwaitsTask(m,v), VH(v,h).
 ThrowReadsTaskObj(p,h) :- ThrowReadsTask(p,v), VH(v,h).
 
@@ -142,7 +155,9 @@ ThrowRemaining(m,p,v) :- !ThrowUnion(m,p,v), ThrowPV(m,p,v).
 .include "VCatchesH.datalog"
 .include "VH.datalog"
 .include "WrapsEx.datalog"
-.include "MethSetsTask.datalog"
-.include "MethAwaitsTask.datalog"
-.include "ThrowReadsTask.datalog"
 .include "TaskFldInBuilder.datalog"
+.include "IsMoveNextMeth.datalog"
+.include "IsBuilderSetExceptionMeth.datalog"
+.include "IsTaskResultMeth.datalog"
+.include "IsTaskWaitMeth.datalog"
+.include "IsTaskGetAwaiterMeth.datalog"
