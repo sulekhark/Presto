@@ -5,6 +5,8 @@
 .include "EH.dom"                        # domain of exception handlers
 .include "P.dom"                         # domain of program points
 .include "H.dom"                         # domain of allocation sites 
+.include "F.dom"                         # domain of fields
+.include "Z.dom"                         # domain of integer indexes
 
 
 relT(t:T) input
@@ -14,6 +16,8 @@ relI(i:I) input
 relEH(eh:EH) input
 relP(p:P) input
 relH(h:H) input
+relF(f:F) input
+relZ(z:Z) input
 
 ExceptionType(t:T) input                 # Type t is an exception type
 sub(t:T,t1:T) input                      # Type t is a subtype of type t1
@@ -26,6 +30,11 @@ HT(h:H,t:T) input
 VCatchesH(v:V,h:H) input
 VH(v:V,h:H) input
 WrapsEx(h2:H,h1:H) input
+HasMethInvk(eh:EH,i:I) input
+MM(m1:M,m2:M) input
+IM(i:I,m:M) input
+MmethArg(m:M,z:Z,v:V) input
+HFH(h1:H,f:F,h2:H) input
 
 TaskFldInBuilder(t:T,f:F) input
 IsMoveNextMeth(m:M) input
@@ -144,6 +153,8 @@ ThrowRemaining(m,p,v) :- !ThrowUnion(m,p,v), ThrowPV(m,p,v).
 .include "relEH.datalog"
 .include "relP.datalog"
 .include "relH.datalog"
+.include "relF.datalog"
+.include "relZ.datalog"
 .include "ExceptionType.datalog"
 .include "HasThrow.datalog"
 .include "MEH.datalog"
@@ -155,6 +166,11 @@ ThrowRemaining(m,p,v) :- !ThrowUnion(m,p,v), ThrowPV(m,p,v).
 .include "VCatchesH.datalog"
 .include "VH.datalog"
 .include "WrapsEx.datalog"
+.include "HasMethInvk.datalog"
+.include "MM.datalog"
+.include "IM.datalog"
+.include "MmethArg.datalog"
+.include "HFH.datalog"
 .include "TaskFldInBuilder.datalog"
 .include "IsMoveNextMeth.datalog"
 .include "IsBuilderSetExceptionMeth.datalog"
