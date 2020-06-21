@@ -202,7 +202,6 @@
     <Compile Include="ProgramFacts\Relations\RelMmethArg.cs" />
     <Compile Include="ProgramFacts\Relations\RelMmethRet.cs" />
     <Compile Include="ProgramFacts\Relations\RelMMove.cs" />
-    <Compile Include="ProgramFacts\Relations\RelMove.cs" />
     <Compile Include="ProgramFacts\Relations\RelMStatFldRead.cs" />
     <Compile Include="ProgramFacts\Relations\RelMStatFldWrite.cs" />
     <Compile Include="ProgramFacts\Relations\RelMStructHFH.cs" />
@@ -212,10 +211,8 @@
     <Compile Include="ProgramFacts\Relations\RelOutermostEH.cs" />
     <Compile Include="ProgramFacts\Relations\RelPI.cs" />
     <Compile Include="ProgramFacts\Relations\RelPrevEH.cs" />
-    <Compile Include="ProgramFacts\Relations\RelRootM.cs" />
     <Compile Include="ProgramFacts\Relations\RelStaticTF.cs" />
     <Compile Include="ProgramFacts\Relations\RelStaticTM.cs" />
-    <Compile Include="ProgramFacts\Relations\RelStrMove.cs" />
     <Compile Include="ProgramFacts\Relations\RelStructH.cs" />
     <Compile Include="ProgramFacts\Relations\RelStructHFH.cs" />
     <Compile Include="ProgramFacts\Relations\RelStructRefV.cs" />

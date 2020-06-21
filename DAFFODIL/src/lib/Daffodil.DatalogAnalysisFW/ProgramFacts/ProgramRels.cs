@@ -31,8 +31,6 @@ namespace Daffodil.DatalogAnalysisFW.ProgramFacts
         public static RelClinitTM relClinitTM;
         public static RelStaticTF relStaticTF;
         public static RelVT relVT;
-        public static RelRootM relRootM;
-	
         public static RelAddrOfVX relAddrOfVX;
         public static RelAddrOfFX relAddrOfFX;
         public static RelAddrOfHFX relAddrOfHFX;
@@ -46,8 +44,6 @@ namespace Daffodil.DatalogAnalysisFW.ProgramFacts
 	    public static RelDelegateIV relDelegateIV;
 	    public static RelStructV relStructV;
         public static RelStructH relStructH;
-        public static RelStrMove relStrMove;
-        public static RelMove relMove;
         public static RelVarEH relVarEH;
         public static RelThrowPV relThrowPV;
         public static RelInRange relInRange;
@@ -155,9 +151,6 @@ namespace Daffodil.DatalogAnalysisFW.ProgramFacts
             relVT = new RelVT();
             nameToRelMap.Add(relVT.GetName(), relVT);
 
-            relRootM = new RelRootM();
-            nameToRelMap.Add(relRootM.GetName(), relRootM);
-
             relAddrOfVX = new RelAddrOfVX();
             nameToRelMap.Add(relAddrOfVX.GetName(), relAddrOfVX);
 
@@ -196,12 +189,6 @@ namespace Daffodil.DatalogAnalysisFW.ProgramFacts
 
             relStructH = new RelStructH();
             nameToRelMap.Add(relStructH.GetName(), relStructH);
-
-            relStrMove = new RelStrMove();
-            nameToRelMap.Add(relStrMove.GetName(), relStrMove);
-
-            relMove = new RelMove();
-            nameToRelMap.Add(relMove.GetName(), relMove);
 
             relVarEH = new RelVarEH();
             nameToRelMap.Add(relVarEH.GetName(), relVarEH);
@@ -314,7 +301,6 @@ namespace Daffodil.DatalogAnalysisFW.ProgramFacts
             relStaticTF.Save();
             relClinitTM.Save();
             relVT.Save();
-
 	        relAddrOfVX.Save();
 	        relAddrOfFX.Save();
 	        relAddrOfHFX.Save();
