@@ -257,11 +257,11 @@ namespace Daffodil.DatalogAnalysisFW.AnalysisNetConsole
                 {
                     FieldRefWrapper fldW = WrapperProvider.getFieldRefW(fld);
                     ITypeDefinition fldType = fld.Type.ResolvedType;
-                    if (builderClass == true && fld.Name.Value.Contains("m_task")) ProgramRels.relTaskFldInBuilder.Add(tyW, fldW);
                     if ((fldType.IsValueType && !fldType.IsStruct) || Stubber.SuppressF(fldType)) continue;
                     TypeRefWrapper fldTypeRefW = WrapperProvider.getTypeRefW(fldType);
                     ProgramDoms.domT.Add(fldTypeRefW);
                     ProgramDoms.domF.Add(fldW);
+                    if (builderClass == true && fld.Name.Value.Contains("m_task")) ProgramRels.relTaskFldInBuilder.Add(tyW, fldW);
                     ProgramRels.relFT.Add(fldW, fldTypeRefW);
                     if (fld.IsStatic)
                     {

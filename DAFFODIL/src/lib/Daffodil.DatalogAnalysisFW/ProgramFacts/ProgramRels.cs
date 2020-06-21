@@ -48,7 +48,6 @@ namespace Daffodil.DatalogAnalysisFW.ProgramFacts
         public static RelStructH relStructH;
         public static RelStrMove relStrMove;
         public static RelMove relMove;
-        public static RelVHfilter relVHfilter;
         public static RelVarEH relVarEH;
         public static RelThrowPV relThrowPV;
         public static RelInRange relInRange;
@@ -203,9 +202,6 @@ namespace Daffodil.DatalogAnalysisFW.ProgramFacts
 
             relMove = new RelMove();
             nameToRelMap.Add(relMove.GetName(), relMove);
-
-            relVHfilter = new RelVHfilter();
-            nameToRelMap.Add(relVHfilter.GetName(), relVHfilter);
 
             relVarEH = new RelVarEH();
             nameToRelMap.Add(relVarEH.GetName(), relVarEH);
