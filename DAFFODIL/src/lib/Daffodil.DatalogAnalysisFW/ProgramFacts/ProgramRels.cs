@@ -11,7 +11,6 @@ namespace Daffodil.DatalogAnalysisFW.ProgramFacts
         public static RelMI relMI;
         public static RelVirtIM relVirtIM;
         public static RelStatIM relStatIM;
-        public static RelMM relMM;
         public static RelMMove relMMove;
         public static RelMAlloc relMAlloc;
         public static RelMInstFldRead relMInstFldRead;
@@ -33,14 +32,7 @@ namespace Daffodil.DatalogAnalysisFW.ProgramFacts
         public static RelStaticTF relStaticTF;
         public static RelVT relVT;
         public static RelRootM relRootM;
-        public static RelVH relVH;
-        public static RelFH relFH;
-        public static RelHFH relHFH;
-        public static RelIM relIM;
 	
-        public static RelVX relVX;
-        public static RelFX relFX;
-        public static RelHFX relHFX;
         public static RelAddrOfVX relAddrOfVX;
         public static RelAddrOfFX relAddrOfFX;
         public static RelAddrOfHFX relAddrOfHFX;
@@ -104,9 +96,6 @@ namespace Daffodil.DatalogAnalysisFW.ProgramFacts
             relStatIM = new RelStatIM();
             nameToRelMap.Add(relStatIM.GetName(), relStatIM);
 
-            relMM = new RelMM();
-            nameToRelMap.Add(relMM.GetName(), relMM);
-
             relMMove = new RelMMove();
             nameToRelMap.Add(relMMove.GetName(), relMMove);
 
@@ -169,27 +158,6 @@ namespace Daffodil.DatalogAnalysisFW.ProgramFacts
 
             relRootM = new RelRootM();
             nameToRelMap.Add(relRootM.GetName(), relRootM);
-
-            relVH = new RelVH();
-            nameToRelMap.Add(relVH.GetName(), relVH);
-
-            relFH = new RelFH();
-            nameToRelMap.Add(relFH.GetName(), relFH);
-
-            relHFH = new RelHFH();
-            nameToRelMap.Add(relHFH.GetName(), relHFH);
-
-            relIM = new RelIM();
-            nameToRelMap.Add(relIM.GetName(), relIM);
-          
-            relVX = new RelVX();
-            nameToRelMap.Add(relVX.GetName(), relVX);
-
-            relFX = new RelFX();
-            nameToRelMap.Add(relFX.GetName(), relFX);
-
-            relHFX = new RelHFX();
-            nameToRelMap.Add(relHFX.GetName(), relHFX);
 
             relAddrOfVX = new RelAddrOfVX();
             nameToRelMap.Add(relAddrOfVX.GetName(), relAddrOfVX);
@@ -330,7 +298,6 @@ namespace Daffodil.DatalogAnalysisFW.ProgramFacts
             relMI.Save();
             relVirtIM.Save();
             relStatIM.Save();
-            relMM.Save();
             relMMove.Save();
             relMAlloc.Save();
             relMInstFldRead.Save();
