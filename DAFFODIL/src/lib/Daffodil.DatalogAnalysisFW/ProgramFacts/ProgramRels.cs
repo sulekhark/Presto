@@ -32,9 +32,6 @@ namespace Daffodil.DatalogAnalysisFW.ProgramFacts
         public static RelClinitTM relClinitTM;
         public static RelStaticTF relStaticTF;
         public static RelVT relVT;
-        public static RelReachableT relReachableT;
-        public static RelReachableI relReachableI;
-        public static RelReachableM relReachableM;
         public static RelRootM relRootM;
         public static RelVH relVH;
         public static RelFH relFH;
@@ -65,13 +62,9 @@ namespace Daffodil.DatalogAnalysisFW.ProgramFacts
         public static RelInRange relInRange;
         public static RelPrevEH relPrevEH;
         public static RelTypeEH relTypeEH;
-        public static RelFinalEH relFinalEH;
         public static RelPI relPI;
-        public static RelCallAt relCallAt;
         public static RelMEH relMEH;
         public static RelExceptionType relExceptionType;
-        public static RelEscapeMTP relEscapeMTP;
-        public static RelFinalMTP relFinalMTP;
         public static RelMStructHFH relMStructHFH;
         public static RelStructRefV relStructRefV;
         public static RelThisRefV relThisRefV;
@@ -174,15 +167,6 @@ namespace Daffodil.DatalogAnalysisFW.ProgramFacts
             relVT = new RelVT();
             nameToRelMap.Add(relVT.GetName(), relVT);
 
-            relReachableT = new RelReachableT();
-            nameToRelMap.Add(relReachableT.GetName(), relReachableT);
-
-            relReachableI = new RelReachableI();
-            nameToRelMap.Add(relReachableI.GetName(), relReachableI);
-
-            relReachableM = new RelReachableM();
-            nameToRelMap.Add(relReachableM.GetName(), relReachableM);
-
             relRootM = new RelRootM();
             nameToRelMap.Add(relRootM.GetName(), relRootM);
 
@@ -270,26 +254,14 @@ namespace Daffodil.DatalogAnalysisFW.ProgramFacts
             relTypeEH = new RelTypeEH();
             nameToRelMap.Add(relTypeEH.GetName(), relTypeEH);
 
-            relFinalEH = new RelFinalEH();
-            nameToRelMap.Add(relFinalEH.GetName(), relFinalEH);
-
             relPI = new RelPI();
             nameToRelMap.Add(relPI.GetName(), relPI);
-
-            relCallAt = new RelCallAt();
-            nameToRelMap.Add(relCallAt.GetName(), relCallAt);
 
             relMEH = new RelMEH();
             nameToRelMap.Add(relMEH.GetName(), relMEH);
 
             relExceptionType = new RelExceptionType();
             nameToRelMap.Add(relExceptionType.GetName(), relExceptionType);
-
-            relEscapeMTP = new RelEscapeMTP();
-            nameToRelMap.Add(relEscapeMTP.GetName(), relEscapeMTP);
-
-            relFinalMTP = new RelFinalMTP();
-            nameToRelMap.Add(relFinalMTP.GetName(), relFinalMTP);
 
             relMStructHFH = new RelMStructHFH();
             nameToRelMap.Add(relMStructHFH.GetName(), relMStructHFH);
