@@ -42,15 +42,12 @@ LinkedEx(m1:M,v1:V,t1:T,m2:M,v2:V,t2:T) input
 ThrowOrigin(m:M,p:P,v:V) input
 ThrowRemaining(m:M,p:P,v:V) input
 
+ThrowAsync(eh:EH,m:M,p:P,v:V) printtuples
 ThrowSubsumed(eh:EH,m:M,p:P,v:V) printtuples
 EscUnion(h:H)
 NotEscaping(t:T,h:H) printtuples
 InfeasibleMTP(m:M,t:T,p:P) printtuples
 
-ThrowPt1(m:M,p:P,v:V) printtuples
-ThrowPt2(m:M,p:P,v:V) printtuples
-ThrowPt3(m:M,p:P,v:V) printtuples
-ThrowPt4(m:M,p:P,v:V) printtuples
 ThrowPoint(m:M,p:P,v:V) printtuples
 ThrowMH(m:M,h:H) printtuples             # The exception object h escapes Method m.
 CatchVH(v:V,h:H) printtuples             # Variable v which is the formal parameter of some catch handler, points-to exception object h.
@@ -69,15 +66,15 @@ Infeasible(t:T,h:H) printtuples
 ###########################################
 
 ThrowSubsumed(eh,m,p,v2) :- MEH(m,eh), VarEH(eh,v1), LinkedEx(m,v1,t1,m,v2,t2), ThrowPV(m,p,v2).
+ThrowAsync(eh,m2,p,v2) :- LinkedEx(m1,v1,t1,m2,v2,t2), ThrowPV(m2,p,v2), VarEH(eh,v1), m1 != m2.
 
-ThrowPt1(m,p,v) :- ThrowOrigin(m,p,v).
-ThrowPt2(m,p,v) :- ThrowSubsumed(eh,m,p,v), VH(v,h), WrapsEx(h,h1), VarEH(eh,ehv), CatchVH(ehv,h1). # wrap and throw
-ThrowPt3(m,p,v) :- ThrowSubsumed(eh,m,p,v), VH(v,h1), WrapsEx(h,h1), VarEH(eh,ehv), CatchVH(ehv,h). # unwrap and throw
-ThrowPt4(m,p,v) :- ThrowSubsumed(eh,m,p,v), VH(v,h), VarEH(eh,ehv), CatchVH(ehv,h).  # rethrow
-ThrowPoint(m,p,v) :- ThrowPt1(m,p,v).
-ThrowPoint(m,p,v) :- ThrowPt2(m,p,v).
-ThrowPoint(m,p,v) :- ThrowPt3(m,p,v).
-ThrowPoint(m,p,v) :- ThrowPt4(m,p,v).
+ThrowPoint(m,p,v) :- ThrowOrigin(m,p,v).
+ThrowPoint(m,p,v) :- ThrowSubsumed(eh,m,p,v), VH(v,h), WrapsEx(h,h1), VarEH(eh,ehv), CatchVH(ehv,h1). # wrap and throw
+ThrowPoint(m,p,v) :- ThrowSubsumed(eh,m,p,v), VH(v,h1), WrapsEx(h,h1), VarEH(eh,ehv), CatchVH(ehv,h). # unwrap and throw
+ThrowPoint(m,p,v) :- ThrowSubsumed(eh,m,p,v), VH(v,h), VarEH(eh,ehv), CatchVH(ehv,h).  # rethrow
+ThrowPoint(m,p,v) :- ThrowAsync(eh,m,p,v), VH(v,h), WrapsEx(h,h1), VarEH(eh,ehv), CatchVH(ehv,h1). # wrap and throw
+ThrowPoint(m,p,v) :- ThrowAsync(eh,m,p,v), VH(v,h1), WrapsEx(h,h1), VarEH(eh,ehv), CatchVH(ehv,h). # unwrap and throw
+ThrowPoint(m,p,v) :- ThrowAsync(eh,m,p,v), VH(v,h), VarEH(eh,ehv), CatchVH(ehv,h).  # rethrow
 ThrowPoint(m,p,v) :- ThrowRemaining(m,p,v).
 ThrowMH(m,h) :- ThrowPoint(m,p,v), VH(v,h), HT(h,t), FeasibleMTP(m,t,p).
 ThrowMH(m,h) :- CallAt(m,p,mcallee), ThrowMH(mcallee,h), HT(h,t), FeasibleMTP(m,t,p).

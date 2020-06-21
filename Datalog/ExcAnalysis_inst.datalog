@@ -47,11 +47,8 @@ FeasibleMTP(m:M,t:T,p:P) input
 FeasibleEH(m:M,eh:EH) input
 ThrowOrigin(m:M,p:P,v:V) input
 ThrowSubsumed(eh:EH,m:M,p:P,v:V) input
+ThrowAsync(eh:EH,m:M,p:P,v:V) input 
 ThrowPoint(m:M,p:P,v:V) input
-ThrowPt1(m:M,p:P,v:V) input
-ThrowPt2(m:M,p:P,v:V) input
-ThrowPt3(m:M,p:P,v:V) input
-ThrowPt4(m:M,p:P,v:V) input
 ThrowRemaining(m:M,p:P,v:V) input
 NotEscaping(t:T,h:H) input
 InfeasibleMTP(m:M,t:T,p:P) input
@@ -65,15 +62,15 @@ NoDirectEsc(t:T,h:H)
 ########################
 
 ThrowSubsumed_i1(eh:EH,m:M,p:P,v2:V,v1:V,t1:T,t2:T) printtuples
-ThrowPt1_i1(m:M,p:P,v:V) printtuples
-ThrowPt2_i1(m:M,p:P,v:V,eh:EH,h:H,h1:H,ehv:V) printtuples
-ThrowPt3_i1(m:M,p:P,v:V,eh:EH,h:H,h1:H,ehv:V) printtuples
-ThrowPt4_i1(m:M,p:P,v:V,eh:EH,h:H,ehv:V) printtuples
+ThrowAsync_i1(eh:EH,m2:M,p:P,v2:V,m1:M,v1:V,t1:T,t2:T) printtuples
 ThrowPoint_i1(m:M,p:P,v:V) printtuples
-ThrowPoint_i2(m:M,p:P,v:V) printtuples
-ThrowPoint_i3(m:M,p:P,v:V) printtuples
-ThrowPoint_i4(m:M,p:P,v:V) printtuples
-ThrowPoint_i5(m:M,p:P,v:V) printtuples
+ThrowPoint_i2(m:M,p:P,v:V,eh:EH,h:H,h1:H,v:V) printtuples
+ThrowPoint_i3(m:M,p:P,v:V,eh:EH,h:H,h1:H,v:V) printtuples
+ThrowPoint_i4(m:M,p:P,v:V,eh:EH,h:H,v:V) printtuples
+ThrowPoint_i5(m:M,p:P,v:V,eh:EH,h:H,h1:H,v:V) printtuples
+ThrowPoint_i6(m:M,p:P,v:V,eh:EH,h:H,h1:H,v:V) printtuples
+ThrowPoint_i7(m:M,p:P,v:V,eh:EH,h:H,v:V) printtuples
+ThrowPoint_i8(m:M,p:P,v:V) printtuples
 ThrowMH_i1(m:M,h:H,p:P,v:V,t:T) printtuples
 ThrowMH_i2(m:M,h:H,p:P,mcallee:M,t:T) printtuples
 CatchVH_i1(ehv:V,h:H,m:M,p:P,v:V,t:T,eh:EH) printtuples
@@ -96,10 +93,7 @@ Infeasible_i2(t:T,h:H,m:M,p:P,mcallee:M) printtuples
 ##################
 
 # ARG_COUNT ThrowSubsumed 4
-# ARG_COUNT ThrowPt1 3
-# ARG_COUNT ThrowPt2 3
-# ARG_COUNT ThrowPt3 3
-# ARG_COUNT ThrowPt4 3
+# ARG_COUNT ThrowAsync 4
 # ARG_COUNT ThrowPoint 3
 # ARG_COUNT ThrowMH 2
 # ARG_COUNT CatchVH 2
@@ -118,16 +112,16 @@ Infeasible_i2(t:T,h:H,m:M,p:P,mcallee:M) printtuples
 ############################
 
 ThrowSubsumed_i1(eh,m,p,v2,v1,t1,t2) :- MEH(m,eh), VarEH(eh,v1), LinkedEx(m,v1,t1,m,v2,t2), ThrowPV(m,p,v2).
+ThrowAsync_i1(eh,m2,p,v2,m1,v1,t1,t2) :- LinkedEx(m1,v1,t1,m2,v2,t2), ThrowPV(m2,p,v2), VarEH(eh,v1), m1 != m2.
 
-ThrowPt1_i1(m,p,v) :- ThrowOrigin(m,p,v).
-ThrowPt2_i1(m,p,v,eh,h,h1,ehv) :- ThrowSubsumed(eh,m,p,v), VH(v,h), WrapsEx(h,h1), VarEH(eh,ehv), CatchVH(ehv,h1).
-ThrowPt3_i1(m,p,v,eh,h,h1,ehv) :- ThrowSubsumed(eh,m,p,v), VH(v,h1), WrapsEx(h,h1), VarEH(eh,ehv), CatchVH(ehv,h).
-ThrowPt4_i1(m,p,v,eh,h,ehv) :- ThrowSubsumed(eh,m,p,v), VH(v,h), VarEH(eh,ehv), CatchVH(ehv,h).
-ThrowPoint_i1(m,p,v) :- ThrowPt1(m,p,v).
-ThrowPoint_i2(m,p,v) :- ThrowPt2(m,p,v).
-ThrowPoint_i3(m,p,v) :- ThrowPt3(m,p,v).
-ThrowPoint_i4(m,p,v) :- ThrowPt4(m,p,v).
-ThrowPoint_i5(m,p,v) :- ThrowRemaining(m,p,v).
+ThrowPoint_i1(m,p,v) :- ThrowOrigin(m,p,v).
+ThrowPoint_i2(m,p,v,eh,h,h1,ehv) :- ThrowSubsumed(eh,m,p,v), VH(v,h), WrapsEx(h,h1), VarEH(eh,ehv), CatchVH(ehv,h1).
+ThrowPoint_i3(m,p,v,eh,h,h1,ehv) :- ThrowSubsumed(eh,m,p,v), VH(v,h1), WrapsEx(h,h1), VarEH(eh,ehv), CatchVH(ehv,h).
+ThrowPoint_i4(m,p,v,eh,h,ehv) :- ThrowSubsumed(eh,m,p,v), VH(v,h), VarEH(eh,ehv), CatchVH(ehv,h).
+ThrowPoint_i5(m,p,v,eh,h,h1,ehv) :- ThrowAsync(eh,m,p,v), VH(v,h), WrapsEx(h,h1), VarEH(eh,ehv), CatchVH(ehv,h1). # wrap and throw
+ThrowPoint_i6(m,p,v,eh,h,h1,ehv) :- ThrowAsync(eh,m,p,v), VH(v,h1), WrapsEx(h,h1), VarEH(eh,ehv), CatchVH(ehv,h). # unwrap and throw
+ThrowPoint_i7(m,p,v,eh,h,ehv) :- ThrowAsync(eh,m,p,v), VH(v,h), VarEH(eh,ehv), CatchVH(ehv,h).  # rethrow
+ThrowPoint_i8(m,p,v) :- ThrowRemaining(m,p,v).
 
 ThrowMH_i1(m,h,p,v,t) :- ThrowPoint(m,p,v), VH(v,h), HT(h,t), FeasibleMTP(m,t,p).
 ThrowMH_i2(m,h,p,mcallee,t) :- CallAt(m,p,mcallee), ThrowMH(mcallee,h), HT(h,t), FeasibleMTP(m,t,p).
@@ -183,11 +177,8 @@ Infeasible_i2(t,h,m,p,mcallee) :- CallAt(m,p,mcallee), ThrowMH(mcallee,h), HT(h,
 .include "FeasibleEH.datalog"
 .include "ThrowOrigin.datalog"
 .include "ThrowSubsumed.datalog"
+.include "ThrowAsync.datalog"
 .include "ThrowPoint.datalog"
-.include "ThrowPt1.datalog"
-.include "ThrowPt2.datalog"
-.include "ThrowPt3.datalog"
-.include "ThrowPt4.datalog"
 .include "ThrowRemaining.datalog"
 .include "NotEscaping.datalog"
 .include "InfeasibleMTP.datalog"
