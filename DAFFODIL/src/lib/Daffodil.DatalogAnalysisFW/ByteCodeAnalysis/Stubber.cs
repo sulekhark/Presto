@@ -106,16 +106,12 @@ namespace Daffodil.DatalogAnalysisFW.AnalysisNetConsole
             return retval;
         }
 
-        public static bool IsStubbed(ITypeDefinition ty)
+        public static ITypeDefinition GetStubIfStubbed(ITypeDefinition ty)
         {
-            bool retval = false;
-            bool matches = MatchesSuppressM(ty);
-            if (matches)
-            {
-                ITypeDefinition stubType = Stubs.GetStubType(ty);
-                retval = stubType == null ? false : true;
-            }
-            return retval;
+            ITypeDefinition retTyp = null;
+            if (MatchesSuppressM(ty)) retTyp = Stubs.GetStubType(ty);
+            if (retTyp == null) retTyp = ty;
+            return retTyp;
         }
 
         public static bool MatchesSuppressM(IMethodDefinition m)
