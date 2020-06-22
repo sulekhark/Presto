@@ -258,6 +258,7 @@ namespace Daffodil.DatalogAnalysisFW.AnalysisNetConsole
                     FieldRefWrapper fldW = WrapperProvider.getFieldRefW(fld);
                     ITypeDefinition fldType = fld.Type.ResolvedType;
                     if ((fldType.IsValueType && !fldType.IsStruct) || Stubber.SuppressF(fldType)) continue;
+                    fldType = Stubber.GetStubIfStubbed(fldType);
                     TypeRefWrapper fldTypeRefW = WrapperProvider.getTypeRefW(fldType);
                     ProgramDoms.domT.Add(fldTypeRefW);
                     ProgramDoms.domF.Add(fldW);
@@ -430,8 +431,8 @@ namespace Daffodil.DatalogAnalysisFW.AnalysisNetConsole
                     ProgramDoms.domV.Add(paramW);
                     ProgramRels.relMV.Add(mRefW, paramW);
                     ProgramRels.relMmethArg.Add(mRefW, paramNdx, paramW);
-                    ITypeReference varTypeRef = param.Type;
-                    TypeRefWrapper varTypeRefW = WrapperProvider.getTypeRefW(varTypeRef.ResolvedType);
+                    ITypeReference varTypeRef = Stubber.GetStubIfStubbed(param.Type.ResolvedType);
+                    TypeRefWrapper varTypeRefW = WrapperProvider.getTypeRefW(varTypeRef);
                     ProgramDoms.domT.Add(varTypeRefW);
                     bool success = ProgramRels.relVT.Add(paramW, varTypeRefW);
                     if (param.Type.ResolvedType.IsStruct && param.Type.IsValueType) CreateStruct(mRefW, param);
@@ -460,8 +461,8 @@ namespace Daffodil.DatalogAnalysisFW.AnalysisNetConsole
                         VariableWrapper lclW = WrapperProvider.getVarW(lclVar);
                         ProgramDoms.domV.Add(lclW);
                         ProgramRels.relMV.Add(mRefW, lclW);
-                        ITypeReference varTypeRef = lclVar.Type;
-                        TypeRefWrapper varTypeRefW = WrapperProvider.getTypeRefW(varTypeRef.ResolvedType);
+                        ITypeReference varTypeRef = Stubber.GetStubIfStubbed(lclVar.Type.ResolvedType);
+                        TypeRefWrapper varTypeRefW = WrapperProvider.getTypeRefW(varTypeRef);
                         ProgramDoms.domT.Add(varTypeRefW);
                         ProgramRels.relVT.Add(lclW, varTypeRefW);
                         if (lclVar.Type.ResolvedType.IsStruct && lclVar.Type.IsValueType)
@@ -667,7 +668,7 @@ namespace Daffodil.DatalogAnalysisFW.AnalysisNetConsole
             {
                 if (exceptionTypes.Contains(objTypeDef) && methDef.FullName().StartsWith("System.")) return;
             }
-           
+            objTypeDef = Stubber.GetStubIfStubbed(objTypeDef); 
             VariableWrapper lhsW = WrapperProvider.getVarW(lhsVar);
             TypeRefWrapper objTypeW = WrapperProvider.getTypeRefW(objTypeDef);
             HeapElemWrapper hpW = WrapperProvider.getHeapElemW(newObjInst, methDef, false);
@@ -698,7 +699,7 @@ namespace Daffodil.DatalogAnalysisFW.AnalysisNetConsole
                         if (!Stubber.SuppressF(fldType) && fldType.IsValueType && fldType.IsStruct) CreateStruct(hpW, fld);
                     }
                 }
-                foreach (ITypeReference baseTypeRef in currTypeDef.BaseClasses) workList.Add(baseTypeRef.ResolvedType);
+                foreach (ITypeReference baseTypeRef in currTypeDef.BaseClasses) workList.Add(Stubber.GetStubIfStubbed(baseTypeRef.ResolvedType));
             }
             return;
         }
@@ -709,6 +710,7 @@ namespace Daffodil.DatalogAnalysisFW.AnalysisNetConsole
             ITypeDefinition arrTypeDef = lhsVar.Type.ResolvedType;
             if (Stubber.SuppressF(arrTypeDef)) return;
 
+            arrTypeDef = Stubber.GetStubIfStubbed(arrTypeDef);
             VariableWrapper lhsW = WrapperProvider.getVarW(lhsVar);
             TypeRefWrapper arrTypeW = WrapperProvider.getTypeRefW(arrTypeDef);
             HeapElemWrapper hpW = WrapperProvider.getHeapElemW(newArrInst, methDef, false);
@@ -942,6 +944,7 @@ namespace Daffodil.DatalogAnalysisFW.AnalysisNetConsole
             currentCatchVar = catchVar;
             VariableWrapper varW = WrapperProvider.getVarW(catchVar);
             ITypeDefinition catchType = catchVar.Type.ResolvedType;
+            catchType = Stubber.GetStubIfStubbed(catchType);
             TypeRefWrapper typeRefW = WrapperProvider.getTypeRefW(catchType);
             ProgramRels.relVarEH.Add(currEhW, varW);
             ProgramRels.relTypeEH.Add(currEhW, typeRefW);
@@ -1003,7 +1006,9 @@ namespace Daffodil.DatalogAnalysisFW.AnalysisNetConsole
         // Assumption: fld is static and fld type is struct
         void CreateStruct(ITypeDefinition containingType, IFieldDefinition fld)
         {
+            containingType = Stubber.GetStubIfStubbed(containingType);
             ITypeDefinition fldType = fld.Type.ResolvedType;
+            fldType = Stubber.GetStubIfStubbed(fldType);
             TypeRefWrapper ctyW = WrapperProvider.getTypeRefW(containingType);
             FieldRefWrapper fldW = WrapperProvider.getFieldRefW(fld);
             TypeRefWrapper fldTypeRefW = WrapperProvider.getTypeRefW(fldType);
@@ -1030,6 +1035,7 @@ namespace Daffodil.DatalogAnalysisFW.AnalysisNetConsole
         void CreateStructInt(HeapElemWrapper containingHpW, IFieldDefinition fld, int nestingDepth)
         {
             ITypeDefinition fldType = fld.Type.ResolvedType;
+            fldType = Stubber.GetStubIfStubbed(fldType);
             TypeRefWrapper fldTypeRefW = WrapperProvider.getTypeRefW(fldType);
             HeapElemWrapper hpFldW = WrapperProvider.getHeapElemW(fld);
             FieldRefWrapper fldW = WrapperProvider.getFieldRefW(fld);
@@ -1051,6 +1057,7 @@ namespace Daffodil.DatalogAnalysisFW.AnalysisNetConsole
         void CreateStruct(MethodRefWrapper methW, IVariable lclVar)
         {
             ITypeDefinition varTypeDef = lclVar.Type.ResolvedType;
+            varTypeDef = Stubber.GetStubIfStubbed(varTypeDef);
             TypeRefWrapper varTypeRefW = WrapperProvider.getTypeRefW(varTypeDef);
             VariableWrapper lclW = WrapperProvider.getVarW(lclVar);
             HeapElemWrapper hpW = WrapperProvider.getHeapElemW(lclVar);
@@ -1073,6 +1080,7 @@ namespace Daffodil.DatalogAnalysisFW.AnalysisNetConsole
             FieldRefWrapper fldW = ProgramDoms.domF.GetVal(0);
             ProgramDoms.domH.Add(elemW);
             ProgramRels.relStructH.Add(elemW);
+            elemType = Stubber.GetStubIfStubbed(elemType);
             ProgramRels.relMStructHFH.Add(methW, containingHpW, fldW, elemW);
             TypeRefWrapper elemTypeW = WrapperProvider.getTypeRefW(elemType);
             ProgramRels.relHT.Add(elemW, elemTypeW);
