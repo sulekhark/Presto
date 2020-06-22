@@ -52,6 +52,7 @@ ThrowPoint(m:M,p:P,v:V) input
 ThrowRemaining(m:M,p:P,v:V) input
 NotEscaping(t:T,h:H) input
 InfeasibleMTP(m:M,t:T,p:P) input
+DiffMeths(m1:M,m2:M) input
 
 
 NoDirectEsc(t:T,h:H)
@@ -112,15 +113,15 @@ Infeasible_i2(t:T,h:H,m:M,p:P,mcallee:M) printtuples
 ############################
 
 ThrowSubsumed_i1(eh,m,p,v2,v1,t1,t2) :- MEH(m,eh), VarEH(eh,v1), LinkedEx(m,v1,t1,m,v2,t2), ThrowPV(m,p,v2).
-ThrowAsync_i1(eh,m2,p,v2,m1,v1,t1,t2) :- LinkedEx(m1,v1,t1,m2,v2,t2), ThrowPV(m2,p,v2), VarEH(eh,v1), m1 != m2.
+ThrowAsync_i1(eh,m2,p,v2,m1,v1,t1,t2) :- LinkedEx(m1,v1,t1,m2,v2,t2), ThrowPV(m2,p,v2), VarEH(eh,v1), DiffMeths(m1,m2).
 
 ThrowPoint_i1(m,p,v) :- ThrowOrigin(m,p,v).
 ThrowPoint_i2(m,p,v,eh,h,h1,ehv) :- ThrowSubsumed(eh,m,p,v), VH(v,h), WrapsEx(h,h1), VarEH(eh,ehv), CatchVH(ehv,h1).
 ThrowPoint_i3(m,p,v,eh,h,h1,ehv) :- ThrowSubsumed(eh,m,p,v), VH(v,h1), WrapsEx(h,h1), VarEH(eh,ehv), CatchVH(ehv,h).
 ThrowPoint_i4(m,p,v,eh,h,ehv) :- ThrowSubsumed(eh,m,p,v), VH(v,h), VarEH(eh,ehv), CatchVH(ehv,h).
-ThrowPoint_i5(m,p,v,eh,h,h1,ehv) :- ThrowAsync(eh,m,p,v), VH(v,h), WrapsEx(h,h1), VarEH(eh,ehv), CatchVH(ehv,h1). # wrap and throw
-ThrowPoint_i6(m,p,v,eh,h,h1,ehv) :- ThrowAsync(eh,m,p,v), VH(v,h1), WrapsEx(h,h1), VarEH(eh,ehv), CatchVH(ehv,h). # unwrap and throw
-ThrowPoint_i7(m,p,v,eh,h,ehv) :- ThrowAsync(eh,m,p,v), VH(v,h), VarEH(eh,ehv), CatchVH(ehv,h).  # rethrow
+ThrowPoint_i5(m,p,v,eh,h,h1,ehv) :- ThrowAsync(eh,m,p,v), VH(v,h), WrapsEx(h,h1), VarEH(eh,ehv), CatchVH(ehv,h1).
+ThrowPoint_i6(m,p,v,eh,h,h1,ehv) :- ThrowAsync(eh,m,p,v), VH(v,h1), WrapsEx(h,h1), VarEH(eh,ehv), CatchVH(ehv,h).
+ThrowPoint_i7(m,p,v,eh,h,ehv) :- ThrowAsync(eh,m,p,v), VH(v,h), VarEH(eh,ehv), CatchVH(ehv,h).
 ThrowPoint_i8(m,p,v) :- ThrowRemaining(m,p,v).
 
 ThrowMH_i1(m,h,p,v,t) :- ThrowPoint(m,p,v), VH(v,h), HT(h,t), FeasibleMTP(m,t,p).
@@ -182,3 +183,4 @@ Infeasible_i2(t,h,m,p,mcallee) :- CallAt(m,p,mcallee), ThrowMH(mcallee,h), HT(h,
 .include "ThrowRemaining.datalog"
 .include "NotEscaping.datalog"
 .include "InfeasibleMTP.datalog"
+.include "DiffMeths.datalog"

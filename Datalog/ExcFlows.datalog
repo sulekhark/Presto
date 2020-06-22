@@ -58,6 +58,7 @@ Escaping(t:T,h:H) printtuples            # h is an exception object of Type t th
 WEscaping(t:T,h:H) printtuples
 OnlyWEscaping(t:T,h:H) printtuples
 Infeasible(t:T,h:H) printtuples
+DiffMeths(m1:M,m2:M) printtuples
 
 # Rules
 
@@ -65,8 +66,9 @@ Infeasible(t:T,h:H) printtuples
 # Computing exception flows.
 ###########################################
 
+DiffMeths(m1,m2) :- relM(m1), relM(m2), m1 != m2.
 ThrowSubsumed(eh,m,p,v2) :- MEH(m,eh), VarEH(eh,v1), LinkedEx(m,v1,t1,m,v2,t2), ThrowPV(m,p,v2).
-ThrowAsync(eh,m2,p,v2) :- LinkedEx(m1,v1,t1,m2,v2,t2), ThrowPV(m2,p,v2), VarEH(eh,v1), m1 != m2.
+ThrowAsync(eh,m2,p,v2) :- LinkedEx(m1,v1,t1,m2,v2,t2), ThrowPV(m2,p,v2), VarEH(eh,v1), DiffMeths(m1,m2).
 
 ThrowPoint(m,p,v) :- ThrowOrigin(m,p,v).
 ThrowPoint(m,p,v) :- ThrowSubsumed(eh,m,p,v), VH(v,h), WrapsEx(h,h1), VarEH(eh,ehv), CatchVH(ehv,h1). # wrap and throw
