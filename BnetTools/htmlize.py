@@ -54,6 +54,20 @@ def getArgs(tup):
     args = argsStr.split(',')
     return args
 
+
+def IsNarrowOrClause(cstr):
+    parts = cstr.split(', ')
+    conseq = parts[-1]
+    if '(' in conseq:
+        return False
+    else:
+        return True
+
+
+def RemoveConsequent(cstr):
+    parts = cstr.split(', ')
+    return ', '.join(parts[:-1])
+
  
 ########################################################################################################################
 # 1. Accept input. Find all "root" IDB tuples whose derivations should be displayed. Find the set of all relation names.
@@ -177,7 +191,10 @@ bnetDictMap = {}
 for line in open(bnetDictFileName):
     line = line.strip()
     parts = line.split(': ')
-    bnetDictMap[parts[1]] = parts[0]
+    clauseStr = parts[1]
+    if IsNarrowOrClause(clauseStr):
+        clauseStr = RemoveConsequent(clauseStr)
+    bnetDictMap[clauseStr] = parts[0]
 
 allProbsMap = {}
 for line in open(allProbsFileName):
@@ -200,6 +217,8 @@ def getHtmlFileName(tup):
 def getRuleProb(clause):
     prob = "NA"
     cl = ', '.join(clause)
+    if cl not in bnetDictMap:
+        cl = RemoveConsequent(cl)
     if cl in bnetDictMap:
         bnetId = bnetDictMap[cl]
         if bnetId in allProbsMap:
