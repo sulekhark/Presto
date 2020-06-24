@@ -38,11 +38,14 @@ InfeasibleEH(eh:EH,t:T,p:P)              # It is infeasible for ExceptionHandler
 FinalEH(eh:EH,t:T,p:P) printtuples       # ExceptionHandler eh catches an exception of Type t thrown at Program point p.
 EscapeMTP(m:M,t:T,p:P) printtuples       # Exception of type t if thrown at Program Point p, escapes Method m.
 FinalMTP(m:M,t:T,p:P) printtuples
+TransSub(t1:T,t2:T)
 
 
 #Rules
+TransSub(t1,t2) :- sub(t1,t2), ExceptionType(t2), ExceptionType(t1).
+TransSub(t1,t2) :- sub(t1,t), TransSub(t,t2), ExceptionType(t1).
 PossibleEH(eh,t,p) :- InRange(eh,p), TypeEH(eh,t).
-PossibleEH(eh,s,p) :- PossibleEH(eh,t,p), sub(s,t).
+PossibleEH(eh,s,p) :- PossibleEH(eh,t,p), TransSub(s,t).
 BeforeEH(eh1,eh2) :- PrevEH(eh1,eh2).
 BeforeEH(eh1,eh3) :- BeforeEH(eh1,eh2), PrevEH(eh2,eh3).
 InfeasibleEH(eh,t,p) :- PossibleEH(eh,t,p), PossibleEH(ehb,t,p), BeforeEH(ehb,eh).
