@@ -667,6 +667,7 @@ namespace Daffodil.DatalogAnalysisFW.AnalysisNetConsole
             if (ConfigParams.SuppressSystemExceptions)
             {
                 if (exceptionTypes.Contains(objTypeDef) && methDef.FullName().StartsWith("System.")) return;
+                if (exceptionTypes.Contains(objTypeDef) && methDef.FullName().StartsWith("Microsoft.Win32.")) return;
             }
             objTypeDef = Stubber.GetStubIfStubbed(objTypeDef); 
             VariableWrapper lhsW = WrapperProvider.getVarW(lhsVar);
