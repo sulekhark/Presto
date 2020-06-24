@@ -50,6 +50,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="FilePackage.cs" />
+    <Compile Include="FilePackageHelper.cs" />
     <Compile Include="FilePackageReader.cs" />
     <Compile Include="FilePackageWriter.cs" />
     <Compile Include="FilePkgUtil.cs" />
