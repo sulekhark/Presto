@@ -43,8 +43,8 @@ public class FilePackageReader
         }
         catch (Exception e)
         {
-            var errorMessage = "Unable to open/read the package. " + e.Message;
-            throw new Exception(errorMessage);
+            var errorMessage = "Unable to open/read the package. ";
+            throw new Exception(errorMessage, e);
         }
     }
 }
