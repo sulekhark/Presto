@@ -35,7 +35,7 @@ namespace Daffodil.DatalogAnalysisFW.AnalysisNetConsole
             prefixesToSuppressMeth.Add("System.Data");
             prefixesToSuppressMeth.Add("System.Diagnostics");
             prefixesToSuppressMeth.Add("System.Globalization");
-            prefixesToSuppressMeth.Add("System.IO");
+            // prefixesToSuppressMeth.Add("System.IO");
             prefixesToSuppressMeth.Add("System.Linq.Expressions");
             prefixesToSuppressMeth.Add("System.Linq.Parallel");
             prefixesToSuppressMeth.Add("System.Net");
