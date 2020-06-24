@@ -21,8 +21,8 @@ else:
 
 removeEdbTransitive = False
 clampRule = os.environ['CLAMP_RULE_PROB_TO_1']
-if clampRule == "true":
-    removeEdbTransitive = True
+# if clampRule == "true":
+    # removeEdbTransitive = True
 
 logging.basicConfig(level=logging.INFO, \
                     format="[%(asctime)s] %(levelname)s [%(name)s.%(funcName)s:%(lineno)d] %(message)s", \
