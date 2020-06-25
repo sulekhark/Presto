@@ -19,7 +19,7 @@ cp -r bin/Debug bin/Debug_orig
 
 cd bin/Debug
 $TORCH_HOME/tools/net/torch-instrumenter-internal.exe -i . --ic ../../dynconfig/Logging/torch-instrumentation.torchconfig  --rc ../../dynconfig/Logging/RuntimeConfig
-for cmd in `cat $cmdsFile`
+while read -r cmd
 do
     cmdName=`echo $cmd | cut -d':' -f1`
     execCmd=`echo $cmd | cut -d':' -f2`
@@ -28,7 +28,7 @@ do
     mkdir $ldir1/$cmdName
     mv execution_log $ldir1/$cmdName
     mv torch-runtime-log4net.torchlog.decompressed $ldir1/$cmdName
-done
+done < $cmdsFile
 
 while read -r dirName
 do
@@ -41,7 +41,7 @@ do
     $TORCH_HOME/tools/net/torch-instrumenter-internal.exe -i . --ic ../../dynconfig/FaultInjectionSet/FInject/$dirName/torch-instrumentation.torchconfig  --rc ../../dynconfig/FaultInjectionSet/FInject/$dirName/RuntimeConfig
     ldir2="../../dynlogs/FaultInjectionSet/FInject/$dirName"
     mkdir $ldir2
-    for cmd in `cat $cmdsFile`
+    while read -r cmd
     do
         cmdName=`echo $cmd | cut -d':' -f1`
         execCmd=`echo $cmd | cut -d':' -f2`
@@ -50,7 +50,7 @@ do
         mkdir $ldir2/$cmdName
         mv execution_log $ldir2/$cmdName
         mv torch-runtime-log4net.torchlog.decompressed $ldir2/$cmdName
-    done
+    done < $cmdsFile
 done < ../../dynconfig/FaultInjectionSet/FInject/fault_config_dirs.txt
 
 while read -r dirName
@@ -64,7 +64,7 @@ do
     $TORCH_HOME/tools/net/torch-instrumenter-internal.exe -i . --ic ../../dynconfig/FaultInjectionSet/LinkInject/$dirName/torch-instrumentation.torchconfig  --rc ../../dynconfig/FaultInjectionSet/LinkInject/$dirName/RuntimeConfig
     ldir3="../../dynlogs/FaultInjectionSet/LinkInject/$dirName"
     mkdir $ldir3
-    for cmd in `cat $cmdsFile`
+    while read -r cmd
     do
         cmdName=`echo $cmd | cut -d':' -f1`
         execCmd=`echo $cmd | cut -d':' -f2`
@@ -73,7 +73,7 @@ do
         mkdir $ldir3/$cmdName
         mv execution_log $ldir3/$cmdName
         mv torch-runtime-log4net.torchlog.decompressed $ldir3/$cmdName
-    done
+    done < $cmdsFile
 done < ../../dynconfig/FaultInjectionSet/LinkInject/fault_config_dirs.txt
 
 # Restore original state - i.e. before instrumentation
