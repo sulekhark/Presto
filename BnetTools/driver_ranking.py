@@ -86,7 +86,7 @@ with subprocess.Popen([wrapperExecutable, fgFileName], \
         index = 0
         for t, confidence in alarmList:
             index = index + 1
-            print('{0}\t{1}\t{2}'.format(index, confidence, t), file=outFile)
+            print('{}\t{:.6f}\t{}'.format(index, confidence, t), file=outFile)
 
 
     def runAlarmRanking(tolerance, minIters, maxIters, histLength, outFile):
