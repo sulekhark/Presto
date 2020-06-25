@@ -33,7 +33,7 @@ logDirPrefix = "T"
 minProb = 0.5
 maxProb = 0.99
 midProb = 0.95
-linkedExMinProb = 0.05
+linkedExMinProb = 0.01
 scaler = 100
 
 logging.basicConfig(level=logging.INFO, \
