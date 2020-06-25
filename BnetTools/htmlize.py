@@ -408,7 +408,7 @@ def writeIndexPage():
     indent += 1
     hprint("<head>")
     indent += 1
-    hprint("<title>Presto derivation graph</title>")
+    hprint("<title>Presto: Ranking of Exception Bugs</title>")
     indent -= 1
     hprint("</head>")
     hprint("<body>")
