@@ -34,6 +34,7 @@ minProb = 0.5
 maxProb = 0.99
 midProb = 0.95
 linkedExMinProb = 0.05
+scaler = 100
 
 logging.basicConfig(level=logging.INFO, \
                             format="[%(asctime)s] %(levelname)s [%(name)s.%(funcName)s:%(lineno)d] %(message)s", \
@@ -235,7 +236,7 @@ def computeProbCallAt(entry):
     elif (callCnt == 0):
         prob = minProb
     else:
-        prob = minProb + ((maxProb - minProb) * callCnt / totalCnt)
+        prob = minProb + ((maxProb - minProb) * (callCnt + scaler) / (totalCnt + scaler))
     logging.info('SRK_DBG: find_tuple_prob.py: tuple:{0} {1}  totalCnt:{2}  callCnt:{3}'.format(caller, callee, totalCnt, callCnt))
     print("{0}: {1}".format(bnetNodeId, prob))
     return
@@ -284,7 +285,7 @@ def computeProbCondCallAt(entry):
     elif (callCnt == 0):
         prob = minProb
     else:
-        prob = minProb + ((maxProb - minProb) * callCnt / totalCnt)
+        prob = minProb + ((maxProb - minProb) * (callCnt + scaler) / (totalCnt + scaler))
     print("{0}: {1}".format(bnetNodeId, prob))
     return
 
@@ -370,7 +371,7 @@ def computeProbEscapeMTP(entry):
         elif callCountTotal > 0 and excCountTotal == 0:
             prob = minProb
         else:
-            prob = minProb + ((maxProb - minProb) * excCountTotal / callCountTotal)
+            prob = minProb + ((maxProb - minProb) * (excCountTotal + scaler) / (callCountTotal + scaler))
     else: # We cannot get a probability from Torch logs for this tuple
         prob = maxProb
     print("{0}: {1}".format(bnetNodeId, prob))
@@ -420,7 +421,7 @@ def computeProbLinkedEx(entry):
     elif excCount == 0:
         prob = linkedExMinProb
     else:
-        prob = linkedExMinProb + ((maxProb - linkedExMinProb) * excCount / callCount)
+        prob = linkedExMinProb + ((maxProb - linkedExMinProb) * (excCount + scaler) / (callCount + scaler))
     print("{0}: {1}".format(bnetNodeId, prob))
     return
 
