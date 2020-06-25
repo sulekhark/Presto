@@ -33,6 +33,7 @@ logDirPrefix = "T"
 minProb = 0.5
 maxProb = 0.99
 midProb = 0.95
+linkedExMinProb = 0.05
 
 logging.basicConfig(level=logging.INFO, \
                             format="[%(asctime)s] %(levelname)s [%(name)s.%(funcName)s:%(lineno)d] %(message)s", \
@@ -415,11 +416,11 @@ def computeProbLinkedEx(entry):
                 if (node.parent.exception[nodeNdx] == excType):
                     excCount += 1
     if callCount == 0:
-        prob = minProb
+        prob = linkedExMinProb
     elif excCount == 0:
-        prob = minProb
+        prob = linkedExMinProb
     else:
-        prob = minProb + ((maxProb - minProb) * excCount / callCount)
+        prob = linkedExMinProb + ((maxProb - linkedExMinProb) * excCount / callCount)
     print("{0}: {1}".format(bnetNodeId, prob))
     return
 

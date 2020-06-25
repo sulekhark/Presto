@@ -1,4 +1,5 @@
 System.ArgumentException:new ArgumentException('Injected by daffodil-torch');
+System.IO.FileNotFoundException:new FileNotFoundException('Injected by daffodil-torch');
 System.ArgumentNullException:new ArgumentNullException('Injected by daffodil-torch');
 System.NullReferenceException:new NullReferenceException('Injected by daffodil-torch');
 System.FieldAccessException:new FieldAccessException('Injected by daffodil-torch');
