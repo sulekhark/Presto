@@ -37,7 +37,8 @@ public class FilePackageWriter
                 }
                 else
                 {
-                    throw new NullReferenceException("Parent directory info was null!");
+                    int errId = 1;
+                    FilePackageHelper.HandleError(errId, "Parent directory info was null!");
                 }
 
                 File.Delete(_filepath);
@@ -52,7 +53,8 @@ public class FilePackageWriter
                 }
                 else
                 {
-                    throw new Exception("The input file path '" + _filepath +
+                    int errId = 2;
+                    FilePackageHelper.HandleError(errId, "The input file path '" + _filepath +
                                         "' does not contain any file seperators.");
                 }
             }
@@ -75,16 +77,29 @@ public class FilePackageWriter
                 }
                 else
                 {
-                    throw new FileNotFoundException("File path " + filePath + " doesn't exist!");
+                    int errId = 3;
+                    FilePackageHelper.HandleError(errId, "File not found error");
                 }
             }
             // Generate the ZIP from the temp directory
             ZipFile.CreateFromDirectory(_tempDirectoryPath, _filepath);
         }
-        catch (Exception e)
+        catch (NullReferenceException e)
         {
             var errorMessage = "An error occured while generating the package.";
             throw new Exception(errorMessage, e);
+        }
+        catch (FileNotFoundException e)
+        {
+            var errorMessage = "An error occured while generating the package.";
+            throw new Exception(errorMessage, e);
+        }
+        catch (Exception e)
+        {
+            if (FilePackageHelper.IsFatal(e))
+            {
+                throw e;
+            }
         }
         finally
         {

@@ -15,10 +15,12 @@ public class FilePackageReader
 
     public Dictionary<string, string> GetFilenameFileContentDictionary()
     {
+        _filenameFileContentDictionary = new Dictionary<string, string>();
+
+        var fileInfo = new FileInfo(_filepath);
+        if (!fileInfo.Exists) FilePackageHelper.HandleInputError("The package to read does not exist!");
         try
         {
-            _filenameFileContentDictionary = new Dictionary<string, string>();
-
             // Open the package file
             using (var fs = new FileStream(_filepath, FileMode.Open))
             {
@@ -38,13 +40,14 @@ public class FilePackageReader
                     }
                 }
             }
-
-            return _filenameFileContentDictionary;
         }
         catch (Exception e)
         {
-            var errorMessage = "Unable to open/read the package. ";
-            throw new Exception(errorMessage, e);
+            if (FilePackageHelper.IsFatal(e))
+            {
+                throw e;
+            }
         }
+        return _filenameFileContentDictionary;
     }
 }

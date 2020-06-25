@@ -32,6 +32,7 @@ namespace Daffodil.DatalogAnalysisFW.AnalysisNetConsole
 
         public StreamWriter tacLogSW;
         public StreamWriter factGenLogSW;
+        private int SystemExceptionsCount;
 
         // To be cleared for each method.
         private IVariable currentCatchVar;
@@ -49,6 +50,7 @@ namespace Daffodil.DatalogAnalysisFW.AnalysisNetConsole
         {
             tacLogSW = sw1;
             factGenLogSW = sw2;
+            SystemExceptionsCount = 0;
             //Create a hypothetical field that represents all array elements
             FieldRefWrapper nullFieldRefW = new FieldRefWrapper(null);
             ProgramDoms.domF.Add(nullFieldRefW);
@@ -664,10 +666,28 @@ namespace Daffodil.DatalogAnalysisFW.AnalysisNetConsole
             IVariable lhsVar = newObjInst.Result;
             ITypeDefinition objTypeDef = newObjInst.AllocationType.ResolvedType;
             if (Stubber.SuppressF(objTypeDef)) return;
-            if (ConfigParams.SuppressSystemExceptions)
+            if (exceptionTypes.Contains(objTypeDef) && methDef.FullName().StartsWith("System."))
             {
-                if (exceptionTypes.Contains(objTypeDef) && methDef.FullName().StartsWith("System.")) return;
-                if (exceptionTypes.Contains(objTypeDef) && methDef.FullName().StartsWith("Microsoft.Win32.")) return;
+                if (ConfigParams.SuppressSystemExceptions) return;
+                if (ConfigParams.SystemExceptionsLimit != -1)
+                {
+                    if (SystemExceptionsCount < ConfigParams.SystemExceptionsLimit)
+                    {
+                        bool match = false;
+                        for (int i = 0; i < ConfigParams.SystemExceptionsAllow.Length; i++)
+                        {
+                            if (methDef.FullName().StartsWith(ConfigParams.SystemExceptionsAllow[i])) match = true;
+                        }
+                        if (match)
+                            SystemExceptionsCount += 1;
+                        else
+                            return;
+                    }
+                    else
+                    {
+                        return;
+                    }
+                }
             }
             objTypeDef = Stubber.GetStubIfStubbed(objTypeDef); 
             VariableWrapper lhsW = WrapperProvider.getVarW(lhsVar);

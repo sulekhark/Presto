@@ -18,7 +18,10 @@ namespace FilePkgUtil
             filePackage.ContentFilePathList = flst;
             flst.Add(f1);
             flst.Add(f2);
-            
+
+            FilePackageHelper.logOnly = true;
+            if (args.Length == 1 && args[0] == "false") FilePackageHelper.logOnly = false;
+
             var filePackageWriter = new FilePackageWriter(filePackage);
             filePackageWriter.GeneratePackage(false);
 

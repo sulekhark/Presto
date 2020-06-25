@@ -48,6 +48,10 @@ namespace Daffodil.DatalogAnalysisFW.AnalysisNetConsole
             prefixesToSuppressMeth.Add("System.Xml");
             prefixesToSuppressMeth.Add("System.Convert");
             prefixesToSuppressMeth.Add("Microsoft.Cci");
+            prefixesToSuppressMeth.Add("Microsoft.Win32");
+            prefixesToSuppressMeth.Add("System.Collections.Generic.ObjectEqualityComparer");
+            prefixesToSuppressMeth.Add("System.Collections.Generic.EqualityComparer");
+            prefixesToSuppressMeth.Add("System.Collections.Generic.RandomizedEqualityComparer");
 
             prefixesToSuppressFull = new List<string>();
             prefixesToSuppressFull.Add("System.Double");
