@@ -9,9 +9,11 @@ do
     fname=`basename $i`
     dos2unix $fname
 done
+cp ../ground_truth.txt .
 cp ../logs/rta_log.txt .
 cp ../logs/tac_log.txt .
 cp ../logs/factgen_log.txt .
+dos2unix ground_truth.txt
 dos2unix tac_log.txt
 dos2unix rta_log.txt
 dos2unix factgen_log.txt

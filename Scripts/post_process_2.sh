@@ -5,6 +5,7 @@ dynlogTgz=$1
 tar xzf $dynlogTgz
 cd bnet
 dynLogDir=../dynlogs
+datalogDir=../datalog
 
 if [ -s named_cons_cr_lf_cr.txt.ee.refined ]
 then
@@ -23,7 +24,7 @@ then
         cat set2_probs.txt.refined >> edb_probabilities.txt.refined
     fi
     $PRESTO_HOME/BnetTools/bnet2fg.py edb_probabilities.txt.refined  < named_bnet.out.refined > factorGraph.fg.refined 2> bnet2fg.log.refined
-    $PRESTO_HOME/BnetTools/arcmd $PRESTO_HOME/BnetTools bnet_dict.out.refined factorGraph.fg.refined base_queries.txt 500
+    $PRESTO_HOME/BnetTools/arcmd $PRESTO_HOME/BnetTools bnet_dict.out.refined factorGraph.fg.refined base_queries.txt $datalogDir/ground_truth.txt 500
     mv alarm_ranking.txt alarm_ranking.txt.refined
     mv arcmd.log arcmd.log.refined
     mv arcmd.out arcmd.out.refined
@@ -46,7 +47,7 @@ then
     cat set2_probs.txt >> edb_probabilities.txt
 fi
 $PRESTO_HOME/BnetTools/bnet2fg.py edb_probabilities.txt  < named_bnet.out > factorGraph.fg 2> bnet2fg.log
-$PRESTO_HOME/BnetTools/arcmd $PRESTO_HOME/BnetTools bnet_dict.out factorGraph.fg base_queries.txt 500
+$PRESTO_HOME/BnetTools/arcmd $PRESTO_HOME/BnetTools bnet_dict.out factorGraph.fg base_queries.txt $datalogDir/ground_truth.txt 500
 
 cd ..
 $PRESTO_HOME/BnetTools/htmlize.sh

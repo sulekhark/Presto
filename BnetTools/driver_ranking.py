@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-# driver_ranking.py bnet_dict.out factorGraph.fg base_queries.txt
+# driver_ranking.py bnet_dict.out factorGraph.fg base_queries.txt ground_truth.txt
 #
 # Accepts human-readable commands from stdin, and passes them to LibDAI/wrapper.cpp, thus acting as a convenient driver.
 # Arguments:
@@ -8,9 +8,8 @@
 #    commands, such as "O racePairs_cs(428,913) true" to the format accepted by LibDAI/wrapper.cpp, such as
 #    "O 38129 true".
 # 2. Factor graph, factor-graph.fg
-# 3. Base queries file, base_queries.txt. This need not be the full list of base queries produced by Chord, but could
-#    instead be any subset of it, such as the alarms reported by the upper oracle.
-# 4. The EDB tuples that need to be clamped to true. 
+# 3. Base queries file, base_queries.txt. This file contains the list of all the alarms that need to be ranked.
+# 4. The file that contains the list of alarms that are true in th ground truth.
 
 import logging
 import subprocess
@@ -22,6 +21,7 @@ import os
 dictFileName = sys.argv[1]
 fgFileName = sys.argv[2]
 baseQueriesFileName = sys.argv[3]
+groundTruthFileName = sys.argv[4]
 
 rootDir = os.environ['PRESTO_HOME']
 wrapperExecutable = rootDir + '/BnetTools/libdai/wrapper'
@@ -47,6 +47,8 @@ for line in open(dictFileName):
 labelledTuples = {}
 
 baseQueries = set([ line.strip() for line in open(baseQueriesFileName) if len(line.strip()) > 0 ])
+gtTuples = set([ line.strip() for line in open(groundTruthFileName) if len(line.strip()) > 0 ])
+assert(gtTuples.issubset(baseQueries))
 assert(baseQueries.issubset(set(bnetDict.keys())))
 
 logging.info('Populated {0} base queries.'.format(len(baseQueries)))
@@ -82,11 +84,12 @@ with subprocess.Popen([wrapperExecutable, fgFileName], \
 
     def printRankedAlarms(outFile):
         alarmList = getRankedAlarms()
-        print('Rank\tConfidence\tTuple', file=outFile)
+        print('Rank\tConfidence\tGroundTruth\tTuple', file=outFile)
         index = 0
         for t, confidence in alarmList:
             index = index + 1
-            print('{}\t{:.6f}\t{}'.format(index, confidence, t), file=outFile)
+            gtVal = 'TrueAlarm' if t in gtTuples else 'FalseAlarm'
+            print('{}\t{:.6f}\t{}\t{}'.format(index, confidence, gtVal, t), file=outFile)
 
 
     def runAlarmRanking(tolerance, minIters, maxIters, histLength, outFile):
