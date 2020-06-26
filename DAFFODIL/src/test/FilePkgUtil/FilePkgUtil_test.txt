@@ -1,1 +1,3 @@
-cmd1:./FilePkgUtil.exe
+cmd1:./FilePkgUtil.exe false false
+cmd2:./FilePkgUtil.exe true false
+cmd3:./FilePkgUtil.exe false true

@@ -19,8 +19,12 @@ namespace FilePkgUtil
             flst.Add(f1);
             flst.Add(f2);
 
-            FilePackageHelper.logOnly = true;
-            if (args.Length == 1 && args[0] == "false") FilePackageHelper.logOnly = false;
+            bool simulateError1 = false;
+            bool simulateError2 = false;
+            if (args[0] == "true") simulateError1 = true;
+            if (args[1] == "true") simulateError2 = true;
+            FilePackageWriter.simulateError1 = simulateError1;
+            FilePackageHelper.simulateError2 = simulateError2;
 
             var filePackageWriter = new FilePackageWriter(filePackage);
             filePackageWriter.GeneratePackage(false);

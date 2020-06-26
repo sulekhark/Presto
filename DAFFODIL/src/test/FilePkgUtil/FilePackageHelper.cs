@@ -1,41 +1,33 @@
 using System;
-using System.Collections.Generic;
 using System.IO;
 
 public static class FilePackageHelper
 {
-    public static bool logOnly;
-
+    public static bool simulateError2;
     public static void HandleError(int errId, string msg)
     {
-        if (logOnly)
+        if (errId == -1) return;
+        switch (errId)
         {
-            System.Console.WriteLine("Error: ID:" + errId + " Error Msg:" + msg);
-        }
-        else
-        {
-            switch (errId)
-            {
-                case 0:
-                    ThrowEx(msg);
-                    break;
-                case 1:
-                    ThrowNullRefEx(msg);
-                    break;
-                case 2:
-                    ThrowEx(msg);
-                    break;
-                case 3:
-                    ThrowFileNotFoundEx(msg);
-                    break;
-            }
+            case 0:
+                ThrowEx(msg);
+                break;
+            case 1:
+                ThrowNullRefEx(msg);
+                break;
+            case 2:
+                ThrowEx(msg);
+                break;
         }
     }
 
-    public static void HandleInputError(string msg)
+    public static void CheckInput(FileInfo fileInfo, string msg)
     {
-        System.Console.WriteLine("Input argument error: Giving up...");
-        ThrowArgumentEx(msg);
+        if (!fileInfo.Exists || simulateError2)
+        {
+            System.Console.WriteLine("Input argument error: Giving up...");
+            ThrowArgumentEx(msg);
+        }
     }
 
     public static void ThrowNullRefEx(string msg)
@@ -46,11 +38,6 @@ public static class FilePackageHelper
     public static void ThrowEx(string msg)
     {
         throw new Exception(msg);
-    }
-
-    public static void ThrowFileNotFoundEx(string msg)
-    {
-        throw new FileNotFoundException(msg);
     }
 
     public static void ThrowArgumentEx(string msg)

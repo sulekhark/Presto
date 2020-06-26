@@ -44,6 +44,7 @@ namespace Daffodil.DatalogAnalysisFW.AnalysisNetConsole
         }
         private readonly Stack<EhStruct> ehStack = new Stack<EhStruct>();
         private ISet<ITypeDefinition> exceptionTypes = new HashSet<ITypeDefinition>();
+        private bool sysExcChosen;
 
 
         public FactGenerator(StreamWriter sw1, StreamWriter sw2)
@@ -62,6 +63,7 @@ namespace Daffodil.DatalogAnalysisFW.AnalysisNetConsole
             currentCatchVar = null;
             prevEhW = null;
             ehStack.Clear();
+            sysExcChosen = false;
 
             IMethodDefinition methDef = mBody.MethodDefinition;
             MethodRefWrapper mRefW = WrapperProvider.getMethodRefW(methDef, mBody);
@@ -671,7 +673,7 @@ namespace Daffodil.DatalogAnalysisFW.AnalysisNetConsole
                 if (ConfigParams.SuppressSystemExceptions) return;
                 if (ConfigParams.SystemExceptionsLimit != -1)
                 {
-                    if (SystemExceptionsCount < ConfigParams.SystemExceptionsLimit)
+                    if (SystemExceptionsCount < ConfigParams.SystemExceptionsLimit && !sysExcChosen)
                     {
                         bool match = false;
                         for (int i = 0; i < ConfigParams.SystemExceptionsAllow.Length; i++)
@@ -679,7 +681,10 @@ namespace Daffodil.DatalogAnalysisFW.AnalysisNetConsole
                             if (methDef.FullName().StartsWith(ConfigParams.SystemExceptionsAllow[i])) match = true;
                         }
                         if (match)
+                        {
                             SystemExceptionsCount += 1;
+                            sysExcChosen = true;
+                        }
                         else
                             return;
                     }

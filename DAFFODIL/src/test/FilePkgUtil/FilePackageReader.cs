@@ -15,37 +15,49 @@ public class FilePackageReader
 
     public Dictionary<string, string> GetFilenameFileContentDictionary()
     {
-        _filenameFileContentDictionary = new Dictionary<string, string>();
-
         var fileInfo = new FileInfo(_filepath);
-        if (!fileInfo.Exists) FilePackageHelper.HandleInputError("The package to read does not exist!");
+        FilePackageHelper.CheckInput(fileInfo, "The package to read does not exist!");
+        Dictionary<string, string> fContentDict = null;
         try
         {
-            // Open the package file
-            using (var fs = new FileStream(_filepath, FileMode.Open))
-            {
-                // Open the package file as a ZIP
-                using (var archive = new ZipArchive(fs))
-                {
-                    // Iterate through the content files and add them to a dictionary
-                    foreach (var zipArchiveEntry in archive.Entries)
-                    {
-                        using (var stream = zipArchiveEntry.Open())
-                        {
-                            using (var zipSr = new StreamReader(stream))
-                            {
-                                _filenameFileContentDictionary.Add(zipArchiveEntry.Name, zipSr.ReadToEnd());
-                            }
-                        }
-                    }
-                }
-            }
+            fContentDict = GetFilenameFileContentDictionaryInt();
         }
         catch (Exception e)
         {
             if (FilePackageHelper.IsFatal(e))
             {
                 throw e;
+            }
+            else
+            {
+                string msg = e.Message;
+                System.Console.WriteLine("GetFilenameFileContentDictionary: Non-fatal exception raised:" + msg);
+            }
+        }
+        return fContentDict;
+    }
+
+    public Dictionary<string, string> GetFilenameFileContentDictionaryInt()
+    {
+        _filenameFileContentDictionary = new Dictionary<string, string>();
+
+        // Open the package file
+        using (var fs = new FileStream(_filepath, FileMode.Open))
+        {
+            // Open the package file as a ZIP
+            using (var archive = new ZipArchive(fs))
+            {
+                // Iterate through the content files and add them to a dictionary
+                foreach (var zipArchiveEntry in archive.Entries)
+                {
+                    using (var stream = zipArchiveEntry.Open())
+                    {
+                        using (var zipSr = new StreamReader(stream))
+                        {
+                            _filenameFileContentDictionary.Add(zipArchiveEntry.Name, zipSr.ReadToEnd());
+                        }
+                    }
+                }
             }
         }
         return _filenameFileContentDictionary;

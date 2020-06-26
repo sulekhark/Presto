@@ -10,6 +10,8 @@ public class FilePackageWriter
     private readonly IEnumerable<string> _contentFilePathList;
     private string _tempDirectoryPath;
 
+    public static bool simulateError1;
+
     public FilePackageWriter(FilePackage filePackage)
     {
         _filepath = filePackage.FilePath;
@@ -20,76 +22,9 @@ public class FilePackageWriter
     {
         try
         {
-            string parentDirectoryPath = null;
-            string filename = null;
-
-            var fileInfo = new FileInfo(_filepath);
-
-            // Get the parent directory path of the package file and if the package file already exists delete it
-            if (fileInfo.Exists)
-            {
-                filename = fileInfo.Name;
-
-                var parentDirectoryInfo = fileInfo.Directory;
-                if (parentDirectoryInfo != null)
-                {
-                    parentDirectoryPath = parentDirectoryInfo.FullName;
-                }
-                else
-                {
-                    int errId = 1;
-                    FilePackageHelper.HandleError(errId, "Parent directory info was null!");
-                }
-
-                File.Delete(_filepath);
-            }
-            else
-            {
-                var lastIndexOfFileSeperator = _filepath.LastIndexOf("\\", StringComparison.Ordinal);
-                if (lastIndexOfFileSeperator != -1)
-                {
-                    parentDirectoryPath = _filepath.Substring(0, lastIndexOfFileSeperator);
-                    filename = _filepath.Substring(lastIndexOfFileSeperator + 1,_filepath.Length - (lastIndexOfFileSeperator + 1));
-                }
-                else
-                {
-                    int errId = 2;
-                    FilePackageHelper.HandleError(errId, "The input file path '" + _filepath +
-                                        "' does not contain any file seperators.");
-                }
-            }
-
-            // Create a temp directory for our package
-            _tempDirectoryPath = parentDirectoryPath + "\\" + filename + "_temp";
-            if (Directory.Exists(_tempDirectoryPath))
-            {
-                Directory.Delete(_tempDirectoryPath, true);
-            }
-
-            Directory.CreateDirectory(_tempDirectoryPath);
-            foreach (var filePath in _contentFilePathList)
-            {
-                // Copy every content file into the temp directory we created before
-                var filePathInfo = new FileInfo(filePath);
-                if (filePathInfo.Exists)
-                {
-                    File.Copy(filePathInfo.FullName, _tempDirectoryPath + "\\" + filePathInfo.Name);
-                }
-                else
-                {
-                    int errId = 3;
-                    FilePackageHelper.HandleError(errId, "File not found error");
-                }
-            }
-            // Generate the ZIP from the temp directory
-            ZipFile.CreateFromDirectory(_tempDirectoryPath, _filepath);
+            GeneratePackageInt(deleteContents);
         }
         catch (NullReferenceException e)
-        {
-            var errorMessage = "An error occured while generating the package.";
-            throw new Exception(errorMessage, e);
-        }
-        catch (FileNotFoundException e)
         {
             var errorMessage = "An error occured while generating the package.";
             throw new Exception(errorMessage, e);
@@ -100,23 +35,88 @@ public class FilePackageWriter
             {
                 throw e;
             }
-        }
-        finally
-        {
-            // Clear the temp directory and the content files
-            if (Directory.Exists(_tempDirectoryPath))
+            else
             {
-                Directory.Delete(_tempDirectoryPath, true);
+                string msg = e.Message;
+                System.Console.WriteLine("GeneratePackage: Non-fatal exception raised:" + msg);
             }
+        }
+    }
 
-            if (deleteContents)
+    public void GeneratePackageInt(bool deleteContents)
+    {
+        string parentDirectoryPath = null;
+        string filename = null;
+
+        var fileInfo = new FileInfo(_filepath);
+        int errId = -1;
+        string msg = "";
+        // Get the parent directory path of the package file and if the package file already exists delete it
+        if (fileInfo.Exists)
+        {
+            filename = fileInfo.Name;
+
+            var parentDirectoryInfo = fileInfo.Directory;
+            if (parentDirectoryInfo != null)
             {
-                foreach (var filePath in _contentFilePathList)
+                parentDirectoryPath = parentDirectoryInfo.FullName;
+                if (simulateError1) errId = 1;
+            }
+            else
+            {
+                errId = 1;
+                msg = "Parent directory info was null!";
+            }
+            File.Delete(_filepath);
+        }
+        else
+        {
+            var lastIndexOfFileSeperator = _filepath.LastIndexOf("\\", StringComparison.Ordinal);
+            if (lastIndexOfFileSeperator != -1)
+            {
+                parentDirectoryPath = _filepath.Substring(0, lastIndexOfFileSeperator);
+                filename = _filepath.Substring(lastIndexOfFileSeperator + 1, _filepath.Length - (lastIndexOfFileSeperator + 1));
+                if (simulateError1) errId = 2;
+            }
+            else
+            {
+                errId = 2;
+                msg = "The input file path does not contain any file seperators.";
+            }
+        }
+        // Create a temp directory for our package
+        _tempDirectoryPath = parentDirectoryPath + "\\" + filename + "_temp";
+        if (Directory.Exists(_tempDirectoryPath))
+        {
+            Directory.Delete(_tempDirectoryPath, true);
+        }
+
+        Directory.CreateDirectory(_tempDirectoryPath);
+        foreach (var filePath in _contentFilePathList)
+        {
+            // Copy every content file into the temp directory we created before
+            var filePathInfo = new FileInfo(filePath);
+            if (filePathInfo.Exists)
+            {
+                File.Copy(filePathInfo.FullName, _tempDirectoryPath + "\\" + filePathInfo.Name);
+            }
+        }
+        FilePackageHelper.HandleError(errId, msg);
+        // Generate the ZIP from the temp directory
+        ZipFile.CreateFromDirectory(_tempDirectoryPath, _filepath);
+
+        if (Directory.Exists(_tempDirectoryPath))
+        {
+            Directory.Delete(_tempDirectoryPath, true);
+        }
+
+        if (deleteContents)
+        {
+            foreach (var filePath in _contentFilePathList)
+            {
+                if (File.Exists(filePath))
                 {
-                    if (File.Exists(filePath))
-                    {
-                        File.Delete(filePath);
-                    }
+                    File.Delete(filePath);
                 }
             }
         }
