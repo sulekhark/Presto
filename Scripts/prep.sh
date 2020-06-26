@@ -11,8 +11,10 @@ do
 done
 cp ../logs/rta_log.txt .
 cp ../logs/tac_log.txt .
+cp ../logs/factgen_log.txt .
 dos2unix tac_log.txt
 dos2unix rta_log.txt
+dos2unix factgen_log.txt
 dos2unix modules.txt
 dos2unix classes.txt
 dos2unix methods.txt

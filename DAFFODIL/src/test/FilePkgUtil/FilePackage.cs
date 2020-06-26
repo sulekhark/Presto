@@ -1,8 +1,11 @@
 using System.Collections.Generic;
 
-public class FilePackage
+namespace FilePkgUtil
 {
-    public string FilePath { get; set; }
-    public IEnumerable<string> ContentFilePathList { get; set; }
+    public class FilePackage
+    {
+        public string FilePath { get; set; }
+        public IEnumerable<string> ContentFilePathList { get; set; }
+    }
 }
 

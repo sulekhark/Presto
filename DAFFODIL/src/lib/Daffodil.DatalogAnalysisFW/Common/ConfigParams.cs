@@ -19,6 +19,7 @@ namespace Daffodil.DatalogAnalysisFW.Common
         public static bool SuppressSystemExceptions { get; set; }
         public static int SystemExceptionsLimit { get; set; }
         public static string[] SystemExceptionsAllow { get; set; }
+        public static string[] AppClassPrefixes { get; set; }
         public static string SourceRoot { get; set; }
 
         public static void LoadConfig(string filePath)
@@ -84,6 +85,11 @@ namespace Daffodil.DatalogAnalysisFW.Common
                             string allowedCl = line.Split()[1];
                             SystemExceptionsAllow = allowedCl.Split(':');
                         }
+                        else if (line.StartsWith("AppClassPrefixes= "))
+                        {
+                            string appCl = line.Split()[1];
+                            AppClassPrefixes = appCl.Split(':');
+                        }
                         else if (line.StartsWith("SourceRoot= "))
                         {
                             SourceRoot = line.Split()[1];
@@ -111,6 +117,7 @@ namespace Daffodil.DatalogAnalysisFW.Common
                 sw.WriteLine("SuppressSystemExceptions= {0}", SuppressSystemExceptions ? "true" : "false");
                 sw.WriteLine("SystemExceptionsLimit= {0}", SystemExceptionsLimit.ToString());
                 sw.WriteLine("SystemExceptionsAllow= {0}", String.Join(":", SystemExceptionsAllow));
+                sw.WriteLine("AppClassPrefixes= {0}", String.Join(":", AppClassPrefixes));
                 sw.WriteLine("SourceRoot= {0}", SourceRoot);
             }
         }

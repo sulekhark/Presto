@@ -3,63 +3,66 @@ using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
 
-public class FilePackageReader
+namespace FilePkgUtil
 {
-    private Dictionary<string, string> _filenameFileContentDictionary;
-    private readonly string _filepath;
-
-    public FilePackageReader(string filepath)
+    public class FilePackageReader
     {
-        _filepath = filepath;
-    }
+        private Dictionary<string, string> _filenameFileContentDictionary;
+        private readonly string _filepath;
 
-    public Dictionary<string, string> GetFilenameFileContentDictionary()
-    {
-        var fileInfo = new FileInfo(_filepath);
-        FilePackageHelper.CheckInput(fileInfo, "The package to read does not exist!");
-        Dictionary<string, string> fContentDict = null;
-        try
+        public FilePackageReader(string filepath)
         {
-            fContentDict = GetFilenameFileContentDictionaryInt();
+            _filepath = filepath;
         }
-        catch (Exception e)
-        {
-            if (FilePackageHelper.IsFatal(e))
-            {
-                throw e;
-            }
-            else
-            {
-                string msg = e.Message;
-                System.Console.WriteLine("GetFilenameFileContentDictionary: Non-fatal exception raised:" + msg);
-            }
-        }
-        return fContentDict;
-    }
 
-    public Dictionary<string, string> GetFilenameFileContentDictionaryInt()
-    {
-        _filenameFileContentDictionary = new Dictionary<string, string>();
-
-        // Open the package file
-        using (var fs = new FileStream(_filepath, FileMode.Open))
+        public Dictionary<string, string> GetFilenameFileContentDictionary()
         {
-            // Open the package file as a ZIP
-            using (var archive = new ZipArchive(fs))
+            var fileInfo = new FileInfo(_filepath);
+            FilePackageHelper.CheckInput(fileInfo, "The package to read does not exist!");
+            Dictionary<string, string> fContentDict = null;
+            try
             {
-                // Iterate through the content files and add them to a dictionary
-                foreach (var zipArchiveEntry in archive.Entries)
+                fContentDict = GetFilenameFileContentDictionaryInt();
+            }
+            catch (Exception e)
+            {
+                if (FilePackageHelper.IsFatal(e))
                 {
-                    using (var stream = zipArchiveEntry.Open())
+                    throw e;
+                }
+                else
+                {
+                    string msg = e.Message;
+                    System.Console.WriteLine("GetFilenameFileContentDictionary: Non-fatal exception raised:" + msg);
+                }
+            }
+            return fContentDict;
+        }
+
+        public Dictionary<string, string> GetFilenameFileContentDictionaryInt()
+        {
+            _filenameFileContentDictionary = new Dictionary<string, string>();
+
+            // Open the package file
+            using (var fs = new FileStream(_filepath, FileMode.Open))
+            {
+                // Open the package file as a ZIP
+                using (var archive = new ZipArchive(fs))
+                {
+                    // Iterate through the content files and add them to a dictionary
+                    foreach (var zipArchiveEntry in archive.Entries)
                     {
-                        using (var zipSr = new StreamReader(stream))
+                        using (var stream = zipArchiveEntry.Open())
                         {
-                            _filenameFileContentDictionary.Add(zipArchiveEntry.Name, zipSr.ReadToEnd());
+                            using (var zipSr = new StreamReader(stream))
+                            {
+                                _filenameFileContentDictionary.Add(zipArchiveEntry.Name, zipSr.ReadToEnd());
+                            }
                         }
                     }
                 }
             }
+            return _filenameFileContentDictionary;
         }
-        return _filenameFileContentDictionary;
     }
 }

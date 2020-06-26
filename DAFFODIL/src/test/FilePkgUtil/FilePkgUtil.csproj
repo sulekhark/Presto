@@ -53,7 +53,7 @@
     <Compile Include="FilePackageHelper.cs" />
     <Compile Include="FilePackageReader.cs" />
     <Compile Include="FilePackageWriter.cs" />
-    <Compile Include="FilePkgUtil.cs" />
+    <Compile Include="FilePackageMain.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

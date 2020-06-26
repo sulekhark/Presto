@@ -158,6 +158,11 @@ namespace Daffodil.DatalogAnalysisFW.AnalysisNetConsole
             }
             factGen.CheckDomX();
             tacLogSW.Close();
+            factGenLogSW.WriteLine("TotalBytecodeLocCount= " + factGen.TotalBytecodeLocCount.ToString());
+            factGenLogSW.WriteLine("AppBytecodeLocCount= " + factGen.AppBytecodeLocCount.ToString());
+            factGenLogSW.WriteLine("TotalMethCount= " + factGen.TotalMethCount.ToString());
+            factGenLogSW.WriteLine("AppMethCount= " + factGen.AppMethCount.ToString());
+            factGenLogSW.Close();
         }
 
         static void CopyAll(ISet<ITypeDefinition> srcSet, IList<ITypeDefinition> dstList)

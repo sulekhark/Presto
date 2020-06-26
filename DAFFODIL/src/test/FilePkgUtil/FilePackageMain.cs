@@ -4,7 +4,7 @@ using System.IO;
 
 namespace FilePkgUtil
 {
-    class FilePkgUtil
+    class FilePackageMain
     {
         static void Main(string[] args)
         {

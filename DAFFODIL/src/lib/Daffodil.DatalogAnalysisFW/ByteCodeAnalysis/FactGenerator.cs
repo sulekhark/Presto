@@ -32,6 +32,10 @@ namespace Daffodil.DatalogAnalysisFW.AnalysisNetConsole
 
         public StreamWriter tacLogSW;
         public StreamWriter factGenLogSW;
+        public int AppBytecodeLocCount;
+        public int TotalBytecodeLocCount;
+        public int AppMethCount;
+        public int TotalMethCount;
         private int SystemExceptionsCount;
 
         // To be cleared for each method.
@@ -52,9 +56,39 @@ namespace Daffodil.DatalogAnalysisFW.AnalysisNetConsole
             tacLogSW = sw1;
             factGenLogSW = sw2;
             SystemExceptionsCount = 0;
+            AppBytecodeLocCount = 0;
+            TotalBytecodeLocCount = 0;
+            AppMethCount = 0;
+            TotalMethCount = 0;
             //Create a hypothetical field that represents all array elements
             FieldRefWrapper nullFieldRefW = new FieldRefWrapper(null);
             ProgramDoms.domF.Add(nullFieldRefW);
+        }
+
+        public void UpdateLocCounts(IMethodDefinition methDef)
+        {
+            TotalBytecodeLocCount += 1;
+            for (int i = 0; i < ConfigParams.AppClassPrefixes.Length; i++)
+            {
+                if (methDef.FullName().StartsWith(ConfigParams.AppClassPrefixes[i]))
+                {
+                    AppBytecodeLocCount += 1;
+                    break;
+                }
+            }
+        }
+
+        public void UpdateMethCounts(IMethodDefinition methDef)
+        {
+            TotalMethCount += 1;
+            for (int i = 0; i < ConfigParams.AppClassPrefixes.Length; i++)
+            {
+                if (methDef.FullName().StartsWith(ConfigParams.AppClassPrefixes[i]))
+                {
+                    AppMethCount += 1;
+                    break;
+                }
+            }
         }
 
         public void GenerateFacts(MethodBody mBody, ControlFlowGraph cfg, IList<CatchExceptionHandler> ehInfoList)
@@ -66,6 +100,7 @@ namespace Daffodil.DatalogAnalysisFW.AnalysisNetConsole
             sysExcChosen = false;
 
             IMethodDefinition methDef = mBody.MethodDefinition;
+            UpdateMethCounts(methDef);
             MethodRefWrapper mRefW = WrapperProvider.getMethodRefW(methDef, mBody);
             tacLogSW.WriteLine();
             tacLogSW.WriteLine(methDef.FullName());
@@ -94,6 +129,7 @@ namespace Daffodil.DatalogAnalysisFW.AnalysisNetConsole
                 tacLogSW.WriteLine("----- BB {0} {1} {2} -----", node.Id, succStr.ToString(), predStr.ToString());
                 foreach (var instruction in node.Instructions)
                 {
+                    UpdateLocCounts(methDef);
                     tacLogSW.WriteLine("{0}", instruction.ToString());
                     // tacLogSW.WriteLine("{0}", instruction.GetType().ToString());
                     // tacLogSW.WriteLine();
