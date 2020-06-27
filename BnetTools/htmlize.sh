@@ -55,10 +55,14 @@ $PRESTO_HOME/Datalog/preprocess_doms.py
 
 # Now invoke htmlize.py
 cd ..
-$PRESTO_HOME/BnetTools/htmlize.py metadata $rootIdbFN $rootHdrFN $displayFN ../bnet/bnet_dict.out ../bnet/all_probabilities.txt < metadata/constraints.txt
+tail -n +2 ../bnet/alarm_ranking.txt > ar.txt 
+$PRESTO_HOME/BnetTools/htmlize.py metadata $rootIdbFN $rootHdrFN $displayFN ../bnet/bnet_dict.out ../bnet/all_probabilities.txt ar.txt < metadata/constraints.txt
+rm -f ar.txt
 
 # Constraints may be shared between refined and non-refined but the probabilities will be different. Hence, different dir.
 mkdir refined
 cd refined
-$PRESTO_HOME/BnetTools/htmlize.py ../metadata $rootIdbFN $rootHdrFN $displayFN ../../bnet/bnet_dict.out.refined ../../bnet/all_probabilities.txt.refined < ../metadata/constraints.txt.refined
+tail -n +2 ../../bnet/alarm_ranking.txt.refined > ar.txt.refined 
+$PRESTO_HOME/BnetTools/htmlize.py ../metadata $rootIdbFN $rootHdrFN $displayFN ../../bnet/bnet_dict.out.refined ../../bnet/all_probabilities.txt.refined ar.txt.refined < ../metadata/constraints.txt.refined
+rm -f ar.txt.refined
 cd ../..

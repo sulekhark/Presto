@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-# ./htmlize.py metadata_dir root_idb.txt root_headers.txt display_desc.txt bnet_dict.out all_probabilities.txt < constraints.txt
+# ./htmlize.py metadata_dir root_idb.txt root_headers.txt display_desc.txt bnet_dict.out all_probabilities.txt alarm_ranking.txt < constraints.txt
 
 import logging
 import re
@@ -17,6 +17,7 @@ rootHeadersFileName = sys.argv[3]
 displayDescFileName = sys.argv[4]
 bnetDictFileName = sys.argv[5]
 allProbsFileName = sys.argv[6]
+alarmRankingFileName = sys.argv[7]
  
 refineInfo = os.environ['REFINE_INFO']
 
@@ -412,12 +413,80 @@ def writeIndexPage():
     indent -= 1
     hprint("</head>")
     hprint("<body>")
+    writeAlarmRanking()
     writeRoots()
     hprint("</body>")
     indent -= 1
     hprint("</html>")
     htmlFile.close()
     return
+
+
+def writeAlarmRanking():
+    global indent
+    writeAlarmRankingHeader()
+    emptyLine()
+    writeAlarmRankingTable()
+    emptyLine()
+    emptyLine()
+    return
+
+
+def writeAlarmRankingHeader():
+    global indent
+    indent += 1
+    hprint("<tr>")
+    indent += 1
+    desc = "ALARM RANKING TABLE"
+    pre = "<td colspan=\"1\"><u><font size=\"5\" color=\"red\">"
+    post = "</font></u></td>"
+    txt = pre + desc + lineBrk + post
+    hprint(txt)
+    indent -= 1
+    hprint("</tr>")
+    indent -= 1
+    return
+
+
+def writeAlarmRankingTable():
+    global indent
+    indent += 1
+    hprint("<table>")
+    indent += 1
+    hprint("<tr>")
+    indent += 1
+    hprint("<td colspan=\"1\"><font size=\"4\" color=\"red\"> Rank&nbsp;&nbsp;&nbsp;&nbsp; </font></td>")
+    hprint("<td colspan=\"1\"><font size=\"4\" color=\"red\"> Confidence&nbsp;&nbsp;&nbsp;&nbsp; </font></td>")
+    hprint("<td colspan=\"1\"><font size=\"4\" color=\"red\"> GroundTruth&nbsp;&nbsp;&nbsp;&nbsp; </font></td>")
+    hprint("<td colspan=\"1\"><font size=\"4\" color=\"red\"> Tuple </font></td>")
+    indent -= 1
+    hprint("</tr>")
+    indent -= 1
+
+    for line in open(alarmRankingFileName):
+        indent += 1
+        hprint("<tr>")
+        indent += 1
+        line = line.strip()
+        parts = line.split('\t')
+        for i in range(0, len(parts) - 1):
+            pre = "<td colspan=\"1\">"
+            post = "</td>"
+            hprint(pre + parts[i] + post)
+
+        tup = parts[-1]
+        linkName = getHtmlFileName(tup)
+        pre1 = "<td colspan=\"1\"><a href=" + linkName + ">"
+        post1 = "</a></td>"
+        hprint(pre1 + linkName + post1)
+        indent -= 1
+        hprint("</tr>")
+        indent -= 1
+
+    hprint("</table>")
+    indent -= 1
+    return
+
 
 def writeRoots():
     global indent
