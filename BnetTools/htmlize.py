@@ -478,7 +478,7 @@ def writeAlarmRankingTable():
         linkName = getHtmlFileName(tup)
         pre1 = "<td colspan=\"1\"><a href=" + linkName + ">"
         post1 = "</a></td>"
-        hprint(pre1 + linkName + post1)
+        hprint(pre1 + tup + post1)
         indent -= 1
         hprint("</tr>")
         indent -= 1
