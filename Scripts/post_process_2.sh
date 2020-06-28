@@ -29,6 +29,7 @@ then
     mv arcmd.log arcmd.log.refined
     mv arcmd.out arcmd.out.refined
     mv all_probabilities.txt all_probabilities.txt.refined
+    $PRESTO_HOME/BnetTools/auc.py alarm_ranking.txt.refined auc_refined.pdf > auc_refined.txt
 fi
 
 
@@ -48,6 +49,7 @@ then
 fi
 $PRESTO_HOME/BnetTools/bnet2fg.py edb_probabilities.txt  < named_bnet.out > factorGraph.fg 2> bnet2fg.log
 $PRESTO_HOME/BnetTools/arcmd $PRESTO_HOME/BnetTools bnet_dict.out factorGraph.fg base_queries.txt $datalogDir/ground_truth.txt 500
+$PRESTO_HOME/BnetTools/auc.py alarm_ranking.txt auc.pdf > auc.txt
 
 cd ..
 $PRESTO_HOME/BnetTools/htmlize.sh
