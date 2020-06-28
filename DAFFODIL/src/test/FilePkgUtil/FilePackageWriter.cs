@@ -87,13 +87,8 @@ namespace FilePkgUtil
                 }
             }
             // Create a temp directory for our package
-            _tempDirectoryPath = parentDirectoryPath + "\\" + filename + "_temp";
-            if (Directory.Exists(_tempDirectoryPath))
-            {
-                Directory.Delete(_tempDirectoryPath, true);
-            }
-
-            Directory.CreateDirectory(_tempDirectoryPath);
+            _tempDirectoryPath = CreateTempDir(parentDirectoryPath);
+            
             foreach (var filePath in _contentFilePathList)
             {
                 // Copy every content file into the temp directory we created before
@@ -122,6 +117,18 @@ namespace FilePkgUtil
                     }
                 }
             }
+        }
+
+        public string CreateTempDir(string parentPath)
+        {
+            string tempDirName = parentPath + "\\" + "f_temp";
+            if (Directory.Exists(tempDirName))
+            {
+                Directory.Delete(tempDirName, true);
+            }
+
+            Directory.CreateDirectory(tempDirName);
+            return tempDirName;
         }
     }
 }
