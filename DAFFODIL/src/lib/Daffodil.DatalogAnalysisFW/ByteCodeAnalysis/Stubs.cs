@@ -35,6 +35,7 @@ namespace Daffodil.DatalogAnalysisFW.AnalysisNetConsole
             NameToNameMap.Add("System.Runtime.CompilerServices.TaskAwaiter", "Daffodil.Stubs.TaskAwaiter");
             NameToNameMap.Add("System.Runtime.CompilerServices.TaskAwaiter<TResult>", "Daffodil.Stubs.TaskAwaiter<TResult>");
             NameToNameMap.Add("System.Runtime.CompilerServices.IAsyncStateMachine", "Daffodil.Stubs.IAsyncStateMachine");
+            NameToNameMap.Add("System.Threading.Thread", "Daffodil.Stubs.Thread");
 
             foreach (ITypeDefinition ty in stubsModule.GetAllTypes().OfType<INamedTypeDefinition>().ToList())
             {
