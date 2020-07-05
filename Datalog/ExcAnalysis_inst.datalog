@@ -115,7 +115,7 @@ Infeasible_i2(t:T,h:H,m:M,p:P,mcallee:M) printtuples
 ############################
 
 ThrowSubsumed_i1(eh,m,p,v2,v1,t1,t2) :- CatchInfo(m,eh,v1,t1), LinkedEx(m,v1,t1,m,v2,t2), ThrowInfo(m,p,v2,t2).
-ThrowAsync_i1(eh,m2,p,v2,m1,v1,t1,t2) :- CatchInfo(m1,eh,v1,t1), LinkedEx(m1,v1,t1,m2,v2,t2),ThrowInfo(m2,p,v2,t2), DiffMeths(m1,m2).
+ThrowAsync_i1(eh,m2,p,v2,m1,v1,t1,t2) :- CatchInfo(m1,eh,v1,t1), LinkedEx(m1,v1,t1,m2,v2,t2), ThrowInfo(m2,p,v2,t2), DiffMeths(m1,m2).
 
 ThrowPoint_i1(m,p,v,h) :- ThrowOrigin(m,p,v), VH(v,h).
 ThrowPoint_i2(m,p,v,h,eh,h1,ehv) :- ThrowSubsumed(eh,m,p,v), VH(v,h), WrapsEx(h,h1), VarEH(eh,ehv), CatchVH(ehv,h1).
