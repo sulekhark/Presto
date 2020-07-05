@@ -414,7 +414,7 @@ def computeProbLinkedEx(entry):
             callCount += len(throwNodes)
             for node in throwNodes:
                 nodeNdx = node.getIndex()
-                if (node.parent.exception[nodeNdx] == excType):
+                if (nodeNdx >= 0) and (node.parent.exception[nodeNdx] == excType):
                     excCount += 1
     if callCount == 0:
         prob = linkedExMinProb

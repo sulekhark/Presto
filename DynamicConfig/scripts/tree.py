@@ -47,9 +47,12 @@ class Node(object):
             return [a for a in self.parent.children if a is not self]
 
     def getIndex(self):
-        for n, child in enumerate(self.parent.children):
-            if child is self:
-                return n
+        if self.parent is not None:
+            for n, child in enumerate(self.parent.children):
+                if child is self:
+                    return n
+        else:
+            return -1
 
     def remChild(self, index):
         try:
