@@ -40,6 +40,7 @@ do
 
     $TORCH_HOME/tools/net/torch-instrumenter-internal.exe -i . --ic ../../dynconfig/FaultInjectionSet/FInject/$dirName/torch-instrumentation.torchconfig  --rc ../../dynconfig/FaultInjectionSet/FInject/$dirName/RuntimeConfig
     ldir2="../../dynlogs/FaultInjectionSet/FInject/$dirName"
+    echo "DEBUG: $ldir2"
     mkdir $ldir2
     while read -r cmd
     do
@@ -63,6 +64,7 @@ do
 
     $TORCH_HOME/tools/net/torch-instrumenter-internal.exe -i . --ic ../../dynconfig/FaultInjectionSet/LinkInject/$dirName/torch-instrumentation.torchconfig  --rc ../../dynconfig/FaultInjectionSet/LinkInject/$dirName/RuntimeConfig
     ldir3="../../dynlogs/FaultInjectionSet/LinkInject/$dirName"
+    echo "DEBUG: $ldir3"
     mkdir $ldir3
     while read -r cmd
     do
