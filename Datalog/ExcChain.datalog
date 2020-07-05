@@ -58,8 +58,8 @@ CandidateMethPair(m1:M,m2:M,h:H,eh:EH)
 CandidatePair(m1:M,eh:EH,m2:M,p:P)
 ThrowExpl(m:M,v:V)
 ThrowUnion(m:M,p:P,v:V)
-ThrowSubsumed(eh:EH,m:M,p:P,v:V)
-ThrowAsync(eh:EH,m:M,p:P,v:V)
+ThrowSubsumed(eh:EH,m:M,p:P,v:V,t:T)
+ThrowAsync(eh:EH,m:M,p:P,v:V,t:T)
 
 ThrowRemaining(m:M,p:P,v:V) printtuples
 ThrowOrigin(m:M,p:P,v:V) printtuples
@@ -81,7 +81,7 @@ TransSub(t1,t2) :- sub(t1,t2), ExceptionType(t2), ExceptionType(t1).
 TransSub(t1,t2) :- sub(t1,t), TransSub(t,t2), ExceptionType(t1).
 ValidExType(v,t1) :- VT(v,t), TransSub(t1,t).
 LinkedEx(m,v1,t1,m,v2,t2) :- MVarEH(m,eh,v1), ThrowEH(eh,m,v2), ValidExType(v1,t1), ValidExType(v2,t2).
-ThrowSubsumed(eh,m,p,v) :- LinkedEx(m,v1,t1,m,v,t), ThrowPV(m,p,v), VarEH(eh,v1).
+ThrowSubsumed(eh,m,p,v,t) :- LinkedEx(m,v1,t1,m,v,t), ThrowPV(m,p,v), VarEH(eh,v1).
 
 # Find links between a catch variable and a throw variable such that 
 # they have types t1 and t2 respectively, and it is potentially possible for
@@ -107,13 +107,13 @@ ThrowReadsTaskObj(p,h) :- ThrowReadsTask(p,v), VH(v,h).
 CandidateMethPair(m1,m2,h,eh) :- MethSetsTaskObj(m1,h,eh), MethAwaitsTaskObj(m2,h).
 CandidatePair(m1,eh,m2,p) :- CandidateMethPair(m1,m,h,eh), ThrowReadsTaskObj(p,h), ThrowPV(m2,p,v).
 LinkedEx(m1,v1,t1,m2,v2,t2) :- CandidatePair(m1,eh,m2,p), VarEH(eh,v1), ThrowPV(m2,p,v2), ValidExType(v1,t1), ValidExType(v2,t2).
-ThrowAsync(eh,m2,p,v2) :- LinkedEx(m1,v1,t1,m2,v2,t2), ThrowPV(m2,p,v2), VarEH(eh,v1), m1 != m2.
+ThrowAsync(eh,m2,p,v2,t2) :- LinkedEx(m1,v1,t1,m2,v2,t2), ThrowPV(m2,p,v2), VarEH(eh,v1), m1 != m2.
 
 # ThrowSubsumed and ThrowAsync contain the throw statements that may have further explanations.
 # ThrowOrigin contains the throw statements that may be the program points in whose vicinity the exception object originates.
  
-ThrowExpl(m,v) :- ThrowSubsumed(eh,m,p,v).
-ThrowExpl(m,v) :- ThrowAsync(eh,m,p,v).
+ThrowExpl(m,v) :- ThrowSubsumed(eh,m,p,v,t).
+ThrowExpl(m,v) :- ThrowAsync(eh,m,p,v,t).
 ThrowOrigin(m,p,v) :- ThrowPV(m,p,v), !ThrowExpl(m,v).
 
 
@@ -123,12 +123,12 @@ ThrowOrigin(m,p,v) :- ThrowPV(m,p,v), !ThrowExpl(m,v).
 ######################################################################################
 
 ThrowUnion(m,p,v) :- ThrowOrigin(m,p,v).
-ThrowUnion(m,p,v) :- ThrowSubsumed(eh,m,p,v), VH(v,h), WrapsEx(h,h1), VarEH(eh,ehv), VCatchesH(ehv,h1). # wrap and throw
-ThrowUnion(m,p,v) :- ThrowSubsumed(eh,m,p,v), VH(v,h1), WrapsEx(h,h1), VarEH(eh,ehv), VCatchesH(ehv,h). # unwrap and throw
-ThrowUnion(m,p,v) :- ThrowSubsumed(eh,m,p,v), VH(v,h), VarEH(eh,ehv), VCatchesH(ehv,h).  # rethrow
-ThrowUnion(m,p,v) :- ThrowAsync(eh,m,p,v), VH(v,h), WrapsEx(h,h1), VarEH(eh,ehv), VCatchesH(ehv,h1). # wrap and throw
-ThrowUnion(m,p,v) :- ThrowAsync(eh,m,p,v), VH(v,h1), WrapsEx(h,h1), VarEH(eh,ehv), VCatchesH(ehv,h). # unwrap and throw
-ThrowUnion(m,p,v) :- ThrowAsync(eh,m,p,v), VH(v,h), VarEH(eh,ehv), VCatchesH(ehv,h).  # rethrow
+ThrowUnion(m,p,v) :- ThrowSubsumed(eh,m,p,v,t), VH(v,h), WrapsEx(h,h1), VarEH(eh,ehv), VCatchesH(ehv,h1). # wrap and throw
+ThrowUnion(m,p,v) :- ThrowSubsumed(eh,m,p,v,t), VH(v,h1), WrapsEx(h,h1), VarEH(eh,ehv), VCatchesH(ehv,h). # unwrap and throw
+ThrowUnion(m,p,v) :- ThrowSubsumed(eh,m,p,v,t), VH(v,h), VarEH(eh,ehv), VCatchesH(ehv,h).  # rethrow
+ThrowUnion(m,p,v) :- ThrowAsync(eh,m,p,v,t), VH(v,h), WrapsEx(h,h1), VarEH(eh,ehv), VCatchesH(ehv,h1). # wrap and throw
+ThrowUnion(m,p,v) :- ThrowAsync(eh,m,p,v,t), VH(v,h1), WrapsEx(h,h1), VarEH(eh,ehv), VCatchesH(ehv,h). # unwrap and throw
+ThrowUnion(m,p,v) :- ThrowAsync(eh,m,p,v,t), VH(v,h), VarEH(eh,ehv), VCatchesH(ehv,h).  # rethrow
 ThrowRemaining(m,p,v) :- !ThrowUnion(m,p,v), ThrowPV(m,p,v).
 
 
