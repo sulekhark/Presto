@@ -79,7 +79,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MNTest", "DAFFODIL\src\test
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FilePkgUtil", "DAFFODIL\src\test\FilePkgUtil\FilePkgUtil.csproj", "{1A65ACE1-ADA2-420E-A414-9D7CC8724D09}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AsyncAwaitFSM", "DAFFODIL\src\test\AsyncAwaitFSM\AsyncAwaitFSM.csproj", "{FD2F35CC-9900-4A8C-9024-DF3123A8C784}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AsyncJobDispatcher", "DAFFODIL\src\test\AsyncJobDispatcher\AsyncJobDispatcher.csproj", "{FD2F35CC-9900-4A8C-9024-DF3123A8C784}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

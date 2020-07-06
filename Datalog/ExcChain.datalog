@@ -43,19 +43,19 @@ IsTaskResultMeth(m:M) input
 IsTaskWaitMeth(m:M) input
 IsTaskGetAwaiterMeth(m:M) input
 
-MethSetsBuilder(m:M,v:V,eh:EH)
-MethSetsBuilderInt(m:M,m1:M,v:V)
-MethAwaitsTask(m:M,v:V)
-ThrowReadsTask(p:P,v:V)
-MethSetsTaskObj(m:M,h:H,eh:EH)
-MethAwaitsTaskObj(m:M,h:H)
-ThrowReadsTaskObj(p:P,h:H)
+MethSetsBuilder(m:M,v:V,eh:EH) printtuples
+MethSetsBuilderInt(m:M,m1:M,v:V) printtuples
+MethAwaitsTask(m:M,v:V) printtuples
+ThrowReadsTask(p:P,v:V) printtuples
+MethSetsTaskObj(m:M,h:H,eh:EH) printtuples
+MethAwaitsTaskObj(m:M,h:H) printtuples
+ThrowReadsTaskObj(p:P,h:H) printtuples
 ThrowEH(eh:EH,m:M,v:V)
 MVarEH(m:M,eh:EH,v:V)
 TransSub(t1:T,t2:T)
 ValidExType(v:V,t1:T)
-CandidateMethPair(m1:M,m2:M,h:H,eh:EH)
-CandidatePair(m1:M,eh:EH,m2:M,p:P)
+CandidateMethPair(m1:M,m2:M,h:H,eh:EH) printtuples
+CandidatePair(m1:M,eh:EH,m2:M,p:P) printtuples
 ThrowExpl(m:M,v:V)
 ThrowUnion(m:M,p:P,v:V)
 ThrowSubsumed(eh:EH,m:M,p:P,v:V,t:T)
