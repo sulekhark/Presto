@@ -1,5 +1,5 @@
 System.ArgumentException:new ArgumentException('Injected by daffodil-torch');
-System.IO.FileNotFoundException:new FileNotFoundException('Injected by daffodil-torch');
+System.IO.FileNotFoundException:new System.IO.FileNotFoundException('Injected by daffodil-torch');
 System.ArgumentNullException:new ArgumentNullException('Injected by daffodil-torch');
 System.NullReferenceException:new NullReferenceException('Injected by daffodil-torch');
 System.FieldAccessException:new FieldAccessException('Injected by daffodil-torch');
@@ -26,7 +26,8 @@ System.OperationCanceledException:new OperationCanceledException('Injected by da
 System.ArithmeticException:new ArithmeticException('Injected by daffodil-torch');
 System.OverflowException:new OverflowException('Injected by daffodil-torch');
 System.Runtime.InteropServices.ExternalException:new ExternalException('Injected by daffodil-torch');
-System.IO.IOException:new IOException('Injected by daffodil-torch');
+System.IO.IOException:new System.IO.IOException('Injected by daffodil-torch');
+System.IO.PathTooLongException:new System.IO.PathTooLongException('Injected by daffodil-torch');
 System.UnauthorizedAccessException:new UnauthorizedAccessException('Injected by daffodil-torch');
 System.Security.SecurityException:new SecurityException('Injected by daffodil-torch');
 System.MemberAccessException:new MemberAccessException('Injected by daffodil-torch');
