@@ -7,7 +7,6 @@ System.Exception:new Exception('Injected by daffodil-torch');
 System.DivideByZeroException:new DivideByZeroException('Injected by daffodil-torch');
 System.AggregateException:new AggregateException('Injected by daffodil-torch');
 System.SystemException:new SystemException('Injected by daffodil-torch');
-Microsoft.WindowsAzure.Storage.StorageException:new StorageException('Injected by daffodil-torch');
 System.InvalidTimeZoneException:new InvalidTimeZoneException('Injected by daffodil-torch');
 System.InvalidOperationException:new InvalidOperationException('Injected by daffodil-torch');
 System.ObjectDisposedException:new ObjectDisposedException('Injected by daffodil-torch');
@@ -33,3 +32,8 @@ System.Security.SecurityException:new SecurityException('Injected by daffodil-to
 System.MemberAccessException:new MemberAccessException('Injected by daffodil-torch');
 System.MissingMemberException:new MissingMemberException('Injected by daffodil-torch');
 System.ArgumentOutOfRangeException:new ArgumentOutOfRangeException('Injected by daffodil-torch');
+System.ComponentModel.InvalidEnumArgumentException:new ComponentModel.InvalidEnumArgumentException('Injected by daffodil-torch');
+System.OutOfMemoryException:new OutOfMemoryException('Injected by daffodil-torch');
+System.IO.FileLoadException:new IO.FileLoadException('Injected by daffodil-torch');
+System.IO.DirectoryNotFoundException:new IO.DirectoryNotFoundException('Injected by daffodil-torch');
+System.IO.DriveNotFoundException:new IO.DriveNotFoundException('Injected by daffodil-torch');
