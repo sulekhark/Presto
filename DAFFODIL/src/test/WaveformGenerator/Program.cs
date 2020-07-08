@@ -18,7 +18,8 @@ namespace WaveformGenerator {
             }
 
             Bitmap wfImage = CreateBitmapImage(wg);
-            WriteImageToFile(wfImage);
+            string outFilePath = "bitmap_out.bmp";
+            wg.SaveImage(wfImage, outFilePath);
         }
 
         static WaveformGenerator SetupWaveformGenerator(string inputPath)
@@ -70,11 +71,6 @@ namespace WaveformGenerator {
                 }
             }
             return wfImage;
-        }
-
-        static void WriteImageToFile(Bitmap wfImage)
-        {
-
         }
     }
 }

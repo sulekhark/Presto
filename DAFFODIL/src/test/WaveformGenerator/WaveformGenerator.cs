@@ -227,7 +227,7 @@ namespace WaveformGenerator {
         /// Detects waveform levels of track.
         /// Subscribe to ProgressChanged event to get progress.
         /// </summary>
-        public async Task DetectWaveformLevelsAsync() {
+        public async Task<int> DetectWaveformLevelsAsync() {
             if (!(State == ReadyState.CreatedStream || State == ReadyState.Completed))
                 throw new InvalidOperationException("Not ready.");
 
@@ -261,6 +261,7 @@ namespace WaveformGenerator {
 
             if (Completed != null)
                 Completed(this, EventArgs.Empty);
+            return 0;
         }
 
         /// <summary>
@@ -353,6 +354,28 @@ namespace WaveformGenerator {
                 leftList.ToArray(), rightList.ToArray(), LeftSideBrush, RightSideBrush, CenterLineBrush);
         }
 
+        /// <summary>
+        /// Saves image to file.
+        /// </summary>
+        public void SaveImage(Bitmap img, string fname)
+        {
+            try
+            {
+                SaveImageInt(img, fname);
+            }
+            catch (Exception e)
+            {
+                if (e is ArgumentNullException)
+                {
+                    Console.WriteLine("Invalid arguments (filename) to SaveImage: {0}", e.Message);
+                }
+                else
+                {
+                    throw e;
+                }
+            }
+        }
+
         public void wg_ProgressChanged(object sender, EventArgs e)
         {
            
@@ -367,10 +390,17 @@ namespace WaveformGenerator {
 
 
         #region Private
+        private void SaveImageInt(Bitmap img, string fname)
+        {
+            if (fname == "")
+                throw new ArgumentNullException();
+            img.Save(fname);
+        }
+
         /// <summary>
         /// Detects waveform levels.
         /// </summary>
-        private async Task DetectWaveformLevelsInnerAsync() {
+        private async Task<bool> DetectWaveformLevelsInnerAsync() {
             // Create progress reporter.
             IProgress<ProgressChangedEventArgs> prog = new Progress<ProgressChangedEventArgs>(value => {
                 // Invoke ProgressChanged event.
@@ -423,6 +453,7 @@ namespace WaveformGenerator {
                     throw e;
                 }
             }
+            return true;
         }
         #endregion
 
