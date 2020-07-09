@@ -136,8 +136,8 @@ def readLogFiles(logFNList):
             insertIntoMap(callee, calleeNode)
             crntNode.addChild(calleeNode, ilOffset, exception)
             crntNode = calleeNode
-    for root in logRoots:
-        root.printTree()
+    # for root in logRoots:
+        # root.printTree()
     return
 
 
