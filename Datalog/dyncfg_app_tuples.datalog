@@ -37,6 +37,7 @@ LibEscapeMTP(m,t,p) :- EscapeMTP(m,t,p), PI(p,i), IM(i,m1), libM(m1).
 LibCallAt(m,p,mcallee) :- CallAt(m,p,mcallee), libM(m).
 LibCallAt(m,p,mcallee) :- CallAt(m,p,mcallee), libM(mcallee).
 LibLinkedEx(m1,v1,t1,m2,v2,t2) :- LinkedEx(m1,v1,t1,m2,v2,t2), libM(m2).
+LibLinkedEx(m1,v1,t1,m2,v2,t2) :- LinkedEx(m1,v1,t1,m2,v2,t2), VarEH(eh,v1), InRange(eh,p), PI(p,i), IM(i,m3), libM(m3).
 
 
 .include "relT.datalog"

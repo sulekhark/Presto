@@ -30,7 +30,6 @@ InRange(eh:EH,p:P) input
 ILoc(i:I,n:N) input
 DelegateIV(i:I,v:V) input
 MI(m:M,i:I) input
-appM(m:M) input
 
 
 FInject(m:M,n:N,mcallee:M,t:T) printtuples
@@ -48,7 +47,7 @@ DelegateCall(m1:M,n:N,m2:M) printtuples
 FInject(m,n,mcallee,t) :- CallAt(m,p,mcallee), EscapeMTP(m,t,p), PNMap(p,n).
 FInject(m,n,mcallee,t) :- CondEscapeMTP(mcallee,m,t,p), PNMap(p,n).
 PNMap(p,n) :- CallAt(m,p,mcallee), PI(p,i), ILoc(i,n).
-LinkInject(m1,v1,t1,m2,v2,t2,m3,n) :- LinkedEx(m1,v1,t1,m2,v2,t2), VarEH(eh,v1), InRange(eh,p), PI(p,i), IM(i,m3), ILoc(i,n), appM(m3).
+LinkInject(m1,v1,t1,m2,v2,t2,m3,n) :- LinkedEx(m1,v1,t1,m2,v2,t2), VarEH(eh,v1), InRange(eh,p), PI(p,i), IM(i,m3), ILoc(i,n).
 
 # Information for constructing the call tree
 
@@ -72,4 +71,3 @@ DelegateCall(m1,n,m2) :- DelegateIV(i,v), MI(m1,i), IM(i,m2), ILoc(i,n).
 .include "ILoc.datalog"
 .include "DelegateIV.datalog"
 .include "MI.datalog"
-.include "appM.datalog"
