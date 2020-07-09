@@ -39,7 +39,7 @@ namespace WaveformGenerator {
             }
             catch (Exception e)
             {
-                if (e is Exception)
+                if (!(e is NullReferenceException))
                 {
                     Console.WriteLine("BASS not correctly initialized.");
                 }
