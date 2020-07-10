@@ -470,8 +470,12 @@ def writeAlarmRankingTable():
         line = line.strip()
         parts = line.split('\t')
         for i in range(0, len(parts) - 1):
-            pre = "<td colspan=\"1\">"
-            post = "</td>"
+            if (i == 2) and ("True" in parts[i]):
+                pre = "<td colspan=\"1\"> <font color=\"red\">"
+                post = "</font></td>"
+            else:
+                pre = "<td colspan=\"1\">"
+                post = "</td>"
             hprint(pre + parts[i] + post)
 
         tup = parts[-1]
