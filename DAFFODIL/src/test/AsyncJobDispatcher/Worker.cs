@@ -18,7 +18,7 @@ namespace AsyncJobDispatcher {
 
         public void Start()
         {
-            Thread wth = new Thread(ProcessJobTasks);
+            Thread wth = new Thread(new ThreadStart(ProcessJobTasks));
             wth.Start();
         }
         
@@ -33,7 +33,7 @@ namespace AsyncJobDispatcher {
                 }
                 catch (Exception e)
                 {
-                    System.Console.WriteLine("Job Task with id: {0} has a null file spec.", jt.Id);
+                    System.Console.WriteLine("Job task has a null file spec: {0}", e.Message);
                 }
             }
         }
