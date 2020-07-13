@@ -83,6 +83,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AsyncJobDispatcher", "DAFFO
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WaveformGenerator", "DAFFODIL\src\test\WaveformGenerator\WaveformGenerator.csproj", "{86C69EA4-705C-4129-BCAD-4E8E9AAD6362}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AsyncWebCrawler", "DAFFODIL\src\test\AsyncWebCrawler\AsyncWebCrawler.csproj", "{4E723DFB-7D96-4E3A-971A-8C0B271F44CC}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -229,6 +231,10 @@ Global
 		{86C69EA4-705C-4129-BCAD-4E8E9AAD6362}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{86C69EA4-705C-4129-BCAD-4E8E9AAD6362}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{86C69EA4-705C-4129-BCAD-4E8E9AAD6362}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4E723DFB-7D96-4E3A-971A-8C0B271F44CC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4E723DFB-7D96-4E3A-971A-8C0B271F44CC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4E723DFB-7D96-4E3A-971A-8C0B271F44CC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4E723DFB-7D96-4E3A-971A-8C0B271F44CC}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -269,6 +275,7 @@ Global
 		{1A65ACE1-ADA2-420E-A414-9D7CC8724D09} = {AE2D211D-4EA0-4BCC-8E6F-A3F833635FD0}
 		{FD2F35CC-9900-4A8C-9024-DF3123A8C784} = {AE2D211D-4EA0-4BCC-8E6F-A3F833635FD0}
 		{86C69EA4-705C-4129-BCAD-4E8E9AAD6362} = {AE2D211D-4EA0-4BCC-8E6F-A3F833635FD0}
+		{4E723DFB-7D96-4E3A-971A-8C0B271F44CC} = {AE2D211D-4EA0-4BCC-8E6F-A3F833635FD0}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {26192443-B8E7-40D6-8F72-E89831C4D9F4}
