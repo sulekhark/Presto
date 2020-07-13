@@ -406,6 +406,7 @@ def computeProbLinkedEx(entry):
     excCount = 0
     for liLogPair in linkInjectLogs:
         torchLog = liLogPair[0]
+        execLog = liLogPair[1]
         logRoots.clear()
         method2NodeMap.clear()
         readLogFiles([torchLog])
@@ -416,6 +417,9 @@ def computeProbLinkedEx(entry):
                 nodeNdx = node.getIndex()
                 if (nodeNdx >= 0) and (node.parent.exception[nodeNdx] == excType):
                     excCount += 1
+                elif nodeNdx < 0:
+                    if ".Main(" in throwMeth:
+                        excCount = getExcThrownCountFromOutput(execLog, excType)
     if callCount == 0:
         prob = linkedExMinProb
     elif excCount == 0:
