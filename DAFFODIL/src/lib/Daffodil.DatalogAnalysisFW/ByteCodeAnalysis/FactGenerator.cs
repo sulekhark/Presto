@@ -464,7 +464,11 @@ namespace Daffodil.DatalogAnalysisFW.AnalysisNetConsole
             int paramNdx = 0;
             foreach (IVariable param in paramList)
             {
-                if (Stubber.SuppressF(param.Type.ResolvedType)) continue;
+                if (Stubber.SuppressF(param.Type.ResolvedType))
+                {
+                    paramNdx++;
+                    continue;
+                }
                 if (!param.Type.IsValueType || param.Type.ResolvedType.IsStruct)
                 {
                     VariableWrapper paramW = WrapperProvider.getVarW(param);
