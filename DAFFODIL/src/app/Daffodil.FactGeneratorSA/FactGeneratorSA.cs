@@ -13,8 +13,8 @@ namespace Daffodil.FactGeneratorSA
         {
             if (args.Length == 0)
             {
-                ConfigParams.LoadConfig(@"C:\Users\sulek\work\ExcAnalysis\Presto\DAFFODIL\src\test\HtmlSanitizer\daffodil.cfg");
-                // ConfigParams.LoadConfig(@"C:\Users\sulek\work\ExcAnalysis\Presto\DAFFODIL\src\test\T5\daffodil.cfg");
+                // ConfigParams.LoadConfig(@"C:\Users\sulek\work\ExcAnalysis\Presto\DAFFODIL\src\test\HtmlSanitizer\daffodil.cfg");
+                ConfigParams.LoadConfig(@"C:\Users\sulek\work\ExcAnalysis\Presto\DAFFODIL\src\test\T5\daffodil.cfg");
             }
             else if (args.Length == 1)
             {
