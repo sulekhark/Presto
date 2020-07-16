@@ -2,3 +2,4 @@ System.
 Daffodil.Stubs.
 Bass.Net.
 Un4seen.Bass.
+HtmlAgilityPack.

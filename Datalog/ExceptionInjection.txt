@@ -38,3 +38,5 @@ System.IO.FileLoadException:new IO.FileLoadException('Injected by daffodil-torch
 System.IO.DirectoryNotFoundException:new IO.DirectoryNotFoundException('Injected by daffodil-torch');
 System.IO.DriveNotFoundException:new IO.DriveNotFoundException('Injected by daffodil-torch');
 System.IO.EndOfStreamException:new IO.EndOfStreamException('Injected by daffodil-torch');
+System.IndexOutOfRangeException:new IndexOutOfRangeException('Injected by daffodil-torch');
+System.InvalidProgramException:new InvalidProgramException('Injected by daffodil-torch');
