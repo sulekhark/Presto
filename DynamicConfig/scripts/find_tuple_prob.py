@@ -30,10 +30,10 @@ fInjectDir = "../dynlogs/FaultInjectionSet/FInject"
 linkInjectDir = "../dynlogs/FaultInjectionSet/LinkInject"
 logDirPrefix = "T"
 
-minProb = 0.5
-maxProb = 0.99
+minProb = 0.4
+maxProb = 0.98
 midProb = 0.95
-linkedExMinProb = 0.01
+linkedExMinProb = 0.05
 scaler = 100
 
 logging.basicConfig(level=logging.INFO, \
@@ -236,8 +236,13 @@ def computeProbCallAt(entry):
     elif (callCnt == 0):
         prob = minProb
     else:
-        prob = minProb + ((maxProb - minProb) * (callCnt + scaler) / (totalCnt + scaler))
-    logging.info('SRK_DBG: find_tuple_prob.py: tuple:{0} {1}  totalCnt:{2}  callCnt:{3}'.format(caller, callee, totalCnt, callCnt))
+        failureCnt = totalCnt - callCnt
+        if totalCnt <= scaler:
+            denom = scaler
+        else:
+            denom = totalCnt
+        prob = minProb + ((maxProb - minProb) * (1.0 - (failureCnt / denom)))
+    logging.info('SRK_DBG: find_tuple_prob.py: tuple:{0} {1}  totalCnt:{2}  callCnt:{3} prob: {4}'.format(caller, callee, totalCnt, callCnt, prob))
     print("{0}: {1}".format(bnetNodeId, prob))
     return
 
@@ -285,7 +290,12 @@ def computeProbCondCallAt(entry):
     elif (callCnt == 0):
         prob = minProb
     else:
-        prob = minProb + ((maxProb - minProb) * (callCnt + scaler) / (totalCnt + scaler))
+        failureCnt = totalCnt - callCnt
+        if totalCnt <= scaler:
+            denom = scaler
+        else:
+            denom = totalCnt
+        prob = minProb + ((maxProb - minProb) * (1.0 - (failureCnt / denom)))
     print("{0}: {1}".format(bnetNodeId, prob))
     return
 
@@ -371,7 +381,12 @@ def computeProbEscapeMTP(entry):
         elif callCountTotal > 0 and excCountTotal == 0:
             prob = minProb
         else:
-            prob = minProb + ((maxProb - minProb) * (excCountTotal + scaler) / (callCountTotal + scaler))
+            failureCountTotal = callCountTotal - excCountTotal
+            if callCountTotal <= scaler:
+                denom = scaler
+            else:
+                denom = callCountTotal
+            prob = minProb + ((maxProb - minProb) * (1.0 - (failureCountTotal / denom)))
     else: # We cannot get a probability from Torch logs for this tuple
         prob = maxProb
     print("{0}: {1}".format(bnetNodeId, prob))
@@ -386,7 +401,7 @@ def computeProbLinkedEx(entry):
     entry = entry[:-1] # remove )
     entry = entry[9:] # remove LinkedEx(
     parts = entry.split(',')
-    throwMethId = parts[3]
+    throwMethId = parts[3] # throwMeth is the method that contains the "throw" statement that is nested in the catch block that it is linked with.
     throwMeth = methodMap[throwMethId]
     throwMeth = modifyCaller(throwMeth)  # throwMeth is treated like a "caller" for modification because it has to be an app meth.
     excTypeId = parts[5]
@@ -425,8 +440,14 @@ def computeProbLinkedEx(entry):
     elif excCount == 0:
         prob = linkedExMinProb
     else:
-        prob = linkedExMinProb + ((maxProb - linkedExMinProb) * (excCount + scaler) / (callCount + scaler))
+        failureCount = callCount - excCount
+        if callCount <= scaler:
+            denom = scaler
+        else:
+            denom = callCount
+        prob = linkedExMinProb + ((maxProb - linkedExMinProb) * (1.0 - (failureCount / denom)))
     print("{0}: {1}".format(bnetNodeId, prob))
+    # logging.info('SRK_DBG: LINKED_EX INFO: throwMeth:{0}  excCnt:{1}  callCnt:{2}'.format(throwMeth, excCount, callCount))
     return
 
 
