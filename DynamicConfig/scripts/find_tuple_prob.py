@@ -35,6 +35,7 @@ maxProb = 0.98
 midProb = 0.95
 linkedExMinProb = 0.05
 scaler = 100
+scalingOn = True
 
 logging.basicConfig(level=logging.INFO, \
                             format="[%(asctime)s] %(levelname)s [%(name)s.%(funcName)s:%(lineno)d] %(message)s", \
@@ -237,7 +238,7 @@ def computeProbCallAt(entry):
         prob = minProb
     else:
         failureCnt = totalCnt - callCnt
-        if totalCnt <= scaler:
+        if (totalCnt <= scaler) and (scalingOn == True):
             denom = scaler
         else:
             denom = totalCnt
@@ -291,7 +292,7 @@ def computeProbCondCallAt(entry):
         prob = minProb
     else:
         failureCnt = totalCnt - callCnt
-        if totalCnt <= scaler:
+        if (totalCnt <= scaler) and (scalingOn == True):
             denom = scaler
         else:
             denom = totalCnt
@@ -382,7 +383,7 @@ def computeProbEscapeMTP(entry):
             prob = minProb
         else:
             failureCountTotal = callCountTotal - excCountTotal
-            if callCountTotal <= scaler:
+            if (callCountTotal <= scaler) and (scalingOn == True):
                 denom = scaler
             else:
                 denom = callCountTotal
@@ -441,7 +442,7 @@ def computeProbLinkedEx(entry):
         prob = linkedExMinProb
     else:
         failureCount = callCount - excCount
-        if callCount <= scaler:
+        if (callCount <= scaler) and (scalingOn == True):
             denom = scaler
         else:
             denom = callCount

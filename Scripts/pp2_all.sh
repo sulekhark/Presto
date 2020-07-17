@@ -8,7 +8,7 @@ do
     rm -rf dynlogs rep*
     post_process_2.sh dynlogs.tgz
     echo $i >> ../$out_file
-    cat $i/bnet/auc.txt >> ../$out_file
+    cat bnet/auc.txt >> ../$out_file
     echo  >> ../$out_file
     echo  >> ../$out_file
     cd -
