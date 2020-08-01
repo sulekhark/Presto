@@ -5,6 +5,7 @@ DynCfgTgz=$1
 cmdsFile="../../$2" # Will execute in bin/Debug
 
 tar xzf $DynCfgTgz 
+date > dyn_run_time.txt
 rm -rf dynlogs
 mkdir dynlogs
 cd dynlogs
@@ -84,4 +85,5 @@ rm -rf Debug
 mv Debug_orig Debug
 
 cd ..
+date >> dyn_run_time.txt
 tar czf dynlogs.tgz dynlogs
