@@ -11,6 +11,8 @@ do
     echo $i >> $outFile
     echo "num clauses after SA:" $s_num_cl "num tuples after SA:" $s_num_tup >> $outFile
     head -n 2 $i/bnet/cons_all2bnet.log >> $outFile
+    dyn_tups=`find $i/dynconfig -name torch-instr\* | wc -l`
+    echo "num of dyn tups:" $dyn_tups  >> $outFile
     dyn_runs=`find $i/dynlogs -name \*.decompressed | wc -l`
     echo "num of dyn runs:" $dyn_runs  >> $outFile
     echo >> $outFile
