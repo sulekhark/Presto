@@ -1,0 +1,164 @@
+IHM(i,h,m2) :- VirtIM(i,m1), HT(h,t), cha(m1,t,m2).
+reachableM(m) :- entryPtM(m).
+reachableM(m) :- reachableT(t), clinitTM(t,m).
+reachableM(m) :- IM(_,m).
+reachableI(i) :- MI(m,i), reachableM(m).
+IM(i,m) :- reachableI(i), IinvkArg0(i,v), VH(v,h), IHM(i,h,m).
+IM(i,m) :- reachableI(i), thisIVH(i,v,h), IHM(i,h,m).
+thisIVH(i,v,h) :- IinvkArg0(i,v), VX(v,x), AddrOfVX(v1,x), VH(v1,h).
+thisIVH(i,v,h) :- IinvkArg0(i,v), VX(v,x), AddrOfHFX(h1,f,x), HFH(h1,f,h).
+thisIVH(i,v,h) :- IinvkArg0(i,v), VX(v,x), AddrOfFX(f1,x), FH(f1,h).
+IM(i,m) :- reachableI(i), StatIM(i,m).
+DelegateIH(i,h) :- reachableI(i), DelegateIV(i,v), VH(v,h).
+DelReceiver(i,rh) :- DelegateIH(i,h), HFH(h,0,rh).
+DelFunc(i,m) :- DelegateIH(i,h), HFX(h,0,x), AddrOfMX(m,x).
+IM(i,m1) :- DelFunc(i,m), DelReceiver(i,h), HT(h,t), cha(m,t,m1).
+IM(i,m) :- DelFunc(i,m), staticTM(t,m).
+VH(v,rh) :- DelReceiver(i,rh), IM(i,m), MmethArg(m,0,v).
+VH(v,h) :- IM(i,m), thisIVH(i,u,h), MmethArg(m,0,v), thisRefV(u), !structRefV(u).
+Move(v,u) :- IinvkArg(i,z,u), IM(i,m), MmethArg(m,z,v), thisRefV(u), structRefV(u).
+Move(v,u) :- IinvkArg(i,z,u), IM(i,m), MmethArg(m,z,v), !thisRefV(u).
+Move(u,v) :- IinvkRet(i,z,u), IM(i,m), MmethRet(m,z,v).
+Alloc(l,h)   :- reachableM(m), MAlloc(m,l,h).
+Move(l,r)   :- reachableM(m), MMove(m,l,r).
+InstFldRead(l,h,f) :- reachableM(m), MInstFldRead(m,l,r,f), VH(r,h).
+InstFldRead(l,h,f) :- reachableM(m), MInstFldRead(m,l,r,f), VX(r,x), AddrOfHFX(h,f,x).
+InstFldWrite(h,f,r) :- reachableM(m), MInstFldWrite(m,l,f,r), VH(l,h).
+InstFldWrite(h,f,r) :- reachableM(m), MInstFldWrite(m,l,f,r), VX(l,x), AddrOfHFX(h,f,x).
+StatFldRead(l,f)   :- reachableM(m), MStatFldRead(m,l,f).
+StatFldWrite(f,r)   :- reachableM(m), MStatFldWrite(m,f,r).
+AddrTakenLocal(l,r) :- reachableM(m), MAddrTakenLocal(m,l,r).
+AddrTakenInstFld(l,r,f) :- reachableM(m), MAddrTakenInstFld(m,l,r,f).
+AddrTakenStatFld(l,f) :- reachableM(m), MAddrTakenStatFld(m,l,f).
+AddrTakenFunc(l,m2) :- reachableM(m1), MAddrTakenFunc(m1,l,m2).
+DerefLeft(l,r) :- reachableM(m), MDerefLeft(m,l,r).
+DerefRight(l,r) :- reachableM(m), MDerefRight(m,l,r).
+HFH(h1,f,h2) :- reachableM(m), MStructHFH(m,h1,f,h2).
+FH(f,h) :- reachableT(t), TStructFH(t,f,h).
+HFH(h1,f,h2) :- StructHFH(h1,f,h2).
+VH(l,h) :- Alloc(l,h).
+VH(l,h) :- Move(l,r), VH(r,h), !structV(l).
+StrMove(lh,rh) :- Move(l,r), VH(l,lh), VH(r,rh), structV(l).
+VX(l,x) :- Move(l,r), VX(r,x).
+VH(l,hfh) :- InstFldRead(l,h,f), HFH(h,f,hfh), !structV(l).
+StrMove(lh,hfh) :- InstFldRead(l,h,f), VH(l,lh), HFH(h,f,hfh), structV(l).
+VX(l,x) :- InstFldRead(l,h,f), HFX(h,f,x).
+HFH(h,f,rh) :- InstFldWrite(h,f,r), VH(r,rh), !structV(r).
+StrMove(hfh,rh) :- InstFldWrite(h,f,r), HFH(h,f,hfh), VH(r,rh), structV(r).
+HFX(h,f,x) :- InstFldWrite(h,f,r), VX(r,x).
+VH(l,h) :- StatFldRead(l,f), FH(f,h), !structV(l).
+StrMove(lh,fh) :- StatFldRead(l,f), VH(l,lh), FH(f,fh), structV(l).
+VX(l,x) :- StatFldRead(l,f), FX(f,x).
+FH(f,h) :- StatFldWrite(f,r), VH(r,h), !structV(r).
+StrMove(fh,rh) :- StatFldWrite(f,r), FH(f,fh), VH(r,rh), structV(r).
+FX(f,x) :- StatFldWrite(f,r), VX(r,x).
+StrMove(lhfh,rhfh) :- StrMove(lh,rh), HFH(lh,f, lhfh), HFH(rh,f,rhfh), structH(lhfh), structH(rhfh).
+HFH(lh,f,rhfh) :- StrMove(lh,rh), !structH(rhfh), HFH(rh,f,rhfh).
+VX(v1,x) :- AddrTakenLocal(v1,v2), AddrOfVX(v2,x), !structV(v2).
+VH(v1,h) :- AddrTakenLocal(v1,v2), VH(v2,h), structV(v2).
+VX(v1,x) :- AddrTakenInstFld(v1,v2,f), VH(v2,h2), AddrOfHFX(h2,f,x), !structRefV(v1).
+VH(v1,h) :- AddrTakenInstFld(v1,v2,f), VH(v2,h2), HFH(h2,f,h), structRefV(v1).
+VX(v1,x) :- AddrTakenStatFld(v1,f), AddrOfFX(f,x), !structRefV(v1).
+VH(v1,h) :- AddrTakenStatFld(v1,f), FH(f,h), structRefV(v1).
+VX(v1,x) :- AddrTakenFunc(v1,m), AddrOfMX(m,x).
+Move(v,r) :- DerefLeft(l,r), VX(l,x), AddrOfVX(v,x).
+InstFldWrite(h,f,r) :- DerefLeft(l,r), VX(l,x), AddrOfHFX(h,f,x).
+StatFldWrite(f,r) :- DerefLeft(l,r), VX(l,x), AddrOfFX(f,x).
+Move(l,v) :- DerefRight(l,r), VX(r,x), AddrOfVX(v,x).
+InstFldRead(l,h,f) :- DerefRight(l,r), VX(r,x), AddrOfHFX(h,f,x).
+StatFldRead(l,f) :- DerefRight(l,r), VX(r,x), AddrOfFX(f,x).
+reachableT(t) :- Alloc(_,h), HT(h,t).
+reachableT(t) :- reachableM(m), staticTM(t,m).
+reachableT(t) :- StatFldWrite(f,_), staticTF(t,f).
+reachableT(t) :- StatFldRead(_,f), staticTF(t,f).
+reachableT(t) :- classT(t), reachableT(s), sub(s,t).
+rootM(m) :- entryPtM(m).
+rootM(m) :- reachableT(t), clinitTM(t,m).
+MM(m,n) :- IM(i,n), MI(m,i).
+CallAt(m,p,mcallee) :- MI(m,i), IM(i,mcallee), PI(p,i).
+VH(v,h) :- VCatchesH(v,h).
+PossibleEH(eh,t,p) :- InRange(eh,p), TypeEH(eh,t).
+PossibleEH(eh,s,p) :- PossibleEH(eh,t,p), sub(s,t).
+BeforeEH(eh1,eh2) :- PrevEH(eh1,eh2).
+BeforeEH(eh1,eh3) :- BeforeEH(eh1,eh2), PrevEH(eh2,eh3).
+InfeasibleEH(eh,t,p) :- PossibleEH(eh,t,p), PossibleEH(ehb,t,p), BeforeEH(ehb,eh).
+FinalEH(eh,t,p) :- PossibleEH(eh,t,p), !InfeasibleEH(eh,t,p).
+MP(m,p) :- ThrowPV(m,p,v).
+MP(m,p) :- MI(m,i), PI(p,i).
+FinalMTP(m,t,p) :- MEH(m,eh), FinalEH(eh,t,p).
+EscapeMTP(m,t1,p) :- !FinalMTP(m,t1,p), ExceptionType(t1), MP(m,p).
+ExceptionObj(h) :- VH(v,h), HT(h,t), ExceptionType(t).
+ExceptionObj(h) :- FH(f,h), HT(h,t), ExceptionType(t).
+ExceptionObj(h) :- HFH(h1,f,h), HT(h,t), ExceptionType(t).
+TransLink(h1,h2) :- HFH(h1,f1,h), HFH(h,f2,h2), !ExceptionObj(h).
+TransLink(h1,h2) :- HFH(h1,f,h), TransLink(h,h2), !ExceptionObj(h).
+WrapsEx(h1,h2) :- ExceptionObj(h1), ExceptionObj(h2), HFH(h1,f,h2), h1 != h2.
+WrapsEx(h1,h2) :- ExceptionObj(h1), ExceptionObj(h2), TransLink(h1,h2), h1 != h2.
+EscObj(t,h) :- MThrowsH(m,h), HT(h,t), ExceptionType(t), entryPtM(m).
+WEscObj(t2,h2) :- WrapsEx(h1,h2), EscObj(t1,h1), HT(h2,t2).
+WEscObj(t3,h3) :- WrapsEx(h2,h3), WEscObj(t2,h2), HT(h3,t3).
+OnlyWEscObj(t2,h2) :- WEscObj(t2,h2), !EscObj(t2,h2).
+EscUnion(h) :- EscObj(t,h).
+EscUnion(h) :- WEscObj(t,h).
+NotEscObj(t,h) :- !EscUnion(h), HT(h,t), ExceptionType(t).
+CaughtObj(t,h) :- VCatchesH(v,h), NotEscObj(t,h).
+InfeasMTP(m,t,p) :- !FeasMTP(m,t,p), EscapeMTP(m,t,p).
+InfeasObj(t,h) :- ThrowPV(m,p,v), VH(v,h), HT(h,t), InfeasMTP(m,t,p).
+InfeasObj(t,h) :- CallAt(m,p,mcallee), MThrowsH(mcallee,h), HT(h,t), InfeasMTP(m,t,p).
+ThrowEH(eh,m,v) :- HasThrow(eh,p), MEH(m,eh), ThrowPV(m,p,v).
+MVarEH(m,eh,v) :- MEH(m,eh), VarEH(eh,v).
+TransSub(t1,t2) :- sub(t1,t2), ExceptionType(t2), ExceptionType(t1).
+TransSub(t1,t2) :- sub(t1,t), TransSub(t,t2), ExceptionType(t1).
+ValidExType(v,t1) :- VT(v,t), TransSub(t1,t).
+LinkedEx(m,v1,t1,m,v2,t2) :- MVarEH(m,eh,v1), ThrowEH(eh,m,v2), ValidExType(v1,t1), ValidExType(v2,t2).
+ThrowSubsumed(eh,m,p,v,t) :- LinkedEx(m,v1,t1,m,v,t), ThrowPV(m,p,v), VarEH(eh,v1).
+MethSetsBuilderInt(m,m1,v) :- IsMoveNextMeth(m), IsBuilderSetExceptionMeth(m1), MM(m,m1), MmethArg(m1,0,v).
+MethSetsBuilder(m,v,eh) :- MethSetsBuilderInt(m,m1,v), HasMethInvk(eh,i), MEH(m,eh), IM(i,m1).
+MethAwaitsTask(m,v) :- IsMoveNextMeth(m), IsTaskGetAwaiterMeth(m1), MM(m,m1), MmethArg(m1,0,v).
+MethAwaitsTask(m,v) :- IsTaskWaitMeth(m1), MM(m,m1), MmethArg(m1,0,v).
+ThrowReadsTask(p,v) :- IsTaskWaitMeth(m), MmethArg(m,0,v), ThrowPV(m,p,v1).
+ThrowReadsTask(p,v) :- IsTaskResultMeth(m), MmethArg(m,0,v), ThrowPV(m,p,v1).
+MethSetsTaskObj(m,h1,eh) :- MethSetsBuilder(m,v,eh), VH(v,h), HT(h,t), TaskFldInBuilder(t,f), HFH(h,f,h1).
+MethAwaitsTaskObj(m,h) :- MethAwaitsTask(m,v), VH(v,h).
+ThrowReadsTaskObj(p,h) :- ThrowReadsTask(p,v), VH(v,h).
+CandidateMethPair(m1,m2,h,eh) :- MethSetsTaskObj(m1,h,eh), MethAwaitsTaskObj(m2,h).
+CandidatePair(m1,eh,m2,p) :- CandidateMethPair(m1,m,h,eh), ThrowReadsTaskObj(p,h), ThrowPV(m2,p,v).
+LinkedEx(m1,v1,t1,m2,v2,t2) :- CandidatePair(m1,eh,m2,p), VarEH(eh,v1), ThrowPV(m2,p,v2), ValidExType(v1,t1), ValidExType(v2,t2).
+ThrowAsync(eh,m2,p,v2,t2) :- LinkedEx(m1,v1,t1,m2,v2,t2), ThrowPV(m2,p,v2), VarEH(eh,v1), m1 != m2.
+ThrowExpl(m,v) :- ThrowSubsumed(eh,m,p,v,t).
+ThrowExpl(m,v) :- ThrowAsync(eh,m,p,v,t).
+ThrowOrigin(m,p,v) :- ThrowPV(m,p,v), !ThrowExpl(m,v).
+ThrowRemaining(m,p,v) :- !ThrowUnion(m,p,v), ThrowPV(m,p,v).
+DiffMeths(m1,m2) :- relM(m1), relM(m2), m1 != m2.
+CatchInfo(m,eh,v,t) :- MEH(m,eh), VarEH(eh,v), VH(v,h), HT(h,t).
+ThrowInfo(m,p,v,t) :- ThrowPV(m,p,v), VH(v,h), HT(h,t).
+VHT(v,h,t) :- VH(v,h), HT(h,t).
+ThrowSubsumed(eh,m,p,v2,t2) :- CatchInfo(m,eh,v1,t1), LinkedEx(m,v1,t1,m,v2,t2), ThrowInfo(m,p,v2,t2).
+ThrowAsync(eh,m2,p,v2,t2) :- CatchInfo(m1,eh,v1,t1), LinkedEx(m1,v1,t1,m2,v2,t2),ThrowInfo(m2,p,v2,t2), DiffMeths(m1,m2).
+ThrowPoint(m,p,v,h) :- ThrowOrigin(m,p,v), VH(v,h).
+ThrowPoint(m,p,v,h) :- ThrowSubsumed(eh,m,p,v,t), VHT(v,h,t), WrapsEx(h,h1), VarEH(eh,ehv), CatchVH(ehv,h1). # wrap and throw
+ThrowPoint(m,p,v,h1) :- ThrowSubsumed(eh,m,p,v,t), VHT(v,h1,t), WrapsEx(h,h1), VarEH(eh,ehv), CatchVH(ehv,h). # unwrap and throw
+ThrowPoint(m,p,v,h) :- ThrowSubsumed(eh,m,p,v,t), VHT(v,h,t), VarEH(eh,ehv), CatchVH(ehv,h).  # rethrow
+ThrowPoint(m,p,v,h) :- ThrowAsync(eh,m,p,v,t), VHT(v,h,t), WrapsEx(h,h1), VarEH(eh,ehv), CatchVH(ehv,h1). # wrap and throw
+ThrowPoint(m,p,v,h1) :- ThrowAsync(eh,m,p,v,t), VHT(v,h1,t), WrapsEx(h,h1), VarEH(eh,ehv), CatchVH(ehv,h). # unwrap and throw
+ThrowPoint(m,p,v,h) :- ThrowAsync(eh,m,p,v,t), VHT(v,h,t), VarEH(eh,ehv), CatchVH(ehv,h).  # rethrow
+ThrowPoint(m,p,v,h) :- ThrowRemaining(m,p,v), VH(v,h).
+ThrowMH(m,h) :- ThrowPoint(m,p,v,h), HT(h,t), FeasibleMTP(m,t,p).
+ThrowMH(m,h) :- CallAt(m,p,mcallee), ThrowMH(mcallee,h), HT(h,t), FeasibleMTP(m,t,p).
+FeasibleMTP(m,t,p) :- EscapeMTP(m,t,p), NoEnclose(m,p).
+FeasibleMTP(m,t,p) :- EscapeMTP(m,t,p), EnclosingEH(m,eh,p), FeasibleEH(m,eh).
+FeasibleEH(m,eh) :- CatchVH(v,h), VarEH(eh,v), OutermostEH(m,eh).
+FeasibleEH(m,eh) :- CatchVH(v,h), VarEH(eh,v), NestedEH(m,eh1,eh), FeasibleEH(m,eh1).
+CatchVH(ehv,h) :- ThrowPoint(m,p,v,h), HT(h,t), FinalEH(eh,t,p), VarEH(eh,ehv).
+CatchVH(v,h) :- CallAt(m,p,mcallee), ThrowMH(mcallee,h), HT(h,t), FinalEH(eh,t,p), VarEH(eh,v).
+Escaping(t,h) :- ThrowMH(m,h), HT(h,t), ExceptionType(t), entryPtM(m).
+WEscaping(t2,h2) :- WrapsEx(h1,h2), Escaping(t1,h1), HT(h2,t2).
+WEscaping(t3,h3) :- WrapsEx(h2,h3), WEscaping(t2,h2), HT(h3,t3).
+OnlyWEscaping(t2,h2) :- WEscaping(t2,h2), !Escaping(t2,h2).
+EscUnion(h) :- Escaping(t,h).
+EscUnion(h) :- WEscaping(t,h).
+NotEscaping(t,h) :- !EscUnion(h), HT(h,t), ExceptionType(t).
+Caught(t,h) :- CatchVH(v,h), NotEscaping(t,h).
+InfeasibleMTP(m,t,p) :- !FeasibleMTP(m,t,p), EscapeMTP(m,t,p).
+Infeasible(t,h) :- ThrowPoint(m,p,v,h), HT(h,t), InfeasibleMTP(m,t,p).
+Infeasible(t,h) :- CallAt(m,p,mcallee), ThrowMH(mcallee,h), HT(h,t), InfeasibleMTP(m,t,p).
