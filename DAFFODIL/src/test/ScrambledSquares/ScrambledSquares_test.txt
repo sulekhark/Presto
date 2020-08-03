@@ -1,1 +1,1 @@
-cmd1:./ScrambledSquares.exe
+cmd1:./ScrambledSquares.exe 3 input4.in

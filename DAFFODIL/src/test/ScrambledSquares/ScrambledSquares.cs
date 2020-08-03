@@ -19,9 +19,6 @@ namespace ScrambledSquares
 
         public ScrambledSquares(int dimension, string inputFile)
         {
-            if (!File.Exists(inputFile))
-                throw new FileNotFoundException();
-
             Results = new List<Result>();
             this.dimension = dimension;
             MAX_CARDS = dimension * dimension;

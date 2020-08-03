@@ -60,9 +60,21 @@ namespace ScrambledSquares
                 cards = new Card[dimension, dimension];
                 MakeAllCardInt(dimension, cards);
             }
+            catch (ArgumentException ae)
+            {
+                if (!ScrambledSquares.IgnoreExceptions) throw ae;
+            }
+            catch (FormatException fe)
+            {
+                if (!ScrambledSquares.IgnoreExceptions) throw fe;
+            }
+            catch (ObjectDisposedException ode)
+            {
+                if (!ScrambledSquares.IgnoreExceptions) throw ode;
+            }
             catch (Exception e)
             {
-                if (!ScrambledSquares.IgnoreExceptions) throw e;
+                Console.WriteLine("Received exception: {0}", e.Message);
             }
             return cards;
         }
