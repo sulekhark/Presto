@@ -12,5 +12,7 @@ do
 
     echo $i >> $outFile
     echo "Total classes:" $ntc  "App classes:" $nac  "Total meths:" $ntm  "App meths:" $nam >> $outFile
+    head -n 2 $i/datalog/factgen_log.txt >> $outFile
+    echo >> $outFile
     echo >> $outFile
 done
