@@ -57,5 +57,5 @@ date >> bnet_time.txt
 $PRESTO_HOME/BnetTools/auc.py alarm_ranking.txt auc.pdf > auc.txt
 
 cd ..
-$PRESTO_HOME/BnetTools/htmlize.sh
-tar czf reports.tgz reports
+# $PRESTO_HOME/BnetTools/htmlize.sh
+# tar czf reports.tgz reports

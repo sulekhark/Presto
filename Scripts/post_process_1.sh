@@ -51,6 +51,7 @@ $PRESTO_HOME/DynamicConfig/scripts/generate_dyncfg_info.sh ../bnet/app_prob_edb_
 
 cd ..
 cd dynconfig
+date > dyncfg.txt
 mkdir Logging
 cp -r $PRESTO_HOME/DynamicConfig/LoggingTemplate/* Logging
 $PRESTO_HOME/DynamicConfig/scripts/logging_config.sh Logging assemblies.txt
@@ -60,4 +61,5 @@ cd FaultInjectionSet
 $PRESTO_HOME/DynamicConfig/scripts/fault_injection_config.sh ../../../datalog/FInject.txt ../../../datalog/LinkInject.txt ../../../datalog/ExceptionInjection.txt
 
 cd ../..
+date >> dynconfig/dyncfg.txt
 tar czf dynconfig.tgz dynconfig

@@ -31,7 +31,7 @@ linkInjectDir = "../dynlogs/FaultInjectionSet/LinkInject"
 logDirPrefix = "T"
 
 minProb = 0.05
-maxProb = 0.98
+maxProb = 0.985
 midProb = 0.94
 scaler = 4
 scalingOn = True
@@ -309,7 +309,9 @@ def getExcThrownCount(callerMeth, calleeMeth, callerLoc, excType):
         callerNodes = method2NodeMap[callerMeth]
         for node in callerNodes:
             calleeNdx = node.getChildAtOffset(calleeMeth, callerLoc)
-            if (calleeNdx > -1) and (node.exception[calleeNdx] == excType):
+            if (calleeNdx > -1):
+                nodeNdx = node.getIndex()
+                if (nodeNdx >= 0) and (node.parent.exception[nodeNdx] == excType):
                     excCnt += 1
     return excCnt
 
@@ -319,6 +321,12 @@ def getExcThrownCountFromOutput(execLog, excType):
         if ("Unhandled Exception:" in line) and (excType in line):
             return 1
     return 0
+
+
+def checkIfAppException(excType):
+    if excType.startswith('System.'):
+        return 0
+    return 1
 
 
 def computeProbEscapeMTP(entry): 
@@ -350,7 +358,7 @@ def computeProbEscapeMTP(entry):
             selector = calleeMethId
         else:
             selector = '*'
-        logDirName = logDirPrefix + "_" + callerMethId + "_" + callerPP + "_" + selector + "_" + excTypeId
+        logDirName = logDirPrefix + "_" + callerMethId + "_" + callerLoc + "_" + selector + "_" + excTypeId
         logDirList = getLogDirs(fInjectDir, logDirName)
         callCountTotal = 0
         excCountTotal = 0
@@ -379,7 +387,10 @@ def computeProbEscapeMTP(entry):
         elif callCountTotal == 0:
             prob = maxProb
         elif callCountTotal > 0 and excCountTotal == 0:
-            prob = minProb
+            if checkIfAppException(excType):
+                prob = maxProb
+            else:
+                prob = minProb
         else:
             ratio = excCountTotal * 1.0 / callCountTotal
             if scalingOn == True:
@@ -438,7 +449,10 @@ def computeProbLinkedEx(entry):
     if callCount == 0:
         prob = maxProb
     elif excCount == 0:
-        prob = minProb
+        if checkIfAppException(excType):
+            prob = maxProb
+        else:
+            prob = minProb
     else:
         ratio = excCount * 1.0 / callCount
         if scalingOn == True:
